@@ -15,5 +15,22 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: adaan-pradaan-core:latest
+    ports:
+      - "8000:8000"
+    environment:
+      TENANT_APP_ENV: dev
+      TENANT_DATABASE_URL: postgresql+asyncpg://tenant:tenant@postgres:5432/tenant_platform
+      TENANT_JWT_SECRET: dev-secret-change-in-production
+      TENANT_KEYCLOAK_MODE: fake
+      RUN_MIGRATIONS: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata:

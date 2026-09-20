@@ -33,3 +33,16 @@ API docs: http://127.0.0.1:8000/docs
 ## Phase 1 journeys
 
 J01–J06 identity (register → verify → login → refresh → revoke → password reset) plus AuthZ-gated `POST /api/v1/tenants/{tenant_id}/resources`.
+
+
+## Docker
+
+```bash
+# build API image
+docker build -t adaan-pradaan-core:latest .
+
+# run API + Postgres
+docker compose up --build
+```
+
+API: http://127.0.0.1:8000/docs
