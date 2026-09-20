@@ -46,3 +46,27 @@ docker compose up --build
 ```
 
 API: http://127.0.0.1:8000/docs
+
+
+## CI/CD (GitHub Actions → Docker Hub)
+
+On every push to `main`, GitHub Actions builds and pushes:
+
+- `<DOCKERHUB_USERNAME>/adaan-pradaan-core:latest`
+- `<DOCKERHUB_USERNAME>/adaan-pradaan-core:sha-<commit>`
+
+Pull requests only **build** (no push) to validate the Dockerfile.
+
+### One-time setup
+
+1. Create a Docker Hub Access Token: https://hub.docker.com/settings/security
+2. In GitHub repo **Settings → Secrets and variables → Actions**, add:
+   - `DOCKERHUB_USERNAME` — your Docker Hub username (or org)
+   - `DOCKERHUB_TOKEN` — the access token (not your password)
+3. (Optional) Create public repos on Docker Hub named `adaan-pradaan-core` (auto-created on first push for many accounts).
+
+Pull the published image:
+
+```bash
+docker pull <DOCKERHUB_USERNAME>/adaan-pradaan-core:latest
+```
