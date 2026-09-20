@@ -6,7 +6,9 @@ services:
       POSTGRES_PASSWORD: tenant
       POSTGRES_DB: tenant_platform
     ports:
-      - "5432:5432"
+      # Host 5434 avoids clash with other local Postgres (e.g. tenant-postgres-1 on 5432).
+      # Containers still talk on postgres:5432 inside the compose network.
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
