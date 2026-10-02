@@ -40,6 +40,7 @@ packages = [
   "src/tenant",
   "src/resources",
   "src/vendor",
+  "src/marketplace",
   "src/workflows",
   "src/api",
 ]

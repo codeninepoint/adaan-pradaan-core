@@ -637,7 +637,10 @@ CORS does **not** authenticate users. It only lets the browser expose the respon
 | J16 onboarding checklist | `GET /tenants/{tenant_id}/onboarding` | Missing |
 | J17 org overview | `GET /organizations/{org_id}/overview` | Missing |
 | J18 realm status/retry | `GET/POST .../realm` | Partial via J07 poll only |
-| J23+ plugins / marketplace | various | Not started |
+| J23–J25, J27–J34, J36, J38–J42 | plugin, catalog, install, provision, product archive | Live under `/api/v1` |
+| J26, J35, J37 governance review, claim, and vendor suspend | see [02_Tenant_Vendor_Plugin_Journeys.md](User_Journeys/02_Tenant_Vendor_Plugin_Journeys.md) | Live under `/api/v1` |
+| J43, J44, J48–J52 wishlist, cart, checkout, orders, returns, subscriptions, addresses | same doc | Live under `/api/v1` |
+| J45–J47 vendor payouts, settings, support | same doc | Not started |
 
 ---
 

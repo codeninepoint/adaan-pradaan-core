@@ -2,6 +2,13 @@
 
 Consumer journey from **browse** through **install**, **provision**, **meter**, and **bill**.
 
+Buyer UI: [marketplace_portal.html](../UI%20Screems_Html/marketplace_portal.html). Journey contracts: J31 and J41–J42 for browse and detail, J32–J34 for install and provision, J44 and J48–J49 for cart and orders.
+
+After the buyer opens a product (J42), the path depends on `fulfilment_type` (J40):
+
+- `PROVISION_SOFTWARE` and `PROVISION_CLOUD` follow the install → provision steps below (J32, J34). They are not cart lines.
+- Every other fulfilment type goes cart → checkout → order (J44, J48, J49). Returns are J50. Recurring plans are read in J51.
+
 ## Preconditions
 
 - User authenticated; member of tenant.
@@ -84,6 +91,7 @@ Events are append-only; duplicates rejected via `idempotency_key`.
 
 ## Related
 
+- [02_Tenant_Vendor_Plugin_Journeys.md](../User_Journeys/02_Tenant_Vendor_Plugin_Journeys.md) — J31–J34 and J40–J52
 - [resource-allocation.md](resource-allocation.md) — platform resources (non-marketplace)
 - [billing-domain.md](../domains/billing-domain.md)
 - [metering-domain.md](../domains/metering-domain.md)

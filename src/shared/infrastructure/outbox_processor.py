@@ -94,6 +94,14 @@ class OutboxProcessor:
             # Compensating / retry hook — logged for operator; real KC adapter wires later.
             logger.warning("outbox retry_keycloak_set_password payload=%s", payload)
             self._sink.record("keycloak_set_password_retry", to="keycloak", body=payload)
+        elif row.type == "scan_plugin_artifact":
+            from marketplace.application.provision import handle_scan
+
+            await handle_scan(self._session, payload)
+        elif row.type == "provision_service":
+            from marketplace.application.provision import handle_provision
+
+            await handle_provision(self._session, payload)
         else:
             logger.info("outbox unknown type=%s id=%s — marking processed", row.type, row.id)
 

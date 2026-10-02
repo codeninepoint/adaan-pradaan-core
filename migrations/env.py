@@ -12,6 +12,8 @@ import identity.infrastructure.models  # noqa: F401
 import tenant.infrastructure.models  # noqa: F401
 import authz.infrastructure.models  # noqa: F401
 import resources.infrastructure.models  # noqa: F401
+import vendor.infrastructure.models  # noqa: F401
+import marketplace.infrastructure.models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

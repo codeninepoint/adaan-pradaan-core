@@ -2,6 +2,8 @@
 
 End-to-end reference journey for **Acme Metrics** — a metrics export integration plugin. Demonstrates plugin-first marketplace with subscription + usage.
 
+The same pipeline is the vendor UI in [vendor_plugin_portal1.html](../UI%20Screems_Html/vendor_plugin_portal1.html) (J23–J28, J38–J40, J45–J47). Before a product can be published, it declares one `fulfilment_type` (J40). `PROVISION_SOFTWARE` and `PROVISION_CLOUD` are what this Acme Metrics example uses. Other types are fulfilled as orders (J48), not as a provisioned resource.
+
 ## Actors
 
 | Actor | Org | Role |
@@ -57,9 +59,9 @@ On approve:
 
 ## Phase 3 — Marketplace catalog
 
-1. `POST /v1/vendor/products` — `Product` bound to plugin.
+1. `POST /v1/vendor/products` — `Product` bound to plugin, with `fulfilment_type` (J40). For this example: `PROVISION_CLOUD`.
 2. `POST /v1/vendor/offerings` — `MarketplaceOffering` with `plan_id` + `meter_codes`.
-3. Platform publishes listing (public catalog read).
+3. Platform publishes listing (public catalog read). Publish returns 409 until the plugin version is approved (J36).
 
 ## Phase 4 — Tenant request
 

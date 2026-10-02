@@ -1,8 +1,8 @@
 # Tenant, Vendor & Plugin — Complete User Journey Reference
-### 26 Journeys · Every API · Every Table · Every State Change
+### J12–J52 · Every API · Every Table · Every State Change
 **Multi-Tenant Cloud Platform — Phase 2** (continues numbering from Journey 1: Identity & Authorization, J1–J11)
 
-> Companion document to `01_Identity_Auth_Journeys` (J1–J11). This document covers everything that happens **after** a user has registered, verified, logged in, and optionally upgraded to an Organization (J7). It maps 1:1 onto the 28 screens in the "Tenant, Vendor and Plugin UI Screens" file: **Tenant Journeys, Organization, Vendor Registration, Plugin Publishing, Product & Marketplace, Platform Governance.**
+> Companion document to `01_Identity_Auth_Journeys` (J1–J11). This document covers everything that happens **after** a user has registered, verified, logged in, and optionally upgraded to an Organization (J7). J12–J37 map onto the 28 screens in [Adanpradan_Identity auth tenant vendor_Flow.html](../UI%20Screems_Html/Adanpradan_Identity%20auth%20tenant%20vendor_Flow.html). J38–J52 cover the later vendor portal and buyer storefront in [vendor_plugin_portal1.html](../UI%20Screems_Html/vendor_plugin_portal1.html) and [marketplace_portal.html](../UI%20Screems_Html/marketplace_portal.html).
 
 ## Journey Index
 
@@ -34,8 +34,59 @@
 | J35 | Review Plugins Queue (read + claim) | Platform governance admin | `marketplace.plugin_versions` | g_plugins |
 | J36 | Approve / Reject Plugin Version | Platform governance admin | `marketplace.plugin_versions`, `marketplace.plugins`, `identity.audit_log` | g_approve |
 | J37 | Vendor Directory & Suspension | Platform governance admin | `vendor.profiles`, `marketplace.offerings`, `identity.audit_log` | g_vendors |
+| J38 | Vendor install list (read) | Vendor admin | `marketplace.installations` (read) | vendor portal `installs` |
+| J39 | Product list, edit, archive | Vendor admin | `marketplace.products`, `identity.audit_log` | vendor portal `products` |
+| J40 | Fulfilment-typed product wizard | Vendor admin | `marketplace.products`, `marketplace.product_content`, `marketplace.offerings` | vendor portal `new-product` |
+| J41 | Marketplace home (read) | Buyer | `marketplace.offerings`, `marketplace.products` (read) | buyer `home` |
+| J42 | Product detail (read) | Buyer | `marketplace.products`, `marketplace.product_content`, `marketplace.offerings` (read) | buyer `detail` |
+| J43 | Wishlist | Tenant member | `marketplace.wishlists` | buyer `wishlist` |
+| J44 | Cart | Tenant member | `marketplace.carts`, `marketplace.cart_lines` | buyer `cart` |
+| J45 | Vendor revenue and payouts (read) | Vendor admin | `marketplace.payouts` (read) | vendor portal `revenue` |
+| J46 | Vendor business settings | Vendor admin | `vendor.settings`, `identity.audit_log` | vendor portal `settings` |
+| J47 | Vendor support request | Vendor admin | `vendor.support_requests`, `identity.audit_log` | vendor portal `support` |
+| J48 | Checkout / place order | Tenant-admin | `marketplace.orders`, `marketplace.order_lines`, `marketplace.installations` | buyer `checkout` |
+| J49 | Orders and tracking (read) | Tenant member | `marketplace.orders` (read) | buyer `orders`, `order-detail` |
+| J50 | Returns | Tenant member | `marketplace.returns`, `identity.audit_log` | buyer `returns` |
+| J51 | Buyer subscriptions (read) | Tenant-admin | `marketplace.orders`, billing subscription (read) | buyer `billing` |
+| J52 | Delivery addresses | Tenant member | `tenant.addresses` | buyer `addresses` |
 
 **Column colour coding (kept consistent with Journey 1):** INDIGO = `identity.*` · TEAL = `tenant.*` · CORAL = `vendor.*` · PURPLE = `marketplace.*` · AMBER = PK / state column · RED = `authz.*` writes.
+
+## Screen crosswalk — later portals
+
+J12–J37 stay bound to [Adanpradan_Identity auth tenant vendor_Flow.html](../UI%20Screems_Html/Adanpradan_Identity%20auth%20tenant%20vendor_Flow.html). Governance screens `g_plugins`, `g_approve`, and `g_vendors` (J35–J37) are not in the two HTML files below.
+
+### Vendor portal — `vendor_plugin_portal1.html`
+
+| Page | Journey |
+|---|---|
+| Dashboard | J23 (counts). Checklist and recent installs are the same read, not a new write. |
+| Active Installs | J38 |
+| Revenue & Payouts | J45 |
+| My Products | J39 |
+| Add New Product | J40, which extends J29 and J30 |
+| Listing Standards | Static reference for the nine fulfilment types. No API. |
+| My Plugin | J24 (identity) and J28 (version history). Adapter URL and health are fields on the plugin read. |
+| Submit New Version | J25 and J27 |
+| Business Settings | J46 |
+| Support | J47 |
+
+### Buyer storefront — `marketplace_portal.html`
+
+| Page | Journey |
+|---|---|
+| Marketplace Home | J41 |
+| Browse All | J31, with the extra filters listed on J31 |
+| Product detail | J42. Software and cloud “install” still calls J32. |
+| Wishlist | J43 |
+| Cart | J44 |
+| Checkout | J48 |
+| My Installs | J33, plus J34 status |
+| Orders & order detail | J49 |
+| Returns & Refunds | J50 |
+| Subscriptions & Billing | J51 |
+| Addresses | J52 |
+| Settings | Buyer display preferences only. No new auth journey. |
 
 ---
 
@@ -401,6 +452,8 @@ Requires `platform.admin` (or `governance.review` permission).
 
 **Tables read only:** `vendor.profiles`, `marketplace.products`, `marketplace.offerings`, `marketplace.installations`, `marketplace.plugin_versions` (count where `status='pending_review'`). No writes.
 
+> The vendor portal dashboard in `vendor_plugin_portal1.html` is this read. The install list is J38. Revenue on that page is J45.
+
 ---
 
 ## Journey 24 — Plugin Registration
@@ -561,6 +614,8 @@ Mirrors the "never delete, always append a new row + keep status history" philos
 |---|---|---|---|
 | `marketplace.products.status` | — | `'draft'` | `product.created` |
 
+> The vendor portal “Add New Product” wizard is J40. It calls this create, then stores fulfilment content, then creates the offering in J30.
+
 ---
 
 ## Journey 30 — Create Offering (Pricing / Plan)
@@ -593,6 +648,8 @@ Mirrors the "never delete, always append a new row + keep status history" philos
 | `marketplace.offerings.status` | — | `'draft'` | `offering.created` |
 | `marketplace.offerings.status` (publish) | `'draft'` | `'published'` | `offering.published` |
 
+> Publish still requires an approved plugin version (J36). The wizard’s price and billing period are this offering. Fulfilment type lives on the product (J40), not on the offering.
+
 ---
 
 ## Journey 31 — Marketplace Catalog Browse (Read)
@@ -612,6 +669,8 @@ Mirrors the "never delete, always append a new row + keep status history" philos
 `200 OK` — no auth required to browse; auth required only to install (J32).
 
 **Tables read only:** `marketplace.offerings WHERE status='published'`, joined to `marketplace.products`, `vendor.profiles`.
+
+> Buyer “Browse All” in `marketplace_portal.html` is this endpoint. Optional query params from that screen: `category`, `vendor_id`, `verified_only`, `price_min`, `price_max`, `sort` (`newest` | `price_asc` | `price_desc`). Marketplace home rails are J41, not this list.
 
 ---
 
@@ -794,6 +853,419 @@ On failure: `installations.status → 'failed'`, outbox event retried with expon
 
 ---
 
+## Journey 38 — Vendor Install List (Read)
+
+**Actor:** Vendor admin
+**Trigger:** Opening Active Installs on the vendor portal
+**Outcome:** Read-only list of tenant installations of this vendor's offerings
+
+### API
+`GET /vendors/{vendor_id}/installations`
+```json
+{ "installations": [
+    { "installation_id": "inst-uuid-001", "tenant_name": "MindBloom Studio",
+      "product_name": "Gratitude Journal Pro", "fulfilment_type": "SHIP_PHYSICAL",
+      "status": "active", "since": "2024-04-01T00:00:00Z" }
+  ] }
+```
+`200 OK` · `403` caller is not this vendor's admin
+
+**Tables read only:** `marketplace.installations` joined to `marketplace.offerings`, `marketplace.products`, `tenant.tenants`. No writes. J23 returns the count; this journey returns the rows.
+
+---
+
+## Journey 39 — Product List, Edit, Archive
+
+**Actor:** Vendor admin
+**Trigger:** Opening My Products, editing a listing, or archiving it
+**Outcome:** Product row updated in place. Archived products stay queryable. They leave the public catalog.
+
+### API
+`GET /vendors/{vendor_id}/products`
+```json
+{ "products": [
+    { "product_id": "prod-uuid-001", "name": "Gratitude Journal Pro",
+      "fulfilment_type": "SHIP_PHYSICAL", "status": "published" }
+  ] }
+```
+
+`PATCH /products/{product_id}`
+```json
+{ "name": "Gratitude Journal Pro", "description": "Hardcover A5 journal." }
+```
+```json
+{ "product_id": "prod-uuid-001", "status": "published" }
+```
+
+`POST /products/{product_id}/archive`
+```json
+{ "product_id": "prod-uuid-001", "status": "archived", "archived_at": "2024-06-01T00:00:00Z" }
+```
+`200 OK` · `403` not this vendor's admin · `409` already archived
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `marketplace.products` (edit) | prior name/description | updated fields | `product.updated` |
+| `marketplace.products.status` (archive) | `'published'` or `'draft'` | `'archived'` | `product.archived` |
+
+> Purge warning at 24 months after `archived_at` is a product rule for a later job. This journey does not delete the row. Active installations of an archived product stay active (same rule as J37: existing installs are not torn down).
+
+---
+
+## Journey 40 — Fulfilment-Typed Product Wizard
+
+**Actor:** Vendor admin
+**Trigger:** Add New Product wizard (details, fulfilment type, content, price)
+**Outcome:** Draft product with one fulfilment type and type-specific content, plus a draft offering (J30)
+
+Allowed `fulfilment_type` values:
+
+| Code | Buyer path after publish |
+|---|---|
+| `PROVISION_SOFTWARE` | J32 install, then J34 provision |
+| `PROVISION_CLOUD` | J32 install, then J34 provision |
+| `SHIP_PHYSICAL` | J44 cart, J48 order, shipment |
+| `DELIVER_DIGITAL` | J44 cart, J48 order, file delivery |
+| `LICENSE_SOFTWARE` | J44 cart, J48 order, license delivery |
+| `STREAM_LMS_COURSE` | J44 cart, J48 order, course access |
+| `DELIVER_MULTIMEDIA` | J44 cart, J48 order, stream access |
+| `DISPATCH_SERVICE` | J44 cart, J48 order, dispatch |
+| `BOOK_APPOINTMENT` | J44 cart, J48 order, booking |
+
+### API
+Extends J29. Same `POST /vendors/{vendor_id}/products`, with `fulfilment_type` required.
+```json
+{ "name": "Gratitude Journal Pro", "description": "Hardcover A5 journal.",
+  "plugin_id": "plugin-uuid-001", "fulfilment_type": "SHIP_PHYSICAL",
+  "content": { "sku": "GJP-A5", "weight_g": 400, "ships_from_pincode": "400001" } }
+```
+```json
+{ "product_id": "prod-uuid-001", "status": "draft", "fulfilment_type": "SHIP_PHYSICAL" }
+```
+`201 Created` · `422` unknown `fulfilment_type` · `403` vendor not verified · `404` plugin not owned by vendor
+
+Content is stored on `marketplace.product_content` (`product_id`, `payload` JSON). The wizard's price step is J30 (`POST /products/{product_id}/offerings`). Publish remains `POST /offerings/{offering_id}/publish` and still returns `409` until a plugin version is `approved` (J36).
+
+Listing Standards in the vendor portal is the human-readable checklist for `content`. It is not an endpoint.
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `marketplace.products.status` | — | `'draft'` | `product.created` |
+| `marketplace.products.fulfilment_type` | — | one of the nine codes | `product.created` |
+| `marketplace.product_content` | — | payload row | `product.created` |
+
+---
+
+## Journey 41 — Marketplace Home (Read)
+
+**Actor:** Any visitor (browse). Signed-in tenant member for the recently-viewed rail.
+**Trigger:** Opening Marketplace Home
+**Outcome:** Read-only rails. No cart or install.
+
+### API
+`GET /marketplace/home`
+```json
+{ "categories": ["Lifestyle & Wellness", "Digital Products"],
+  "rails": {
+    "new": [],
+    "sponsored": [],
+    "trending": []
+  } }
+```
+`200 OK`. Recently viewed is `GET /marketplace/home?tenant_id={tenant_id}` and requires Bearer. Each card is a published product summary (name, vendor, fulfilment type, starting price). Full filterable list remains J31.
+
+**Tables read only:** `marketplace.offerings` where `status='published'`, joined to `marketplace.products` and `vendor.profiles`.
+
+---
+
+## Journey 42 — Product Detail (Read)
+
+**Actor:** Any visitor
+**Trigger:** Opening a product card
+**Outcome:** Read-only detail used by install (J32) or add-to-cart (J44)
+
+### API
+`GET /marketplace/products/{product_id}`
+```json
+{ "product_id": "prod-uuid-001", "name": "Gratitude Journal Pro",
+  "fulfilment_type": "SHIP_PHYSICAL", "vendor": "Happy Minds",
+  "content": { "variants": ["A5 Teal"] },
+  "offerings": [
+    { "offering_id": "off-uuid-001", "plan_name": "Per unit", "price_inr": 499, "status": "published" }
+  ] }
+```
+`200 OK` · `404` not published (draft and archived are hidden from buyers)
+
+**Tables read only:** `marketplace.products`, `marketplace.product_content`, `marketplace.offerings`.
+
+---
+
+## Journey 43 — Wishlist
+
+**Actor:** Tenant member
+**Trigger:** Save or remove a product on the buyer storefront
+**Outcome:** One wishlist row per tenant + product
+
+### API
+`GET /tenants/{tenant_id}/wishlist`
+`POST /tenants/{tenant_id}/wishlist`
+```json
+{ "product_id": "prod-uuid-001" }
+```
+`DELETE /tenants/{tenant_id}/wishlist/{product_id}`
+
+`201 Created` · `200 OK` on delete · `409` already saved · `404` product not published · `403` not a member of the tenant
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `marketplace.wishlists` | — | row `(tenant_id, product_id)` | — (no audit; preference only) |
+| `marketplace.wishlists` (delete) | row | removed | — |
+
+---
+
+## Journey 44 — Cart
+
+**Actor:** Tenant member
+**Trigger:** Add, change quantity, or remove a line before checkout
+**Outcome:** One open cart per tenant. Lines reference a published offering.
+
+### API
+`GET /tenants/{tenant_id}/cart`
+`POST /tenants/{tenant_id}/cart/lines`
+```json
+{ "offering_id": "off-uuid-001", "quantity": 1 }
+```
+`PATCH /tenants/{tenant_id}/cart/lines/{line_id}`
+```json
+{ "quantity": 2 }
+```
+`DELETE /tenants/{tenant_id}/cart/lines/{line_id}`
+
+`200 OK` · `404` offering not published · `409` line already present (PATCH quantity instead) · `403` not a member
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `marketplace.carts` | — | `status='open'` | — |
+| `marketplace.cart_lines` | — | line with `offering_id`, `quantity` | — |
+
+Software and cloud products (`PROVISION_SOFTWARE`, `PROVISION_CLOUD`) are not cart lines. Those buyers call J32 directly from the product detail page.
+
+---
+
+## Journey 45 — Vendor Revenue and Payouts (Read)
+
+**Actor:** Vendor admin
+**Trigger:** Opening Revenue & Payouts
+**Outcome:** Read-only ledger. No payment capture in this journey.
+
+### API
+`GET /vendors/{vendor_id}/payouts`
+```json
+{ "currency": "INR",
+  "this_period": { "gross": 293612, "platform_fee": 58722, "net": 234890, "status": "paid" },
+  "payouts": [
+    { "period": "2024-06", "gross": 293612, "platform_fee": 58722, "net": 234890, "status": "paid" }
+  ] }
+```
+`200 OK` · `403` not this vendor's admin
+
+Platform fee is 20% of gross. The remaining split (vendor payout vs builder attribution) is recorded on the payout row and is not calculated in the request. A payment processor is out of scope.
+
+**Tables read only:** `marketplace.payouts`.
+
+---
+
+## Journey 46 — Vendor Business Settings
+
+**Actor:** Vendor admin
+**Trigger:** Saving support email, bank details, or notification preferences
+**Outcome:** `vendor.settings` updated. Legal name and tax id from J21 are not writable here.
+
+### API
+`GET /vendors/{vendor_id}/settings`
+`PATCH /vendors/{vendor_id}/settings`
+```json
+{ "support_email": "support@happyminds.io",
+  "bank_account_name": "Happy Minds Pvt Ltd",
+  "bank_account_number": "XXXX1234",
+  "bank_ifsc": "HDFC0001234",
+  "notify_install": true, "notify_payout": true }
+```
+```json
+{ "vendor_id": "vendor-uuid-001", "status": "verified" }
+```
+`200 OK` · `403` not this vendor's admin · `422` invalid email or IFSC
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `vendor.settings` | prior or empty | updated fields | `vendor.settings_updated` |
+
+`vendor.profiles.legal_name` and tax id stay as written in J21.
+
+---
+
+## Journey 47 — Vendor Support Request
+
+**Actor:** Vendor admin
+**Trigger:** Submitting the support form
+**Outcome:** A support request row. No ticket workflow beyond create and list.
+
+### API
+`POST /vendors/{vendor_id}/support-requests`
+```json
+{ "subject": "Payout delayed", "message": "June payout still pending." }
+```
+```json
+{ "request_id": "sup-uuid-001", "status": "open" }
+```
+`201 Created` · `403` not this vendor's admin
+
+`GET /vendors/{vendor_id}/support-requests` lists the vendor's own requests.
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `vendor.support_requests.status` | — | `'open'` | `vendor.support_requested` |
+
+---
+
+## Journey 48 — Checkout
+
+**Actor:** Tenant-admin
+**Trigger:** Proceed to checkout from the cart (J44)
+**Outcome:** An order. Cart becomes `checked_out`. Provisioned fulfilment types are not in this cart (see J44).
+
+### API
+`POST /tenants/{tenant_id}/orders`
+```json
+{ "address_id": "addr-uuid-001", "payment_method": "upi" }
+```
+```json
+{ "order_id": "ord-uuid-001", "status": "placed", "line_count": 2 }
+```
+`201 Created` · `409` cart empty · `422` a physical, dispatch, or appointment line has no `address_id` · `403` caller lacks `resource.create` in the tenant
+
+### Internal steps
+| Step | Domain | Action | DB Write |
+|---|---|---|---|
+| 1 | Marketplace | Load open cart and lines | READ `marketplace.carts`, `marketplace.cart_lines` |
+| 2 | Marketplace | Require address when any line is `SHIP_PHYSICAL`, `DISPATCH_SERVICE`, or `BOOK_APPOINTMENT` | READ `tenant.addresses` |
+| 3 | Marketplace | INSERT order + lines copied from the cart | `orders.status='placed'` |
+| 4 | Marketplace | Close the cart | `carts.status='checked_out'` |
+| 5 | Audit | Log | `order.placed` |
+
+Payment capture is not performed. `payment_method` is stored on the order for a later billing integration.
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `marketplace.orders.status` | — | `'placed'` | `order.placed` |
+| `marketplace.order_lines` | — | one row per cart line | `order.placed` |
+| `marketplace.carts.status` | `'open'` | `'checked_out'` | `order.placed` |
+
+---
+
+## Journey 49 — Orders and Tracking (Read)
+
+**Actor:** Tenant member
+**Trigger:** Opening Orders or an order detail page
+**Outcome:** Read-only
+
+### API
+`GET /tenants/{tenant_id}/orders`
+`GET /orders/{order_id}`
+```json
+{ "order_id": "ord-uuid-001", "status": "placed",
+  "lines": [ { "product_name": "Gratitude Journal Pro", "quantity": 1, "fulfilment_type": "SHIP_PHYSICAL" } ],
+  "tracking": null }
+```
+`200 OK` · `403` order's tenant is not one the caller belongs to · `404` unknown order
+
+**Tables read only:** `marketplace.orders`, `marketplace.order_lines`.
+
+---
+
+## Journey 50 — Returns
+
+**Actor:** Tenant member
+**Trigger:** Requesting a return on an order line
+**Outcome:** `marketplace.returns` row `status='requested'`
+
+### API
+`POST /orders/{order_id}/returns`
+```json
+{ "line_id": "ol-uuid-001", "reason": "Damaged on arrival", "notes": "" }
+```
+```json
+{ "return_id": "ret-uuid-001", "status": "requested" }
+```
+`201 Created` · `403` not a member of the order's tenant · `409` a return is already open for this line · `422` order is not `placed` or `fulfilled`
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `marketplace.returns.status` | — | `'requested'` | `return.requested` |
+
+Refund execution is out of scope. This journey records the request only.
+
+---
+
+## Journey 51 — Buyer Subscriptions (Read)
+
+**Actor:** Tenant-admin
+**Trigger:** Opening Subscriptions & Billing
+**Outcome:** Read-only list of recurring offerings the tenant holds. Meter math and invoices stay in the billing domain.
+
+### API
+`GET /tenants/{tenant_id}/subscriptions`
+```json
+{ "subscriptions": [
+    { "offering_id": "off-uuid-002", "product_name": "Guided Journal Suite",
+      "plan_name": "Monthly", "status": "active", "next_billing_at": "2024-07-01T00:00:00Z" }
+  ], "active_count": 1 }
+```
+`200 OK` · `403` caller lacks `resource.read` in the tenant
+
+Rows are offerings on active installations (J32) or recurring order lines whose billing period is not `one_time`. Cancel is `POST /tenants/{tenant_id}/subscriptions/{offering_id}/cancel` and sets that installation or order line `status='cancel_at_period_end'`. It does not call a payment provider.
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| installation or order line `status` (cancel only) | `'active'` | `'cancel_at_period_end'` | `subscription.cancel_scheduled` |
+
+---
+
+## Journey 52 — Delivery Addresses
+
+**Actor:** Tenant member
+**Trigger:** Adding or editing an address used by checkout (J48)
+**Outcome:** Address rows scoped to the tenant
+
+### API
+`GET /tenants/{tenant_id}/addresses`
+`POST /tenants/{tenant_id}/addresses`
+```json
+{ "label": "Head Office", "contact_name": "MindBloom Studio",
+  "line1": "12 Linking Road", "city": "Mumbai", "state": "MH",
+  "pincode": "400001", "phone": "+919800000000" }
+```
+`PATCH /tenants/{tenant_id}/addresses/{address_id}`
+`DELETE /tenants/{tenant_id}/addresses/{address_id}`
+
+`201 Created` · `200 OK` · `403` not a member · `409` delete refused when the address is on an order that is not yet `fulfilled`
+
+### State changes
+| Table / Column | Before | After | Audit Event |
+|---|---|---|---|
+| `tenant.addresses` | — | row `status='active'` | — |
+
+---
+
 ## Cross-Journey State Summary (J12–J37)
 
 | Table | J12 | J13 | J14 | J15 | J16 | J17 | J18 | J19 | J20 | J21 | J22 | J23 | J24 | J25 | J26 | J27 | J28 | J29 | J30 | J31 | J32 | J33 | J34 | J35 | J36 | J37 |
@@ -839,6 +1311,19 @@ On failure: `installations.status → 'failed'`, outbox event retried with expon
 | `marketplace` | `installations` | A tenant's install of a specific offering |
 | `marketplace` | `entitlements` | What a tenant is currently entitled to use, derived from installations |
 | `marketplace` | `service_instances` | The provisioned runtime instance backing an active installation |
+| `marketplace` | `product_content` | JSON payload for one fulfilment type on a product (J40) |
+| `marketplace` | `wishlists` | Tenant saved products (J43) |
+| `marketplace` | `carts` | One open cart per tenant (J44) |
+| `marketplace` | `cart_lines` | Offering + quantity on an open cart |
+| `marketplace` | `orders` | Checkout result (J48) |
+| `marketplace` | `order_lines` | Lines copied from the cart at checkout |
+| `marketplace` | `returns` | Return request against an order line (J50) |
+| `marketplace` | `payouts` | Vendor period ledger, read in J45. Writers are a later billing job |
+| `vendor` | `settings` | Support email, bank, notification prefs (J46) |
+| `vendor` | `support_requests` | Vendor support form (J47) |
+| `tenant` | `addresses` | Delivery addresses for checkout (J52) |
+
+J38–J52 touch those tables as follows. Reads do not write audit rows. J39 updates or archives `marketplace.products`. J40 inserts `marketplace.products` and `marketplace.product_content`. J43–J44 write wishlist and cart tables without audit. J46 updates `vendor.settings`. J47 inserts `vendor.support_requests`. J48 inserts orders and closes the cart. J50 inserts `marketplace.returns`. J51 cancel sets `cancel_at_period_end`. J52 inserts `tenant.addresses`.
 
 All of the above reuse `identity.audit_log` for audit trail and `authz.roles` / `authz.user_roles` for permission checks — no new authorization primitives were introduced, consistent with Journey 1's model of roles being resolved fresh from the DB on every request (J10/J11).
 
@@ -853,5 +1338,7 @@ A few screens are pure dashboards with no independent write behavior of their ow
 - **v_portal** → Journey 23
 - **p_versions** → Journey 28
 - **m_entitle** → Journey 33
+- **Listing Standards** (vendor portal) → static checklist for J40 fulfilment types. No endpoint.
+- **Buyer settings** (marketplace portal) → display preferences only. No journey.
 
 End of Tenant, Vendor & Plugin User Journey Reference — TenantPlatform v2 (Phase 2)

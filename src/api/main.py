@@ -7,6 +7,8 @@ from identity.interface.api.routes import router as identity_router
 from identity.interface.api.sa_routes import router as service_accounts_router
 from resources.interface.api.routes import router as resources_router
 from shared.settings import settings
+from marketplace.interface.api.commerce_routes import router as commerce_router
+from marketplace.interface.api.routes import router as marketplace_router
 from tenant.interface.api.routes import router as tenant_router
 from vendor.interface.api.routes import router as vendor_router
 
@@ -29,6 +31,8 @@ def create_app() -> FastAPI:
     app.include_router(tenant_router)
     app.include_router(service_accounts_router)
     app.include_router(vendor_router)
+    app.include_router(marketplace_router)
+    app.include_router(commerce_router)
     return app
 
 

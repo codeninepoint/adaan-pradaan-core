@@ -17,6 +17,13 @@ class VendorRegisterRequest(BaseModel):
     business_doc_url: str = Field(min_length=1, max_length=1024)
 
 
+class VendorProfileResponse(BaseModel):
+    vendor_id: str
+    org_id: str
+    status: str
+    legal_name: str
+
+
 class VendorRegisterResponse(BaseModel):
     vendor_id: str
     org_id: str

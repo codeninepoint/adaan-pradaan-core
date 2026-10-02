@@ -12,6 +12,7 @@ from vendor.interface.api.schemas import (
     VendorDecisionRequest,
     VendorDecisionResponse,
     VendorEligibilityResponse,
+    VendorProfileResponse,
     VendorRegisterRequest,
     VendorRegisterResponse,
     VendorVerificationQueueItem,
@@ -43,6 +44,25 @@ async def vendor_eligibility(
         eligible=result.eligible,
         reasons=result.reasons,
         requirements=result.requirements,
+    )
+
+
+@router.get(
+    "/organizations/{org_id}/vendor",
+    response_model=VendorProfileResponse,
+)
+async def vendor_profile(
+    org_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorService, Depends(get_vendor_service)],
+) -> VendorProfileResponse:
+    user, _session, _credential = auth
+    result = await service.profile_for_org(org_id=org_id, caller_user_id=user.id)
+    return VendorProfileResponse(
+        vendor_id=str(result.vendor_id),
+        org_id=str(result.org_id),
+        status=result.status,
+        legal_name=result.legal_name,
     )
 
 

@@ -24,6 +24,14 @@ class EligibilityResult:
 
 
 @dataclass(frozen=True, slots=True)
+class VendorProfileView:
+    vendor_id: UUID
+    org_id: UUID
+    status: str
+    legal_name: str
+
+
+@dataclass(frozen=True, slots=True)
 class VendorRegisterResult:
     vendor_id: UUID
     org_id: UUID
@@ -83,6 +91,22 @@ class VendorService:
             eligible=eligible,
             reasons=reasons,
             requirements=list(REQUIREMENTS) if eligible else [],
+        )
+
+    async def profile_for_org(self, *, org_id: UUID, caller_user_id: UUID) -> VendorProfileView:
+        await self._require_org_owner(org_id, caller_user_id)
+        vendor = (
+            await self._session.execute(
+                select(VendorProfileRow).where(VendorProfileRow.organization_id == org_id)
+            )
+        ).scalar_one_or_none()
+        if vendor is None:
+            raise NotFoundError("vendor not found")
+        return VendorProfileView(
+            vendor_id=vendor.id,
+            org_id=vendor.organization_id,
+            status=vendor.status,
+            legal_name=vendor.legal_name,
         )
 
     async def register(

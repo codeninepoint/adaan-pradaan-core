@@ -20,6 +20,7 @@ import tenant.infrastructure.models  # noqa: F401
 import authz.infrastructure.models  # noqa: F401
 import resources.infrastructure.models  # noqa: F401
 import vendor.infrastructure.models  # noqa: F401
+import marketplace.infrastructure.models  # noqa: F401
 from shared.infrastructure.models import Base
 from identity.infrastructure.models import DeliverySecretRow
 
@@ -61,7 +62,7 @@ def postgres_url():
 async def engine(postgres_url: str) -> AsyncGenerator[AsyncEngine, None]:
     engine = create_async_engine(postgres_url, echo=False)
     async with engine.begin() as conn:
-        for schema in ("platform", "identity", "tenant", "authz", "resource", "vendor"):
+        for schema in ("platform", "identity", "tenant", "authz", "resource", "vendor", "marketplace"):
             await conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
         await conn.run_sync(Base.metadata.create_all)
 
@@ -100,6 +101,21 @@ async def clean_db(session_factory: async_sessionmaker[AsyncSession]) -> AsyncGe
             text(
                 """
                 TRUNCATE TABLE
+                  marketplace.returns,
+                  marketplace.order_lines,
+                  marketplace.orders,
+                  marketplace.cart_lines,
+                  marketplace.carts,
+                  marketplace.wishlists,
+                  marketplace.service_instances,
+                  marketplace.entitlements,
+                  marketplace.installations,
+                  marketplace.plugin_capabilities,
+                  marketplace.offerings,
+                  marketplace.product_content,
+                  marketplace.plugin_versions,
+                  marketplace.products,
+                  marketplace.plugins,
                   platform.outbox_events,
                   resource.resources,
                   authz.authorization_audit_log,
@@ -108,6 +124,7 @@ async def clean_db(session_factory: async_sessionmaker[AsyncSession]) -> AsyncGe
                   authz.roles,
                   vendor.verifications,
                   vendor.profiles,
+                  tenant.addresses,
                   tenant.organization_registration_requests,
                   tenant.tenant_memberships,
                   tenant.projects,
