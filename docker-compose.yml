@@ -11,11 +11,55 @@ services:
       - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-keycloak-schema.sql:/docker-entrypoint-initdb.d/02-keycloak-schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tenant -d tenant_platform"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  keycloak:
+    image: nehathakur123/keycloak:26.0
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: "8080"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/tenant_platform?currentSchema=keycloak
+      KC_DB_SCHEMA: keycloak
+      KC_DB_USERNAME: tenant
+      KC_DB_PASSWORD: tenant
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  temporal-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal -d temporal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  temporal:
+    image: nehathakur123/temporal:1.25.2
+    ports:
+      - "7233:7233"
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      POSTGRES_SEEDS: temporal-db
+    depends_on:
+      temporal-db:
+        condition: service_healthy
 
   api:
     build:
@@ -28,11 +72,48 @@ services:
       TENANT_APP_ENV: dev
       TENANT_DATABASE_URL: postgresql+asyncpg://tenant:tenant@postgres:5432/tenant_platform
       TENANT_JWT_SECRET: dev-secret-change-in-production
-      TENANT_KEYCLOAK_MODE: fake
+      TENANT_KEYCLOAK_MODE: real
+      TENANT_KEYCLOAK_BASE_URL: http://keycloak:8080
+      TENANT_KEYCLOAK_ADMIN_USERNAME: admin
+      TENANT_KEYCLOAK_ADMIN_PASSWORD: admin
+      TENANT_KEYCLOAK_CLIENT_ID: tenant-platform
+      TENANT_WORKFLOW_MODE: temporal
+      TENANT_TEMPORAL_ADDRESS: temporal:7233
+      TENANT_CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      TENANT_PLATFORM_OPERATOR_EMAILS: runuthakur0@gmail.com
       RUN_MIGRATIONS: "true"
     depends_on:
       postgres:
         condition: service_healthy
+      keycloak:
+        condition: service_started
+      temporal:
+        condition: service_started
+
+  worker:
+    image: adaan-pradaan-core:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "workflows.worker"]
+    restart: on-failure
+    environment:
+      TENANT_APP_ENV: dev
+      TENANT_DATABASE_URL: postgresql+asyncpg://tenant:tenant@postgres:5432/tenant_platform
+      TENANT_JWT_SECRET: dev-secret-change-in-production
+      TENANT_KEYCLOAK_MODE: real
+      TENANT_KEYCLOAK_BASE_URL: http://keycloak:8080
+      TENANT_KEYCLOAK_ADMIN_USERNAME: admin
+      TENANT_KEYCLOAK_ADMIN_PASSWORD: admin
+      TENANT_KEYCLOAK_CLIENT_ID: tenant-platform
+      TENANT_WORKFLOW_MODE: temporal
+      TENANT_TEMPORAL_ADDRESS: temporal:7233
+      RUN_MIGRATIONS: "false"
+    depends_on:
+      api:
+        condition: service_started
+      temporal:
+        condition: service_started
 
 volumes:
   pgdata:

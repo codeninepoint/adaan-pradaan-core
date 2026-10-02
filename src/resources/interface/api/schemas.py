@@ -15,3 +15,15 @@ class CreateResourceResponse(BaseModel):
     name: str
     resource_type: str
     status: str
+
+
+class ResourceListItem(BaseModel):
+    id: str
+    tenant_id: str
+    name: str
+    resource_type: str
+    status: str
+
+
+class ListResourcesResponse(BaseModel):
+    items: list[ResourceListItem]

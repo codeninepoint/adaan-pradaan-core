@@ -8,9 +8,11 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from identity.application.identity_service import IdentityApplicationService
 from identity.interface.api.dependencies import CurrentAuthDep, get_identity_service
 from identity.interface.api.schemas import (
+    MeResponse,
     MessageResponse,
     PasswordResetBody,
     PasswordResetRequestBody,
+    PasswordResetRequestResponse,
     PasswordResetResponse,
     RefreshRequest,
     RefreshResponse,
@@ -74,6 +76,19 @@ async def verify_email(
     try:
         result = await service.verify_email(email=body.email, otp_code=body.otp_code)
         return VerifyEmailResponse(**result)
+    except Exception as exc:
+        raise _http_error(exc) from exc
+
+
+@router.get("/auth/me", response_model=MeResponse)
+async def me(
+    auth: CurrentAuthDep,
+    service: Annotated[IdentityApplicationService, Depends(get_identity_service)],
+) -> MeResponse:
+    user, _, _ = auth
+    try:
+        result = await service.get_me(user=user)
+        return MeResponse(**result)
     except Exception as exc:
         raise _http_error(exc) from exc
 
@@ -182,13 +197,13 @@ async def revoke_user_access(
         raise _http_error(exc) from exc
 
 
-@router.post("/auth/password/reset-request", response_model=MessageResponse)
+@router.post("/auth/password/reset-request", response_model=PasswordResetRequestResponse)
 async def password_reset_request(
     body: PasswordResetRequestBody,
     service: Annotated[IdentityApplicationService, Depends(get_identity_service)],
-) -> MessageResponse:
+) -> PasswordResetRequestResponse:
     result = await service.password_reset_request(email=body.email)
-    return MessageResponse(**result)
+    return PasswordResetRequestResponse(**result)
 
 
 @router.post("/auth/password/reset", response_model=PasswordResetResponse)

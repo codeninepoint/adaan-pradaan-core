@@ -1,0 +1,476 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FairShare Vertical User Journey Block Diagrams</title><style>body{font-family:Arial,sans-serif;background:#f3f6fa;color:#172033;margin:0}.wrap{max-width:1100px;margin:auto;padding:32px}.hero{background:#172033;color:white;padding:30px;border-radius:12px}.journey{background:white;border:1px solid #cbd7e6;border-radius:12px;padding:26px;margin:30px 0;page-break-inside:avoid}.meta{color:#43536b;font-size:17px;line-height:1.65}.mermaid{font-size:20px;margin-top:20px;overflow:auto}.mermaid svg{max-width:100%;height:auto}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.stage{background:#e8f0fa;padding:15px;border-radius:8px;font-size:16px}.small{font-size:14px;color:#52627a;margin-top:5px}h1{font-size:32px;margin-top:0}h2{font-size:25px;color:#0b5cab;margin-bottom:14px}p{font-size:18px;line-height:1.5}@media print{.journey{break-inside:avoid}}</style><script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";mermaid.initialize({startOnLoad:true,securityLevel:"loose",theme:"neutral",flowchart:{useMaxWidth:true,nodeSpacing:45,rankSpacing:55,padding:20}});</script></head><body><div class="wrap">
+<div class="hero"><h1>FairShare User Journey Block Diagrams</h1><p>Vertical, readable diagrams for all 37 journeys. Each flow follows the proper sequence from trigger to outcome.</p></div>
+<h2>Overall platform sequence</h2><div class="mermaid">flowchart TD
+S([Start]) --> A[Sign Up J1-J2] --> B[Login J3-J6] --> C[Org Setup J7-J8] --> D[Create Tenant J12] --> E[Invite Team J14/J19] --> F[Vendor Onboarding J20-J23] --> G[Plugin Lifecycle J24-J28] --> H[Product and SKU J29-J30] --> I[Browse and Install J31-J34] --> J[Governance J35-J37] --> K([Operational Platform])</div>
+<h2>Platform stages in sequence</h2><div class="grid">
+<div class="stage"><b>Sign Up</b><div class="small">J1–J2: J1 → J2</div></div>
+<div class="stage"><b>Login</b><div class="small">J3–J6: J3 → J4 → J5 → J6</div></div>
+<div class="stage"><b>Org Setup</b><div class="small">J7–J8: J7 → J8</div></div>
+<div class="stage"><b>Create Tenant</b><div class="small">J12: J12</div></div>
+<div class="stage"><b>Invite Team</b><div class="small">J14: J14</div></div>
+<div class="stage"><b>Become Vendor</b><div class="small">J20–J22: J20 → J21 → J22</div></div>
+<div class="stage"><b>Register Plugin</b><div class="small">J24–J27: J24 → J25 → J26 → J27</div></div>
+<div class="stage"><b>Publish Product</b><div class="small">J29–J30: J29 → J30</div></div>
+<div class="stage"><b>Browse &amp; Install</b><div class="small">J31–J32: J31 → J32</div></div>
+<div class="stage"><b>Provision</b><div class="small">J34: J34</div></div>
+<div class="stage"><b>Govern</b><div class="small">J35–J37: J35 → J36 → J37</div></div>
+</div>
+<section class="journey"><h2>J1: User Registration</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Anonymous visitor<br><b>Trigger:</b> Visitor submits signup form with email + password<br><b>API:</b> POST /auth/register</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Visitor submits signup form with email + password"]
+A --> API["API: POST /auth/register"]
+API --> N1["1. Identity: Validate email uniqueness"]
+N1 -.-> DB1["Data action: SELECT identity.users WHERE email=?"]
+N1 --> N2["2. Identity: Create user row (pending_verification)"]
+N2 -.-> DB2["Data action: INSERT identity.users"]
+N2 --> N3["3. Identity: Register Keycloak credential"]
+N3 -.-> DB3["Data action: INSERT identity.credentials"]
+N3 --> N4["4. Identity: Send verification email (outbox)"]
+N4 -.-> DB4["Data action: INSERT outbox_events"]
+N4 --> N5["5. Identity: Log registration"]
+N5 -.-> DB5["Data action: INSERT identity.audit_log"]
+N5 --> O([Outcome])</div></section>
+<section class="journey"><h2>J2: Email Verification</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Registered user (email link)<br><b>Trigger:</b> User clicks verification link in email<br><b>API:</b> GET /auth/verify-email?token=...</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["User clicks verification link in email"]
+A --> API["API: GET /auth/verify-email?token=..."]
+API --> N1["1. Identity: Validate signed token (HMAC-SHA256 + expiry)"]
+N1 --> N2["2. Identity: Update user status"]
+N2 -.-> DB2["Data action: UPDATE identity.users SET status=active"]
+N2 --> N3["3. Identity: Log verification"]
+N3 -.-> DB3["Data action: INSERT identity.audit_log"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J3: Login &amp; Session</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Active user<br><b>Trigger:</b> User submits credentials to login form<br><b>API:</b> POST /auth/login</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["User submits credentials to login form"]
+A --> API["API: POST /auth/login"]
+API --> N1["1. Identity: Keycloak validates credentials via realm"]
+N1 --> N2["2. Identity: Lookup user by kc_subject"]
+N2 -.-> DB2["Data action: SELECT identity.credentials WHERE keycloak_subject=?"]
+N2 --> N3["3. Identity: Create session row"]
+N3 -.-> DB3["Data action: INSERT identity.sessions (status=active)"]
+N3 --> N4["4. Identity: Return JWT (sub, iss, exp, sid)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J4: Token Refresh</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Active session<br><b>Trigger:</b> Client sends refresh token before access token expires<br><b>API:</b> POST /auth/token/refresh</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Client sends refresh token before access token expires"]
+A --> API["API: POST /auth/token/refresh"]
+API --> N1["1. Identity: Validate refresh token hash against session row"]
+N1 -.-> DB1["Data action: SELECT identity.sessions WHERE id=sid"]
+N1 --> N2["2. Identity: Rotate refresh token (bcrypt new hash)"]
+N2 -.-> DB2["Data action: UPDATE identity.sessions SET refresh_token_hash=?"]
+N2 --> N3["3. Identity: Update last_seen_at"]
+N3 -.-> DB3["Data action: UPDATE identity.credentials SET last_seen_at=now()"]
+N3 --> N4["4. Identity: Return new access + refresh tokens"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J5: Password Reset</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Locked or forgotten user<br><b>Trigger:</b> User requests password reset by email<br><b>API:</b> POST /auth/password-reset/request</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["User requests password reset by email"]
+A --> API["API: POST /auth/password-reset/request"]
+API --> N1["1. Identity: Validate email exists (silent on miss)"]
+N1 -.-> DB1["Data action: SELECT identity.users WHERE email=?"]
+N1 --> N2["2. Identity: Generate signed reset token (10 min expiry)"]
+N2 --> N3["3. Identity: Send reset email (outbox)"]
+N3 -.-> DB3["Data action: INSERT outbox_events"]
+N3 --> N4["4. Identity: On confirm: update Keycloak password"]
+N4 -.-> DB4["Data action: Keycloak Admin API"]
+N4 --> N5["5. Identity: Revoke all sessions (force re-login)"]
+N5 -.-> DB5["Data action: UPDATE identity.sessions SET status=revoked"]
+N5 --> N6["6. Identity: Log password reset"]
+N6 -.-> DB6["Data action: INSERT identity.audit_log"]
+N6 --> O([Outcome])</div></section>
+<section class="journey"><h2>J6: Session Revocation</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> User or admin<br><b>Trigger:</b> Explicit logout, or admin force-revokes a session<br><b>API:</b> POST /auth/sessions/{session_id}/revoke</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Explicit logout, or admin force-revokes a session"]
+A --> API["API: POST /auth/sessions/session_id/revoke"]
+API --> N1["1. Identity: Verify caller owns session (or has platform.admin)"]
+N1 --> N2["2. Identity: Revoke session"]
+N2 -.-> DB2["Data action: UPDATE identity.sessions SET status=revoked, revoked_at=now()"]
+N2 --> N3["3. Identity: Keycloak: invalidate refresh token"]
+N3 -.-> DB3["Data action: Keycloak Admin API"]
+N3 --> N4["4. Identity: Log revocation"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J7: Org Upgrade</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Individual org owner<br><b>Trigger:</b> Individual user upgrades to a company organization (provisions Keycloak realm)<br><b>API:</b> POST /organizations/{org_id}/upgrade</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Individual user upgrades to a company organization (provisions Keycloak realm)"]
+A --> API["API: POST /organizations/org_id/upgrade"]
+API --> N1["1. Tenant: Validate org_type=individual"]
+N1 -.-> DB1["Data action: SELECT tenant.organizations"]
+N1 --> N2["2. Tenant: INSERT org_registration_request (submitted)"]
+N2 -.-> DB2["Data action: INSERT tenant.org_registration_requests"]
+N2 --> N3["3. Identity: Provision Keycloak org realm (async)"]
+N3 -.-> DB3["Data action: INSERT identity.identity_realms"]
+N3 --> N4["4. Tenant: Update org: org_type=organization, keycloak_realm_ref"]
+N4 -.-> DB4["Data action: UPDATE tenant.organizations"]
+N4 --> N5["5. AuthZ: Seed platform-scoped roles"]
+N5 -.-> DB5["Data action: INSERT authz.roles (is_system=true)"]
+N5 --> N6["6. Identity: Log realm provisioned"]
+N6 -.-> DB6["Data action: INSERT identity.audit_log"]
+N6 --> O([Outcome])</div></section>
+<section class="journey"><h2>J8: Service Account Creation</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Admin creates a robot principal for CI/CD automation<br><b>API:</b> POST /tenants/{tenant_id}/service-accounts</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin creates a robot principal for CI/CD automation"]
+A --> API["API: POST /tenants/tenant_id/service-accounts"]
+API --> N1["1. Identity: Validate caller has tenant.admin"]
+N1 -.-> DB1["Data action: authz.user_roles lookup"]
+N1 --> N2["2. Identity: INSERT service_account"]
+N2 -.-> DB2["Data action: INSERT identity.service_accounts (status=active)"]
+N2 --> N3["3. Identity: Generate API key (raw shown ONCE)"]
+N3 -.-> DB3["Data action: INSERT identity.api_keys (key_hash=bcrypt)"]
+N3 --> N4["4. Identity: Log creation"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J9: Permission Lookup (RBAC)</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> API middleware (every request)<br><b>Trigger:</b> Every authenticated API request — checks caller has required permission in the tenant scope<br><b>API:</b> GET (middleware — not a public endpoint)</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Every authenticated API request  checks caller has required permission in the tenant scope"]
+A --> API["API: GET (middleware  not a public endpoint)"]
+API --> N1["1. AuthZ: Extract user_id from JWT sub, tenant_id from X-Tenant-Id header"]
+N1 --> N2["2. AuthZ: Hot-path permission query (indexed)"]
+N2 -.-> DB2["Data action: SELECT p.code FROM user_roles ur JOIN role_permissions rp ON ur.role_id=rp.role_id JOIN permissions p ... WHERE ur.user_id=? AND ur.scope_id=? AND ur.status=active"]
+N2 --> N3["3. AuthZ: Return 403 immediately if permission code absent"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J10: Role Assignment</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Admin grants a role to a user within a specific tenant scope<br><b>API:</b> POST /tenants/{tenant_id}/roles/assign</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin grants a role to a user within a specific tenant scope"]
+A --> API["API: POST /tenants/tenant_id/roles/assign"]
+API --> N1["1. AuthZ: Validate caller has tenant.admin in this tenant"]
+N1 -.-> DB1["Data action: authz.user_roles lookup"]
+N1 --> N2["2. AuthZ: Validate role.scope_id matches tenant"]
+N2 -.-> DB2["Data action: SELECT authz.roles WHERE id=? AND scope_id=?"]
+N2 --> N3["3. AuthZ: INSERT user_roles (status=active)"]
+N3 -.-> DB3["Data action: INSERT authz.user_roles"]
+N3 --> N4["4. Identity: Log grant"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (role_binding.created)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J11: Role Revocation</h2><div class="meta"><b>Phase:</b> Identity &amp; Auth<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Admin removes a user&#x27;s role — takes effect on the NEXT API request (no JWT wait)<br><b>API:</b> POST /tenants/{tenant_id}/roles/revoke</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin removes a users role  takes effect on the NEXT API request (no JWT wait)"]
+A --> API["API: POST /tenants/tenant_id/roles/revoke"]
+API --> N1["1. AuthZ: Validate caller has tenant.admin"]
+N1 --> N2["2. AuthZ: Revoke  NEVER delete (row kept for audit)"]
+N2 -.-> DB2["Data action: UPDATE authz.user_roles SET status=revoked, revoked_by=?, revoked_at=now()"]
+N2 --> N3["3. AuthZ: Reject if it would leave zero tenant-admins"]
+N3 -.-> DB3["Data action: COUNT active tenant-admin bindings  409 if 0"]
+N3 --> N4["4. Identity: Log revocation"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (role_binding.revoked)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J12: Tenant Creation</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Org owner or tenant-admin<br><b>Trigger:</b> User creates a new isolated tenant environment under their organization<br><b>API:</b> POST /organizations/{org_id}/tenants</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["User creates a new isolated tenant environment under their organization"]
+A --> API["API: POST /organizations/org_id/tenants"]
+API --> N1["1. Tenant: Validate slug unique within org"]
+N1 -.-> DB1["Data action: SELECT tenant.tenants WHERE org_id=? AND slug=?"]
+N1 --> N2["2. Tenant: INSERT tenant (status=active)"]
+N2 -.-> DB2["Data action: INSERT tenant.tenants"]
+N2 --> N3["3. Tenant: Seed default project"]
+N3 -.-> DB3["Data action: INSERT tenant.projects (name=default-project)"]
+N3 --> N4["4. AuthZ: Seed 3 tenant-scoped roles"]
+N4 -.-> DB4["Data action: INSERT authz.roles  3 (is_system=true, scope_id=new_tenant)"]
+N4 --> N5["5. AuthZ: Bind caller as tenant-admin"]
+N5 -.-> DB5["Data action: INSERT authz.user_roles (caller  tenant-admin, scope_id=tenant)"]
+N5 --> N6["6. Identity: Log creation"]
+N6 -.-> DB6["Data action: INSERT identity.audit_log (tenant.created)"]
+N6 --> O([Outcome])</div></section>
+<section class="journey"><h2>J13: Project Creation</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Tenant-admin or resource-admin<br><b>Trigger:</b> Admin creates a project to sub-scope resources inside a tenant<br><b>API:</b> POST /tenants/{tenant_id}/projects</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin creates a project to sub-scope resources inside a tenant"]
+A --> API["API: POST /tenants/tenant_id/projects"]
+API --> N1["1. Tenant: Validate resource.create permission"]
+N1 -.-> DB1["Data action: authz.user_roles lookup"]
+N1 --> N2["2. Tenant: Validate project name unique within tenant"]
+N2 -.-> DB2["Data action: SELECT tenant.projects WHERE tenant_id=? AND slug=?"]
+N2 --> N3["3. Tenant: INSERT project"]
+N3 -.-> DB3["Data action: INSERT tenant.projects (status=active)"]
+N3 --> N4["4. Identity: Log"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (project.created)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J14: Member Management</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Admin invites, removes, or changes the role of a member within a specific tenant<br><b>API:</b> POST /tenants/{tenant_id}/members</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin invites, removes, or changes the role of a member within a specific tenant"]
+A --> API["API: POST /tenants/tenant_id/members"]
+API --> N1["1. Tenant: Validate caller has tenant.admin"]
+N1 -.-> DB1["Data action: authz.user_roles lookup"]
+N1 --> N2["2. Tenant: INSERT tenant_membership (status=active)"]
+N2 -.-> DB2["Data action: INSERT tenant.tenant_memberships"]
+N2 --> N3["3. AuthZ: INSERT role binding for new member"]
+N3 -.-> DB3["Data action: INSERT authz.user_roles (scope_id=tenant)"]
+N3 --> N4["4. AuthZ: On removal: revoke role binding (never delete)"]
+N4 -.-> DB4["Data action: UPDATE authz.user_roles SET status=revoked"]
+N4 --> N5["5. Identity: Log action"]
+N5 -.-> DB5["Data action: INSERT identity.audit_log"]
+N5 --> O([Outcome])</div></section>
+<section class="journey"><h2>J15: Tenant Settings</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Admin edits tenant display name, feature flags, or configuration<br><b>API:</b> PATCH /tenants/{tenant_id}/settings</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin edits tenant display name, feature flags, or configuration"]
+A --> API["API: PATCH /tenants/tenant_id/settings"]
+API --> N1["1. Tenant: Validate tenant.admin permission"]
+N1 --> N2["2. Tenant: PATCH name, settings_json (slug is immutable)"]
+N2 -.-> DB2["Data action: UPDATE tenant.tenants SET name=?, settings_json=?, updated_at=now()"]
+N2 --> N3["3. Identity: Log"]
+N3 -.-> DB3["Data action: INSERT identity.audit_log (tenant.settings_updated)"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J16: Onboarding Checklist</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Tenant-admin (new tenant)<br><b>Trigger:</b> First visit to a new tenant — guided checklist shows setup progress<br><b>API:</b> GET /tenants/{tenant_id}/onboarding</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["First visit to a new tenant  guided checklist shows setup progress"]
+A --> API["API: GET /tenants/tenant_id/onboarding"]
+API --> N1["1. Tenant: Compute invite_team step live"]
+N1 -.-> DB1["Data action: COUNT tenant.tenant_memberships"]
+N1 --> N2["2. Tenant: Compute create_project step live"]
+N2 -.-> DB2["Data action: COUNT tenant.projects WHERE id = default"]
+N2 --> N3["3. Tenant: Compute install_offering step live"]
+N3 -.-> DB3["Data action: COUNT vendor.entitlements WHERE tenant_id=?"]
+N3 --> N4["4. Tenant: Return checklist with percent_complete"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J17: Org Overview</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Any org member<br><b>Trigger:</b> Member views organization-level summary screen<br><b>API:</b> GET /organizations/{org_id}/overview</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Member views organization-level summary screen"]
+A --> API["API: GET /organizations/org_id/overview"]
+API --> N1["1. Tenant: Validate caller is org member"]
+N1 -.-> DB1["Data action: SELECT tenant.org_memberships WHERE org_id=? AND user_id=?"]
+N1 --> N2["2. Tenant: Aggregate counts: tenants, members, participation"]
+N2 -.-> DB2["Data action: SELECT COUNT()..."]
+N2 --> N3["3. Tenant: Return overview payload"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J18: Realm Status</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Org owner<br><b>Trigger:</b> Owner views Keycloak realm status; retries failed provisioning<br><b>API:</b> GET /organizations/{org_id}/realm</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Owner views Keycloak realm status retries failed provisioning"]
+A --> API["API: GET /organizations/org_id/realm"]
+API --> N1["1. Identity: READ realm status"]
+N1 -.-> DB1["Data action: SELECT identity.identity_realms WHERE org_id=?"]
+N1 --> N2["2. Identity: If failed: retry realm provisioning pipeline"]
+N2 -.-> DB2["Data action: UPDATE identity.identity_realms WHERE status=failed"]
+N2 --> O([Outcome])</div></section>
+<section class="journey"><h2>J19: Org Member Management</h2><div class="meta"><b>Phase:</b> Tenant<br><b>Actor:</b> Org owner / admin<br><b>Trigger:</b> Owner invites a new person to the organization (broader than tenant-scoped J14)<br><b>API:</b> POST /organizations/{org_id}/members</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Owner invites a new person to the organization (broader than tenant-scoped J14)"]
+A --> API["API: POST /organizations/org_id/members"]
+API --> N1["1. Tenant: Validate org.admin permission"]
+N1 --> N2["2. Tenant: INSERT org_membership (invited  active on accept)"]
+N2 -.-> DB2["Data action: INSERT tenant.org_memberships"]
+N2 --> N3["3. AuthZ: On removal: cascade-revoke all tenant role bindings"]
+N3 -.-> DB3["Data action: UPDATE authz.user_roles SET status=revoked WHERE user_id=? AND scope_id IN (orgs tenants)"]
+N3 --> N4["4. Identity: Log"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J20: Vendor Eligibility</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Org owner<br><b>Trigger:</b> Owner checks if their org qualifies to become a vendor (reads only)<br><b>API:</b> GET /organizations/{org_id}/vendor-eligibility</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Owner checks if their org qualifies to become a vendor (reads only)"]
+A --> API["API: GET /organizations/org_id/vendor-eligibility"]
+API --> N1["1. Vendor: Check org_type=organization (not individual)"]
+N1 -.-> DB1["Data action: SELECT tenant.organizations"]
+N1 --> N2["2. Vendor: Check no existing vendor profile"]
+N2 -.-> DB2["Data action: SELECT vendor.vendors WHERE org_id=?"]
+N2 --> N3["3. Vendor: Return eligibility result + requirement list"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J21: Vendor Registration</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Org owner<br><b>Trigger:</b> Owner submits vendor registration form (business docs, tax ID, payout info)<br><b>API:</b> POST /organizations/{org_id}/vendor/register</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Owner submits vendor registration form (business docs, tax ID, payout info)"]
+A --> API["API: POST /organizations/org_id/vendor/register"]
+API --> N1["1. Vendor: Validate org_type=organization"]
+N1 -.-> DB1["Data action: SELECT tenant.organizations"]
+N1 --> N2["2. Vendor: INSERT vendor profile (unverified)"]
+N2 -.-> DB2["Data action: INSERT vendor.vendors (status=unverified)"]
+N2 --> N3["3. Tenant: Update org participation"]
+N3 -.-> DB3["Data action: UPDATE tenant.organizations SET participation=consumer_and_vendor"]
+N3 --> N4["4. Vendor: Queue verification request"]
+N4 -.-> DB4["Data action: INSERT vendor.verifications (status=queued)"]
+N4 --> N5["5. Identity: Log registration"]
+N5 -.-> DB5["Data action: INSERT identity.audit_log (vendor.registered)"]
+N5 --> O([Outcome])</div></section>
+<section class="journey"><h2>J22: Vendor Verification (KYC)</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Platform governance ops (reviewer)<br><b>Trigger:</b> Ops reviewer approves or rejects vendor KYC documents<br><b>API:</b> GET /vendors/{id}/verification</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Ops reviewer approves or rejects vendor KYC documents"]
+A --> API["API: GET /vendors/id/verification"]
+API --> N1["1. Governance: Review business docs and tax ID"]
+N1 --> N2["2. Vendor: Update vendor status"]
+N2 -.-> DB2["Data action: UPDATE vendor.vendors SET status=verifiedrejected"]
+N2 --> N3["3. Vendor: On rejection: roll back participation"]
+N3 -.-> DB3["Data action: UPDATE tenant.organizations SET participation=consumer"]
+N3 --> N4["4. Identity: Log decision"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (vendor.verification_decided)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J23: Vendor Portal</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Verified vendor views their operational dashboard (products, installs, revenue)<br><b>API:</b> GET /vendors/{vendor_id}/portal</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Verified vendor views their operational dashboard (products, installs, revenue)"]
+A --> API["API: GET /vendors/vendor_id/portal"]
+API --> N1["1. Vendor: Validate caller is vendors admin"]
+N1 --> N2["2. Vendor: Aggregate: product count, offering count, active installs"]
+N2 -.-> DB2["Data action: SELECT COUNT()..."]
+N2 --> N3["3. Vendor: Count pending plugin reviews"]
+N3 -.-> DB3["Data action: SELECT COUNT() FROM plugin_versions WHERE status=pending_review"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J24: Plugin Registration</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Vendor registers a new plugin (the stable identity before submitting any version)<br><b>API:</b> POST /vendors/{vendor_id}/plugins</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Vendor registers a new plugin (the stable identity before submitting any version)"]
+A --> API["API: POST /vendors/vendor_id/plugins"]
+API --> N1["1. Vendor: Validate vendor status=verified"]
+N1 -.-> DB1["Data action: SELECT vendor.vendors WHERE id=? AND status=verified"]
+N1 --> N2["2. Vendor: Validate plugin_key globally unique"]
+N2 -.-> DB2["Data action: SELECT vendor.service_plugins WHERE plugin_key=?"]
+N2 --> N3["3. Vendor: INSERT plugin (status=active)"]
+N3 -.-> DB3["Data action: INSERT vendor.service_plugins"]
+N3 --> N4["4. Identity: Log"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (plugin.registered)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J25: Plugin Version Submission</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Vendor submits a signed build artifact as a new version for governance review<br><b>API:</b> POST /plugins/{plugin_id}/versions</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Vendor submits a signed build artifact as a new version for governance review"]
+A --> API["API: POST /plugins/plugin_id/versions"]
+API --> N1["1. Vendor: Validate semver is higher than last version"]
+N1 -.-> DB1["Data action: SELECT vendor.plugin_versions WHERE plugin_id=? ORDER BY semver DESC"]
+N1 --> N2["2. Vendor: INSERT plugin_version (submitted)"]
+N2 -.-> DB2["Data action: INSERT vendor.plugin_versions (status=submitted)"]
+N2 --> N3["3. Vendor: Emit outbox event for SBOM security scan"]
+N3 -.-> DB3["Data action: INSERT outbox_events (type=scan_plugin_artifact)"]
+N3 --> N4["4. Identity: Log submission"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (plugin_version.submitted)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J26: Governance Review (Inspector)</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Platform governance admin<br><b>Trigger:</b> Reviewer opens a pending version to inspect capabilities, SBOM, and scan results<br><b>API:</b> GET /plugins/versions/{id}/review</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Reviewer opens a pending version to inspect capabilities, SBOM, and scan results"]
+A --> API["API: GET /plugins/versions/id/review"]
+API --> N1["1. Governance: Read version detail, capabilities, scan status"]
+N1 -.-> DB1["Data action: SELECT vendor.plugin_versions, vendor.capabilities"]
+N1 --> N2["2. Governance: Optionally request changes (holds decision)"]
+N2 -.-> DB2["Data action: UPDATE vendor.plugin_versions SET status=changes_requested"]
+N2 --> O([Outcome])</div></section>
+<section class="journey"><h2>J27: Capability Declaration</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Vendor declares which platform scopes/permissions the plugin needs<br><b>API:</b> PUT /plugins/versions/{version_id}/capabilities</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Vendor declares which platform scopes/permissions the plugin needs"]
+A --> API["API: PUT /plugins/versions/version_id/capabilities"]
+API --> N1["1. Vendor: Validate version is not yet approved (frozen post-approval)"]
+N1 -.-> DB1["Data action: SELECT vendor.plugin_versions WHERE status NOT IN (approved,published)"]
+N1 --> N2["2. Vendor: Replace capability rows"]
+N2 -.-> DB2["Data action: DELETE + INSERT vendor.capabilities (plugin_version_id=?)"]
+N2 --> N3["3. Identity: Log"]
+N3 -.-> DB3["Data action: INSERT identity.audit_log (plugin_capabilities.declared)"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J28: Version History (Read)</h2><div class="meta"><b>Phase:</b> Vendor<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Vendor views the full timeline of all versions submitted for a plugin<br><b>API:</b> GET /plugins/{plugin_id}/versions</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Vendor views the full timeline of all versions submitted for a plugin"]
+A --> API["API: GET /plugins/plugin_id/versions"]
+API --> N1["1. Vendor: Validate caller owns this plugin"]
+N1 -.-> DB1["Data action: SELECT vendor.service_plugins WHERE id=? AND vendor_id=?"]
+N1 --> N2["2. Vendor: List all versions (never deleted  only superseded)"]
+N2 -.-> DB2["Data action: SELECT vendor.plugin_versions WHERE plugin_id=? ORDER BY created_at DESC"]
+N2 --> O([Outcome])</div></section>
+<section class="journey"><h2>J29: Create Product</h2><div class="meta"><b>Phase:</b> Marketplace<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Vendor creates the commercial product listing backed by a plugin<br><b>API:</b> POST /vendors/{vendor_id}/products</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Vendor creates the commercial product listing backed by a plugin"]
+A --> API["API: POST /vendors/vendor_id/products"]
+API --> N1["1. Vendor: Validate vendor is verified"]
+N1 -.-> DB1["Data action: SELECT vendor.vendors WHERE status=verified"]
+N1 --> N2["2. Vendor: Validate plugin_id owned by vendor"]
+N2 -.-> DB2["Data action: SELECT vendor.service_plugins WHERE id=? AND vendor_id=?"]
+N2 --> N3["3. Marketplace: INSERT product (draft)"]
+N3 -.-> DB3["Data action: INSERT vendor.products (status=draft)"]
+N3 --> N4["4. Identity: Log"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (product.created)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J30: Create Offering (SKU)</h2><div class="meta"><b>Phase:</b> Marketplace<br><b>Actor:</b> Vendor admin<br><b>Trigger:</b> Vendor attaches a pricing plan to a product, creating the installable SKU<br><b>API:</b> POST /products/{product_id}/offerings</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Vendor attaches a pricing plan to a product, creating the installable SKU"]
+A --> API["API: POST /products/product_id/offerings"]
+API --> N1["1. Marketplace: Validate backing plugin_version is published"]
+N1 -.-> DB1["Data action: SELECT vendor.plugin_versions WHERE status=published"]
+N1 --> N2["2. Billing: Validate plan_id exists in billing domain"]
+N2 -.-> DB2["Data action: SELECT billing.plans WHERE id=?"]
+N2 --> N3["3. Marketplace: INSERT offering (active)"]
+N3 -.-> DB3["Data action: INSERT vendor.marketplace_offerings (status=active)"]
+N3 --> N4["4. Identity: Log"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (offering.created)"]
+N4 --> O([Outcome])</div></section>
+<section class="journey"><h2>J31: Catalog Browse</h2><div class="meta"><b>Phase:</b> Marketplace<br><b>Actor:</b> Tenant-admin (buyer)<br><b>Trigger:</b> Tenant browses the marketplace catalog to discover offerings<br><b>API:</b> GET /marketplace/catalog?category=...&amp;q=...</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Tenant browses the marketplace catalog to discover offerings"]
+A --> API["API: GET /marketplace/catalog?category=...q=..."]
+API --> N1["1. Marketplace: Filter published offerings"]
+N1 -.-> DB1["Data action: SELECT vendor.marketplace_offerings WHERE status=active AND visibility=public"]
+N1 --> N2["2. Marketplace: JOIN products + vendors for display card"]
+N2 -.-> DB2["Data action: JOIN vendor.products, vendor.vendors"]
+N2 --> N3["3. Marketplace: Return paginated result"]
+N3 -.-> DB3["Data action: LIMIT + OFFSET"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J32: Install Offering</h2><div class="meta"><b>Phase:</b> Marketplace<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Tenant clicks Install on a catalog offering — entitlement granted, async provision kicks off<br><b>API:</b> POST /tenants/{tenant_id}/installations</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Tenant clicks Install on a catalog offering  entitlement granted, async provision kicks off"]
+A --> API["API: POST /tenants/tenant_id/installations"]
+API --> N1["1. Marketplace: Validate offering status=active"]
+N1 -.-> DB1["Data action: SELECT vendor.marketplace_offerings WHERE id=? AND status=active"]
+N1 --> N2["2. Marketplace: Validate accepted_capabilities match declared set"]
+N2 -.-> DB2["Data action: SELECT vendor.capabilities WHERE plugin_version_id=?"]
+N2 --> N3["3. Marketplace: INSERT entitlement (active)"]
+N3 -.-> DB3["Data action: INSERT vendor.entitlements (status=active)"]
+N3 --> N4["4. Billing: INSERT subscription (trialing)"]
+N4 -.-> DB4["Data action: INSERT billing.subscriptions (status=trialing)"]
+N4 --> N5["5. Marketplace: Emit provision outbox event"]
+N5 -.-> DB5["Data action: INSERT outbox_events (type=provision_service)"]
+N5 --> N6["6. Identity: Log"]
+N6 -.-> DB6["Data action: INSERT identity.audit_log (entitlement.granted)"]
+N6 --> O([Outcome])</div></section>
+<section class="journey"><h2>J33: My Entitlements</h2><div class="meta"><b>Phase:</b> Marketplace<br><b>Actor:</b> Tenant-admin<br><b>Trigger:</b> Tenant views all services they have access to with usage stats<br><b>API:</b> GET /tenants/{tenant_id}/entitlements</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Tenant views all services they have access to with usage stats"]
+A --> API["API: GET /tenants/tenant_id/entitlements"]
+API --> N1["1. Marketplace: List active entitlements for tenant"]
+N1 -.-> DB1["Data action: SELECT vendor.entitlements WHERE tenant_id=? AND status=active"]
+N1 --> N2["2. Marketplace: JOIN offerings + products for display"]
+N2 -.-> DB2["Data action: JOIN vendor.marketplace_offerings, vendor.products"]
+N2 --> N3["3. Billing: Attach usage numbers from metering"]
+N3 -.-> DB3["Data action: External metering read"]
+N3 --> O([Outcome])</div></section>
+<section class="journey"><h2>J34: Provision Service (Async)</h2><div class="meta"><b>Phase:</b> Marketplace<br><b>Actor:</b> System outbox worker<br><b>Trigger:</b> Background worker consumes provision_service outbox event from J32<br><b>API:</b> POST (internal — vendor adapter webhook)</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Background worker consumes provision_service outbox event from J32"]
+A --> API["API: POST (internal  vendor adapter webhook)"]
+API --> N1["1. Marketplace: Read pending outbox event"]
+N1 -.-> DB1["Data action: SELECT outbox_events WHERE type=provision_service AND status=pending"]
+N1 --> N2["2. Marketplace: INSERT provisioning_request (queued  running)"]
+N2 -.-> DB2["Data action: INSERT vendor.provisioning_requests"]
+N2 --> N3["3. Vendor: Call vendor adapter /provision endpoint"]
+N3 -.-> DB3["Data action: HTTP POST adapter_url/provision"]
+N3 --> N4["4. Marketplace: INSERT provisioning_result with outputs_json"]
+N4 -.-> DB4["Data action: INSERT vendor.provisioning_results"]
+N4 --> N5["5. Resource: Upsert resource_instances from resource_descriptors"]
+N5 -.-> DB5["Data action: UPSERT resource.resource_instances"]
+N5 --> N6["6. Identity: Log"]
+N6 -.-> DB6["Data action: INSERT identity.audit_log (service_instance.provisioned)"]
+N6 --> O([Outcome])</div></section>
+<section class="journey"><h2>J35: Review Queue</h2><div class="meta"><b>Phase:</b> Governance<br><b>Actor:</b> Platform governance admin<br><b>Trigger:</b> Governance admin views queue of plugin versions pending review and claims one<br><b>API:</b> GET /admin/plugin-reviews?status=pending</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Governance admin views queue of plugin versions pending review and claims one"]
+A --> API["API: GET /admin/plugin-reviews?status=pending"]
+API --> N1["1. Governance: List pending review versions"]
+N1 -.-> DB1["Data action: SELECT vendor.plugin_versions WHERE status IN (submitted,verified)"]
+N1 --> N2["2. Governance: Claim version (prevents double-review)"]
+N2 -.-> DB2["Data action: UPDATE vendor.plugin_versions SET claimed_by=?, claimed_at=now()"]
+N2 --> O([Outcome])</div></section>
+<section class="journey"><h2>J36: Approve/Reject Version</h2><div class="meta"><b>Phase:</b> Governance<br><b>Actor:</b> Platform governance admin<br><b>Trigger:</b> Final governance decision — approved versions unlock dependent offerings for publish<br><b>API:</b> POST /admin/plugin-reviews/{version_id}/decision</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Final governance decision  approved versions unlock dependent offerings for publish"]
+A --> API["API: POST /admin/plugin-reviews/version_id/decision"]
+API --> N1["1. Governance: Validate decision is approved or rejected"]
+N1 --> N2["2. Vendor: Update plugin_version status"]
+N2 -.-> DB2["Data action: UPDATE vendor.plugin_versions SET status=approvedrejected"]
+N2 --> N3["3. Vendor: On approval: parse + INSERT capabilities from manifest"]
+N3 -.-> DB3["Data action: INSERT vendor.capabilities (from capability_manifest_json)"]
+N3 --> N4["4. Vendor: On first approval: activate plugin"]
+N4 -.-> DB4["Data action: UPDATE vendor.service_plugins SET status=active (if draft)"]
+N4 --> N5["5. Identity: Log decision"]
+N5 -.-> DB5["Data action: INSERT identity.audit_log (plugin_version.approvedrejected)"]
+N5 --> O([Outcome])</div></section>
+<section class="journey"><h2>J37: Vendor Directory &amp; Suspension</h2><div class="meta"><b>Phase:</b> Governance<br><b>Actor:</b> Platform governance admin<br><b>Trigger:</b> Admin views all vendors and can suspend one for policy violations<br><b>API:</b> GET /admin/vendors</div>
+<div class="mermaid">flowchart TD
+T([Trigger]) --> A["Admin views all vendors and can suspend one for policy violations"]
+A --> API["API: GET /admin/vendors"]
+API --> N1["1. Governance: List all verified vendors"]
+N1 -.-> DB1["Data action: SELECT vendor.vendors WHERE status=verified"]
+N1 --> N2["2. Vendor: Suspend vendor"]
+N2 -.-> DB2["Data action: UPDATE vendor.vendors SET status=suspended"]
+N2 --> N3["3. Marketplace: Bulk-unpublish all active offerings (stops NEW installs)"]
+N3 -.-> DB3["Data action: UPDATE vendor.marketplace_offerings SET status=deprecated WHERE vendor_id=?"]
+N3 --> N4["4. Identity: Log suspension with reason"]
+N4 -.-> DB4["Data action: INSERT identity.audit_log (vendor.suspended)"]
+N4 --> O([Outcome])</div></section>
+</div></body></html>

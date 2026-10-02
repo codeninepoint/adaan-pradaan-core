@@ -18,6 +18,7 @@ dependencies = [
   "python-multipart>=0.0.12",
   "email-validator>=2.2.0",
   "httpx>=0.28.0",
+  "temporalio>=1.9.0",
 ]
 
 [project.optional-dependencies]
@@ -38,6 +39,8 @@ packages = [
   "src/authz",
   "src/tenant",
   "src/resources",
+  "src/vendor",
+  "src/workflows",
   "src/api",
 ]
 

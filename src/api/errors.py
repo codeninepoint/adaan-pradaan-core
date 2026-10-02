@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from identity.infrastructure.keycloak_admin import KeycloakUnavailable
 from shared.domain.exceptions import (
     ConflictError,
     ForbiddenError,
@@ -30,3 +31,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(UnauthorizedError)
     async def unauthorized_handler(_: Request, exc: UnauthorizedError) -> JSONResponse:
         return JSONResponse(status_code=401, content={"detail": str(exc)})
+
+    @app.exception_handler(KeycloakUnavailable)
+    async def keycloak_unavailable_handler(_: Request, exc: KeycloakUnavailable) -> JSONResponse:
+        return JSONResponse(status_code=503, content={"detail": f"keycloak unavailable: {exc}"})

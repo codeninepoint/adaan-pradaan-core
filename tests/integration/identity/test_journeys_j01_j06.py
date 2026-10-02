@@ -127,6 +127,52 @@ async def test_j03_user_login(client: AsyncClient, session_factory) -> None:
     assert payload["uid"] == data["user_id"]
     assert payload["pid"] == data["principal_id"]
 
+    me = await client.get("/auth/me", headers={"Authorization": f"Bearer {data['access_token']}"})
+    assert me.status_code == 200
+    profile = me.json()
+    assert profile["email"] == "carol@example.com"
+    assert profile["display_name"] == "Carol"
+    assert profile["status"] == "active"
+    assert len(profile["organizations"]) >= 1
+    assert len(profile["tenants"]) >= 1
+    assert profile["organizations"][0]["org_type"] == "individual"
+
+
+@pytest.mark.asyncio
+async def test_login_restores_user_after_keycloak_restart(client: AsyncClient, session_factory) -> None:
+    """A correct password must still work after the IdP forgets the in-memory user."""
+    await client.post(
+        "/auth/register",
+        json={
+            "email": "restart@example.com",
+            "password": PASSWORD,
+            "display_name": "Restart",
+            "agreed_to_terms": True,
+        },
+    )
+    otp = await get_outbox_otp(session_factory, "restart@example.com")
+    await client.post("/auth/verify-email", json={"email": "restart@example.com", "otp_code": otp})
+
+    from identity.interface.api import dependencies as deps
+
+    keycloak = deps._keycloak
+    assert keycloak is not None
+    keycloak._users.clear()
+    keycloak._passwords.clear()
+    keycloak._subjects.clear()
+
+    resp = await client.post(
+        "/auth/token",
+        json={"email": "restart@example.com", "password": PASSWORD},
+    )
+    assert resp.status_code == 200, resp.text
+
+    wrong = await client.post(
+        "/auth/token",
+        json={"email": "restart@example.com", "password": "WrongPass123!"},
+    )
+    assert wrong.status_code == 401
+
 
 @pytest.mark.asyncio
 async def test_j04_token_refresh_rotates(client: AsyncClient, session_factory) -> None:

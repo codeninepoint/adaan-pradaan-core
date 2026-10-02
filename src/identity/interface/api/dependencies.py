@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from identity.application.identity_service import IdentityApplicationService
 from identity.application.ports.keycloak import KeycloakClient
+from identity.infrastructure.keycloak_admin import RealKeycloakClient
 from identity.infrastructure.keycloak_client import FakeKeycloakClient
 from shared.domain.exceptions import UnauthorizedError
 from shared.settings import settings
@@ -43,12 +44,15 @@ def get_keycloak() -> KeycloakClient:
         mode = (settings.keycloak_mode or "fake").lower()
         if mode == "fake":
             _keycloak = FakeKeycloakClient()
-        else:
-            # Real client deferred — fail closed rather than silently using Fake in prod.
-            raise RuntimeError(
-                "TENANT_KEYCLOAK_MODE=real requires RealKeycloakClient (not wired yet); "
-                "use fake only in dev/test"
+        elif mode == "real":
+            _keycloak = RealKeycloakClient(
+                base_url=settings.keycloak_base_url or "",
+                admin_username=settings.keycloak_admin_username,
+                admin_password=settings.keycloak_admin_password,
+                client_id=settings.keycloak_client_id,
             )
+        else:
+            raise RuntimeError(f"unsupported TENANT_KEYCLOAK_MODE={mode!r}")
     return _keycloak
 
 

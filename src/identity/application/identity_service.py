@@ -123,6 +123,7 @@ class IdentityApplicationService:
                     principal_id=principal.id,
                     identity_realm_id=realm.id,
                     keycloak_subject=kc_subject,
+                    password_hash=hash_secret(password),
                     credential_type="password_delegated",
                     status="active",
                 )
@@ -174,13 +175,17 @@ class IdentityApplicationService:
             await self._audit("role_binding.created", actor_user_id=user.id, tenant_id=bootstrap.tenant_id)
 
             await self._session.commit()
-            return {
+            result = {
                 "user_id": str(user.id),
                 "org_id": str(bootstrap.org_id),
                 "tenant_id": str(bootstrap.tenant_id),
                 "status": user.status,
                 "verification_email_sent": True,
             }
+            # Local/UI integration: OTP is email-outboxed; surface plaintext only in non-prod.
+            if (settings.app_env or "dev").lower() in {"dev", "test"}:
+                result["dev_otp"] = otp
+            return result
         except Exception:
             await self._session.rollback()
             if kc_subject:
@@ -231,24 +236,63 @@ class IdentityApplicationService:
         if not principal or principal.status != "active":
             raise ForbiddenError("account is not accessible")
 
-        try:
-            kc_subject = await self._keycloak.authenticate(realm.realm_name, email, password)
-        except ValueError as exc:
-            raise UnauthorizedError("invalid credentials") from exc
-
-        cred = await self._session.execute(
+        cred_result = await self._session.execute(
             select(CredentialRow).where(
                 CredentialRow.principal_id == user.principal_id,
-                CredentialRow.keycloak_subject == kc_subject,
                 CredentialRow.identity_realm_id == realm.id,
                 CredentialRow.status == "active",
             )
         )
-        if not cred.scalar_one_or_none():
+        credential = cred_result.scalar_one_or_none()
+        if not credential:
             raise UnauthorizedError("invalid credentials")
 
+        kc_subject = await self._keycloak_subject_for_login(
+            realm_name=realm.realm_name,
+            email=email,
+            password=password,
+            credential=credential,
+        )
         issuer = realm.issuer or realm.issuer_url
         return await self._issue_tokens(user, kc_subject, issuer)
+
+    async def _keycloak_subject_for_login(
+        self,
+        *,
+        realm_name: str,
+        email: str,
+        password: str,
+        credential: CredentialRow,
+    ) -> str:
+        """Return the Keycloak subject, recreating the IdP user when it was lost.
+
+        A correct password used to fail after the API or Keycloak restarted, because
+        the password existed only in that process. The local hash is the check that
+        lets us put the user back and keep ``keycloak_subject`` aligned.
+        """
+        try:
+            subject = await self._keycloak.authenticate(realm_name, email, password)
+        except ValueError:
+            subject = None
+
+        if subject:
+            if credential.keycloak_subject != subject:
+                credential.keycloak_subject = subject
+            if not credential.password_hash:
+                credential.password_hash = hash_secret(password)
+            return subject
+
+        if not credential.password_hash or not verify_secret(password, credential.password_hash):
+            raise UnauthorizedError("invalid credentials")
+
+        subject = await self._keycloak.set_password(
+            realm_name,
+            credential.keycloak_subject,
+            password,
+            email=email,
+        )
+        credential.keycloak_subject = subject
+        return subject
 
     async def refresh_token(self, *, refresh_token: str, session_id: UUID) -> dict:
         """
@@ -400,7 +444,83 @@ class IdentityApplicationService:
             "message": "Access revoked. Existing access tokens fail on next request.",
         }
 
+    async def get_me(self, *, user: UserRow) -> dict:
+        from tenant.infrastructure.models import (
+            OrgMembershipRow,
+            OrganizationRow,
+            TenantMembershipRow,
+            TenantRow,
+        )
+
+        org_rows = (
+            await self._session.execute(
+                select(OrgMembershipRow, OrganizationRow)
+                .join(OrganizationRow, OrganizationRow.id == OrgMembershipRow.organization_id)
+                .where(
+                    OrgMembershipRow.user_id == user.id,
+                    OrgMembershipRow.status == "active",
+                )
+            )
+        ).all()
+        tenant_rows = (
+            await self._session.execute(
+                select(TenantMembershipRow, TenantRow)
+                .join(TenantRow, TenantRow.id == TenantMembershipRow.tenant_id)
+                .where(
+                    TenantMembershipRow.user_id == user.id,
+                    TenantMembershipRow.status == "active",
+                )
+            )
+        ).all()
+
+        operator_emails = settings.platform_operator_email_set
+        promoted = False
+        for membership, org in org_rows:
+            if (
+                membership.role == "owner"
+                and user.email.lower() in operator_emails
+                and not org.is_platform_operator
+            ):
+                org.is_platform_operator = True
+                promoted = True
+        if promoted:
+            await self._session.commit()
+        is_operator = any(org.is_platform_operator for _, org in org_rows)
+
+        return {
+            "user_id": str(user.id),
+            "principal_id": str(user.principal_id),
+            "email": user.email,
+            "display_name": user.display_name,
+            "status": user.status,
+            "is_platform_operator": is_operator,
+            "organizations": [
+                {
+                    "org_id": str(org.id),
+                    "name": org.name,
+                    "org_type": org.org_type,
+                    "participation": org.participation,
+                    "keycloak_realm_ref": org.keycloak_realm_ref,
+                    "membership_role": membership.role,
+                    "status": org.status,
+                }
+                for membership, org in org_rows
+            ],
+            "tenants": [
+                {
+                    "tenant_id": str(tenant.id),
+                    "org_id": str(tenant.organization_id),
+                    "name": tenant.name,
+                    "slug": tenant.slug,
+                    "status": tenant.status,
+                    "membership_status": membership.status,
+                }
+                for membership, tenant in tenant_rows
+            ],
+        }
+
     async def password_reset_request(self, *, email: str) -> dict:
+        result: dict = {"message": "If that email exists, a reset link has been sent."}
         user = await self._get_user_by_email(email)
         if user and user.status == "active":
             token_id = uuid.uuid4()
@@ -434,7 +554,9 @@ class IdentityApplicationService:
                 )
             )
             await self._session.commit()
-        return {"message": "If that email exists, a reset link has been sent."}
+            if (settings.app_env or "dev").lower() in {"dev", "test"}:
+                result["dev_reset_token"] = composite
+        return result
 
     async def password_reset(self, *, reset_token: str, new_password: str) -> dict:
         """C2: commit local revoke/token-used first, then Keycloak set_password."""
@@ -483,7 +605,12 @@ class IdentityApplicationService:
             raise
 
         try:
-            await self._keycloak.set_password(realm.realm_name, credential.keycloak_subject, new_password)
+            subject = await self._keycloak.set_password(
+                realm.realm_name,
+                credential.keycloak_subject,
+                new_password,
+                email=user.email,
+            )
         except Exception:
             self._session.add(
                 OutboxEventRow(
@@ -493,12 +620,19 @@ class IdentityApplicationService:
                         "user_id": str(user.id),
                         "realm": realm.realm_name,
                         "subject": credential.keycloak_subject,
+                        "email": user.email,
                     },
                     status="pending",
                 )
             )
             await self._session.commit()
-            raise
+            raise ValidationError(
+                "password update could not be completed; request a new reset link and try again"
+            ) from None
+
+        credential.keycloak_subject = subject
+        credential.password_hash = hash_secret(new_password)
+        await self._session.commit()
 
         return {
             "message": "Password updated. All sessions revoked. Please log in again.",

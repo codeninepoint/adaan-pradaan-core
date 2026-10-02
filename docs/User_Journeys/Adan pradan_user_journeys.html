@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FairShare — Platform User Journey Map</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f1e;
+  --surface:#111827;
+  --surface2:#1a2235;
+  --surface3:#232d42;
+  --border:#1e2d45;
+  --border2:#2a3d5a;
+  /* Domain colours */
+  --id:#0ea5e9;   --id-bg:rgba(14,165,233,.1);  --id-bd:rgba(14,165,233,.25);
+  --tn:#10b981;   --tn-bg:rgba(16,185,129,.1);  --tn-bd:rgba(16,185,129,.25);
+  --vn:#f97316;   --vn-bg:rgba(249,115,22,.1);  --vn-bd:rgba(249,115,22,.25);
+  --mk:#a855f7;   --mk-bg:rgba(168,85,247,.1);  --mk-bd:rgba(168,85,247,.25);
+  --az:#ef4444;   --az-bg:rgba(239,68,68,.1);   --az-bd:rgba(239,68,68,.25);
+  --gv:#f59e0b;   --gv-bg:rgba(245,158,11,.1);  --gv-bd:rgba(245,158,11,.25);
+  --bl:#3b82f6;   --bl-bg:rgba(59,130,246,.1);  --bl-bd:rgba(59,130,246,.25);
+  /* Text */
+  --t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',system-ui,sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--sans)}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;z-index:50}
+.logo{font-size:15px;font-weight:800;letter-spacing:-.03em;display:flex;align-items:center;gap:8px}
+.logo-mark{width:26px;height:26px;background:linear-gradient(135deg,#0ea5e9,#a855f7);
+  border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#0a0f1e}
+.tb-sep{width:1px;height:18px;background:var(--border)}
+.tb-title{font-size:13px;color:var(--t2);font-weight:500}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* Domain legend in topbar */
+.leg{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;
+  color:var(--t2);cursor:pointer;padding:4px 8px;border-radius:5px;
+  border:1px solid transparent;transition:all .14s;white-space:nowrap}
+.leg-item:hover{border-color:var(--border2);background:var(--surface2)}
+.leg-item.on{border-color:currentColor;background:rgba(255,255,255,.04)}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+
+/* ── BODY ── */
+.body{display:grid;grid-template-columns:220px 1fr;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.sb-sec{padding:12px 10px 4px;font-size:9px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.1em}
+.sb-item{display:flex;align-items:flex-start;gap:8px;width:100%;padding:7px 10px;
+  border-radius:6px;border:none;background:transparent;color:var(--t2);
+  text-align:left;font-family:var(--sans);font-size:11px;cursor:pointer;
+  transition:all .13s;border-left:2px solid transparent;margin-bottom:1px;
+  line-height:1.35}
+.sb-item:hover{background:var(--surface2);color:var(--t1)}
+.sb-item.on{color:var(--t1);font-weight:600;background:var(--surface2)}
+.sb-item .jnum{font-family:var(--mono);font-size:10px;font-weight:600;
+  flex-shrink:0;margin-top:1px;opacity:.7}
+.sb-item .jname{flex:1}
+
+/* ── CANVAS ── */
+.canvas{overflow:auto;padding:28px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(14,165,233,.04) 0%,transparent 50%),
+    radial-gradient(circle at 100% 100%,rgba(168,85,247,.04) 0%,transparent 50%),
+    var(--bg)}
+
+/* ── PHASE ROW (horizontal lane) ── */
+.phase{margin-bottom:36px}
+.phase-hdr{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.phase-line{flex:1;height:1px;background:var(--border)}
+.phase-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--t3);white-space:nowrap;display:flex;align-items:center;gap:7px;
+  padding:5px 12px;background:var(--surface);border:1px solid var(--border);border-radius:20px}
+.phase-label .ph-dot{width:6px;height:6px;border-radius:50%}
+
+/* ── JOURNEY BLOCK ── */
+.jblocks{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+
+.jblock{border-radius:10px;border:1.5px solid var(--border);background:var(--surface);
+  padding:14px 15px;width:220px;flex-shrink:0;cursor:pointer;transition:all .18s;
+  position:relative}
+.jblock:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.jblock.active{box-shadow:0 0 0 2px currentColor}
+
+.jblock-top{display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:8px;gap:6px}
+.jblock-num{font-family:var(--mono);font-size:10px;font-weight:600;
+  padding:2px 7px;border-radius:4px;flex-shrink:0;line-height:1.5}
+.jblock-screen{font-family:var(--mono);font-size:9px;color:var(--t3);
+  border:1px solid var(--border);padding:1px 6px;border-radius:4px;
+  background:var(--surface2);white-space:nowrap}
+
+.jblock-title{font-size:12px;font-weight:700;line-height:1.3;margin-bottom:5px;color:var(--t1)}
+.jblock-actor{font-size:10px;color:var(--t2);margin-bottom:8px;
+  display:flex;align-items:center;gap:4px}
+.actor-ic{font-size:11px}
+
+.jblock-tables{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px}
+.tbl-chip{font-size:9px;font-family:var(--mono);padding:2px 5px;border-radius:4px;
+  border:1px solid var(--border);color:var(--t3);background:var(--surface2);
+  line-height:1.4;cursor:default}
+.tbl-chip.write{border-color:rgba(239,68,68,.3);color:#f87171;background:rgba(239,68,68,.06)}
+.tbl-chip.read{border-color:rgba(100,116,139,.25);color:var(--t3)}
+
+.jblock-states{margin-top:8px;border-top:1px solid var(--border);padding-top:8px}
+.state-row{display:flex;align-items:center;gap:6px;font-size:10px;margin-bottom:4px}
+.state-row:last-child{margin-bottom:0}
+.state-from{color:var(--t3);font-family:var(--mono);font-size:9px;
+  background:var(--surface2);padding:1px 5px;border-radius:3px;white-space:nowrap}
+.state-arrow{color:var(--t3);font-size:10px;flex-shrink:0}
+.state-to{font-family:var(--mono);font-size:9px;font-weight:600;
+  padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+/* ── CONNECTOR ARROWS between blocks ── */
+.arrow-row{display:flex;align-items:center;gap:0;margin-bottom:12px}
+.arr{font-size:16px;color:var(--t3)}
+
+/* ── DETAIL PANEL (right side slide-in) ── */
+.detail-panel{position:fixed;top:56px;right:0;width:400px;bottom:0;
+  background:var(--surface);border-left:1px solid var(--border);
+  transform:translateX(100%);transition:transform .25s ease;
+  z-index:40;display:flex;flex-direction:column;overflow:hidden}
+.detail-panel.open{transform:translateX(0)}
+.dp-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.dp-num{font-family:var(--mono);font-size:11px;font-weight:600;margin-bottom:6px}
+.dp-title{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:5px}
+.dp-actor{font-size:12px;color:var(--t2);margin-bottom:10px}
+.dp-trigger{font-size:11px;color:var(--t2);line-height:1.6;
+  background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  padding:8px 10px}
+.dp-body{flex:1;overflow-y:auto;padding:16px 20px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.dp-close{position:absolute;top:16px;right:16px;background:none;border:none;
+  color:var(--t2);font-size:20px;cursor:pointer;padding:2px 6px;
+  border-radius:5px;line-height:1}
+.dp-close:hover{color:var(--t1);background:var(--surface2)}
+
+.dp-sec{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--t3);margin:14px 0 7px}
+.dp-sec:first-child{margin-top:0}
+
+/* Steps in detail */
+.step-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;
+  padding-bottom:10px;border-bottom:1px solid var(--border)}
+.step-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.step-n{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;
+  background:var(--surface3);border:1px solid var(--border);color:var(--t2)}
+.step-body{flex:1}
+.step-domain{font-size:9px;font-weight:700;margin-bottom:2px}
+.step-action{font-size:11px;color:var(--t2);line-height:1.5}
+.step-db{font-family:var(--mono);font-size:9px;color:var(--t3);margin-top:3px;
+  background:var(--surface2);border:1px solid var(--border);
+  padding:3px 7px;border-radius:4px;display:inline-block;line-height:1.5}
+
+/* State machine in detail */
+.sm-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  padding:7px 9px;background:var(--surface2);border-radius:6px;
+  border:1px solid var(--border)}
+.sm-table{font-family:var(--mono);font-size:9px;color:var(--t2);flex:1}
+.sm-from{font-family:var(--mono);font-size:10px;color:var(--t3);
+  padding:2px 6px;border-radius:3px;background:var(--bg);border:1px solid var(--border)}
+.sm-arr{color:var(--t3);font-size:12px}
+.sm-to{font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:2px 6px;border-radius:3px}
+
+/* API pill */
+.api-pill{display:inline-flex;align-items:center;gap:7px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:7px;padding:7px 10px;margin-bottom:8px;width:100%}
+.api-method{font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:4px;flex-shrink:0}
+.api-path{font-family:var(--mono);font-size:10px;color:var(--t2);flex:1;
+  word-break:break-all;line-height:1.4}
+.method-get{background:rgba(16,185,129,.15);color:#34d399}
+.method-post{background:rgba(14,165,233,.15);color:#38bdf8}
+.method-patch{background:rgba(245,158,11,.15);color:#fbbf24}
+.method-delete{background:rgba(239,68,68,.15);color:#f87171}
+.method-put{background:rgba(168,85,247,.15);color:#c084fc}
+
+/* Overview flow (full pipeline) */
+.flow-strip{display:flex;align-items:stretch;gap:0;overflow-x:auto;
+  padding-bottom:4px;margin-bottom:28px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.flow-node{min-width:120px;padding:12px 14px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;gap:4px;position:relative}
+.flow-node:first-child{border-radius:8px 0 0 8px}
+.flow-node:last-child{border-radius:0 8px 8px 0}
+.flow-node:not(:last-child)::after{content:"›";position:absolute;right:-10px;top:50%;
+  transform:translateY(-50%);font-size:18px;color:var(--t3);z-index:1}
+.flow-node:hover{background:var(--surface2);border-color:var(--border2)}
+.flow-node.on{border-color:currentColor}
+.fn-num{font-family:var(--mono);font-size:9px;color:var(--t3)}
+.fn-title{font-size:11px;font-weight:600;line-height:1.3}
+.fn-actor{font-size:9px;color:var(--t3)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  opacity:0;transition:all .28s;padding:10px 18px;border-radius:9px;
+  background:var(--surface3);border:1px solid var(--border2);
+  font-size:12px;font-weight:600;color:var(--t1);z-index:999;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><div class="logo-mark">FS</div>FairShare</div>
+  <div class="tb-sep"></div>
+  <div class="tb-title">Platform User Journey Map — 37 Journeys</div>
+  <div class="tb-right">
+    <div class="leg" id="legend">
+      <div class="leg-item on" data-domain="id" style="color:#0ea5e9">
+        <div class="leg-dot" style="background:#0ea5e9"></div>Identity
+      </div>
+      <div class="leg-item on" data-domain="tn" style="color:#10b981">
+        <div class="leg-dot" style="background:#10b981"></div>Tenant
+      </div>
+      <div class="leg-item on" data-domain="az" style="color:#ef4444">
+        <div class="leg-dot" style="background:#ef4444"></div>AuthZ
+      </div>
+      <div class="leg-item on" data-domain="vn" style="color:#f97316">
+        <div class="leg-dot" style="background:#f97316"></div>Vendor
+      </div>
+      <div class="leg-item on" data-domain="mk" style="color:#a855f7">
+        <div class="leg-dot" style="background:#a855f7"></div>Marketplace
+      </div>
+      <div class="leg-item on" data-domain="gv" style="color:#f59e0b">
+        <div class="leg-dot" style="background:#f59e0b"></div>Governance
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="body">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-sec">Identity & Auth — J1–J11</div>
+  <!-- rendered by JS -->
+  <div class="sb-sec" id="sb-t" style="margin-top:10px">Tenant — J12–J19</div>
+  <div class="sb-sec" id="sb-v" style="margin-top:10px">Vendor — J20–J28</div>
+  <div class="sb-sec" id="sb-m" style="margin-top:10px">Marketplace — J29–J34</div>
+  <div class="sb-sec" id="sb-g" style="margin-top:10px">Governance — J35–J37</div>
+  <div id="sb-items"></div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas" id="canvas">
+
+  <!-- OVERVIEW FLOW STRIP -->
+  <div style="margin-bottom:8px">
+    <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">
+      End-to-end platform pipeline — click any stage
+    </div>
+    <div class="flow-strip" id="flow-strip"></div>
+  </div>
+
+  <!-- PHASES -->
+  <div id="phases"></div>
+
+</div>
+</div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-panel">
+  <button class="dp-close" onclick="closeDetail()">✕</button>
+  <div class="dp-hdr">
+    <div class="dp-num" id="dp-num"></div>
+    <div class="dp-title" id="dp-title"></div>
+    <div class="dp-actor" id="dp-actor"></div>
+    <div class="dp-trigger" id="dp-trigger"></div>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   DATA: All 37 journeys
+════════════════════════════════════════════════ */
+var JOURNEYS = [
+  /* ── Phase 1: Identity & Authentication ── */
+  {id:"J1",num:1,title:"User Registration",screen:"—",phase:"Identity & Auth",
+   actor:"Anonymous visitor",actorIc:"👤",
+   trigger:"Visitor submits signup form with email + password",
+   domain:"id",col:"#0ea5e9",
+   tables:[
+     {n:"identity.users",w:true},{n:"identity.credentials",w:true},
+     {n:"identity.sessions",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/auth/register"}],
+   steps:[
+     {n:1,d:"Identity",a:"Validate email uniqueness","db":"SELECT identity.users WHERE email=?"},
+     {n:2,d:"Identity",a:"Create user row (pending_verification)","db":"INSERT identity.users"},
+     {n:3,d:"Identity",a:"Register Keycloak credential","db":"INSERT identity.credentials"},
+     {n:4,d:"Identity",a:"Send verification email (outbox)","db":"INSERT outbox_events"},
+     {n:5,d:"Identity",a:"Log registration","db":"INSERT identity.audit_log"},
+   ],
+   states:[{t:"identity.users.status",f:"—",to:"pending_verification",tc:"#f59e0b"}]
+  },
+  {id:"J2",num:2,title:"Email Verification",screen:"—",phase:"Identity & Auth",
+   actor:"Registered user (email link)",actorIc:"📧",
+   trigger:"User clicks verification link in email",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.users",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"GET",p:"/auth/verify-email?token=..."}],
+   steps:[
+     {n:1,d:"Identity",a:"Validate signed token (HMAC-SHA256 + expiry)","db":"—"},
+     {n:2,d:"Identity",a:"Update user status","db":"UPDATE identity.users SET status='active'"},
+     {n:3,d:"Identity",a:"Log verification","db":"INSERT identity.audit_log"},
+   ],
+   states:[{t:"identity.users.status",f:"pending_verification",to:"active",tc:"#10b981"}]
+  },
+  {id:"J3",num:3,title:"Login & Session",screen:"—",phase:"Identity & Auth",
+   actor:"Active user",actorIc:"🔐",
+   trigger:"User submits credentials to login form",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.credentials",w:false},{n:"identity.sessions",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/auth/login"}],
+   steps:[
+     {n:1,d:"Identity",a:"Keycloak validates credentials via realm","db":"—"},
+     {n:2,d:"Identity",a:"Lookup user by kc_subject","db":"SELECT identity.credentials WHERE keycloak_subject=?"},
+     {n:3,d:"Identity",a:"Create session row","db":"INSERT identity.sessions (status='active')"},
+     {n:4,d:"Identity",a:"Return JWT (sub, iss, exp, sid)","db":"—"},
+   ],
+   states:[{t:"identity.sessions.status",f:"—",to:"active",tc:"#10b981"}]
+  },
+  {id:"J4",num:4,title:"Token Refresh",screen:"—",phase:"Identity & Auth",
+   actor:"Active session",actorIc:"🔄",
+   trigger:"Client sends refresh token before access token expires",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.sessions",w:true},{n:"identity.credentials",w:true}],
+   api:[{m:"POST",p:"/auth/token/refresh"}],
+   steps:[
+     {n:1,d:"Identity",a:"Validate refresh token hash against session row","db":"SELECT identity.sessions WHERE id=sid"},
+     {n:2,d:"Identity",a:"Rotate refresh token (bcrypt new hash)","db":"UPDATE identity.sessions SET refresh_token_hash=?"},
+     {n:3,d:"Identity",a:"Update last_seen_at","db":"UPDATE identity.credentials SET last_seen_at=now()"},
+     {n:4,d:"Identity",a:"Return new access + refresh tokens","db":"—"},
+   ],
+   states:[{t:"identity.sessions.refresh_token_hash",f:"old hash",to:"new hash (rotated)",tc:"#0ea5e9"}]
+  },
+  {id:"J5",num:5,title:"Password Reset",screen:"—",phase:"Identity & Auth",
+   actor:"Locked or forgotten user",actorIc:"🔑",
+   trigger:"User requests password reset by email",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.users",w:false},{n:"identity.sessions",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/auth/password-reset/request"},{m:"POST",p:"/auth/password-reset/confirm"}],
+   steps:[
+     {n:1,d:"Identity",a:"Validate email exists (silent on miss)","db":"SELECT identity.users WHERE email=?"},
+     {n:2,d:"Identity",a:"Generate signed reset token (10 min expiry)","db":"—"},
+     {n:3,d:"Identity",a:"Send reset email (outbox)","db":"INSERT outbox_events"},
+     {n:4,d:"Identity",a:"On confirm: update Keycloak password","db":"Keycloak Admin API"},
+     {n:5,d:"Identity",a:"Revoke all sessions (force re-login)","db":"UPDATE identity.sessions SET status='revoked'"},
+     {n:6,d:"Identity",a:"Log password reset","db":"INSERT identity.audit_log"},
+   ],
+   states:[{t:"identity.sessions.status",f:"active (all)",to:"revoked",tc:"#ef4444"}]
+  },
+  {id:"J6",num:6,title:"Session Revocation",screen:"—",phase:"Identity & Auth",
+   actor:"User or admin",actorIc:"🚫",
+   trigger:"Explicit logout, or admin force-revokes a session",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.sessions",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/auth/sessions/{session_id}/revoke"}],
+   steps:[
+     {n:1,d:"Identity",a:"Verify caller owns session (or has platform.admin)","db":"—"},
+     {n:2,d:"Identity",a:"Revoke session","db":"UPDATE identity.sessions SET status='revoked', revoked_at=now()"},
+     {n:3,d:"Identity",a:"Keycloak: invalidate refresh token","db":"Keycloak Admin API"},
+     {n:4,d:"Identity",a:"Log revocation","db":"INSERT identity.audit_log"},
+   ],
+   states:[{t:"identity.sessions.status",f:"active",to:"revoked",tc:"#ef4444"}]
+  },
+  {id:"J7",num:7,title:"Org Upgrade",screen:"o_upgrade",phase:"Identity & Auth",
+   actor:"Individual org owner",actorIc:"🏢",
+   trigger:"Individual user upgrades to a company organization (provisions Keycloak realm)",
+   domain:"id",col:"#0ea5e9",
+   tables:[
+     {n:"tenant.organizations",w:true},{n:"tenant.org_reg_requests",w:true},
+     {n:"identity.identity_realms",w:true},{n:"authz.roles",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/organizations/{org_id}/upgrade"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate org_type='individual'","db":"SELECT tenant.organizations"},
+     {n:2,d:"Tenant",a:"INSERT org_registration_request (submitted)","db":"INSERT tenant.org_registration_requests"},
+     {n:3,d:"Identity",a:"Provision Keycloak org realm (async)","db":"INSERT identity.identity_realms"},
+     {n:4,d:"Tenant",a:"Update org: org_type='organization', keycloak_realm_ref","db":"UPDATE tenant.organizations"},
+     {n:5,d:"AuthZ",a:"Seed platform-scoped roles","db":"INSERT authz.roles (is_system=true)"},
+     {n:6,d:"Identity",a:"Log realm provisioned","db":"INSERT identity.audit_log"},
+   ],
+   states:[
+     {t:"tenant.organizations.org_type",f:"individual",to:"organization",tc:"#10b981"},
+     {t:"identity.identity_realms.status",f:"—",to:"active",tc:"#10b981"},
+   ]
+  },
+  {id:"J8",num:8,title:"Service Account Creation",screen:"—",phase:"Identity & Auth",
+   actor:"Tenant-admin",actorIc:"🤖",
+   trigger:"Admin creates a robot principal for CI/CD automation",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.service_accounts",w:true},{n:"identity.api_keys",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/tenants/{tenant_id}/service-accounts"}],
+   steps:[
+     {n:1,d:"Identity",a:"Validate caller has tenant.admin","db":"authz.user_roles lookup"},
+     {n:2,d:"Identity",a:"INSERT service_account","db":"INSERT identity.service_accounts (status='active')"},
+     {n:3,d:"Identity",a:"Generate API key (raw shown ONCE)","db":"INSERT identity.api_keys (key_hash=bcrypt)"},
+     {n:4,d:"Identity",a:"Log creation","db":"INSERT identity.audit_log"},
+   ],
+   states:[{t:"identity.service_accounts.status",f:"—",to:"active",tc:"#10b981"}]
+  },
+  {id:"J9",num:9,title:"Permission Lookup (RBAC)",screen:"—",phase:"Identity & Auth",
+   actor:"API middleware (every request)",actorIc:"⚡",
+   trigger:"Every authenticated API request — checks caller has required permission in the tenant scope",
+   domain:"az",col:"#ef4444",
+   tables:[{n:"authz.user_roles",w:false},{n:"authz.role_permissions",w:false},{n:"authz.permissions",w:false}],
+   api:[{m:"GET",p:"(middleware — not a public endpoint)"}],
+   steps:[
+     {n:1,d:"AuthZ",a:"Extract user_id from JWT sub, tenant_id from X-Tenant-Id header","db":"—"},
+     {n:2,d:"AuthZ",a:"Hot-path permission query (indexed)","db":"SELECT p.code FROM user_roles ur JOIN role_permissions rp ON ur.role_id=rp.role_id JOIN permissions p ... WHERE ur.user_id=? AND ur.scope_id=? AND ur.status='active'"},
+     {n:3,d:"AuthZ",a:"Return 403 immediately if permission code absent","db":"—"},
+   ],
+   states:[]
+  },
+  {id:"J10",num:10,title:"Role Assignment",screen:"t_members",phase:"Identity & Auth",
+   actor:"Tenant-admin",actorIc:"👤",
+   trigger:"Admin grants a role to a user within a specific tenant scope",
+   domain:"az",col:"#ef4444",
+   tables:[{n:"authz.user_roles",w:true},{n:"authz.roles",w:false},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/tenants/{tenant_id}/roles/assign"}],
+   steps:[
+     {n:1,d:"AuthZ",a:"Validate caller has tenant.admin in this tenant","db":"authz.user_roles lookup"},
+     {n:2,d:"AuthZ",a:"Validate role.scope_id matches tenant","db":"SELECT authz.roles WHERE id=? AND scope_id=?"},
+     {n:3,d:"AuthZ",a:"INSERT user_roles (status='active')","db":"INSERT authz.user_roles"},
+     {n:4,d:"Identity",a:"Log grant","db":"INSERT identity.audit_log (role_binding.created)"},
+   ],
+   states:[{t:"authz.user_roles.status",f:"—",to:"active",tc:"#10b981"}]
+  },
+  {id:"J11",num:11,title:"Role Revocation",screen:"t_members",phase:"Identity & Auth",
+   actor:"Tenant-admin",actorIc:"🚫",
+   trigger:"Admin removes a user's role — takes effect on the NEXT API request (no JWT wait)",
+   domain:"az",col:"#ef4444",
+   tables:[{n:"authz.user_roles",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/tenants/{tenant_id}/roles/revoke"}],
+   steps:[
+     {n:1,d:"AuthZ",a:"Validate caller has tenant.admin","db":"—"},
+     {n:2,d:"AuthZ",a:"Revoke — NEVER delete (row kept for audit)","db":"UPDATE authz.user_roles SET status='revoked', revoked_by=?, revoked_at=now()"},
+     {n:3,d:"AuthZ",a:"Reject if it would leave zero tenant-admins","db":"COUNT active tenant-admin bindings → 409 if 0"},
+     {n:4,d:"Identity",a:"Log revocation","db":"INSERT identity.audit_log (role_binding.revoked)"},
+   ],
+   states:[{t:"authz.user_roles.status",f:"active",to:"revoked (never deleted)",tc:"#ef4444"}]
+  },
+
+  /* ── Phase 2: Tenant ── */
+  {id:"J12",num:12,title:"Tenant Creation",screen:"t_create",phase:"Tenant",
+   actor:"Org owner or tenant-admin",actorIc:"🏗️",
+   trigger:"User creates a new isolated tenant environment under their organization",
+   domain:"tn",col:"#10b981",
+   tables:[
+     {n:"tenant.tenants",w:true},{n:"tenant.projects",w:true},
+     {n:"authz.roles",w:true},{n:"authz.user_roles",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/organizations/{org_id}/tenants"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate slug unique within org","db":"SELECT tenant.tenants WHERE org_id=? AND slug=?"},
+     {n:2,d:"Tenant",a:"INSERT tenant (status='active')","db":"INSERT tenant.tenants"},
+     {n:3,d:"Tenant",a:"Seed default project","db":"INSERT tenant.projects (name='default-project')"},
+     {n:4,d:"AuthZ",a:"Seed 3 tenant-scoped roles","db":"INSERT authz.roles × 3 (is_system=true, scope_id=new_tenant)"},
+     {n:5,d:"AuthZ",a:"Bind caller as tenant-admin","db":"INSERT authz.user_roles (caller → tenant-admin, scope_id=tenant)"},
+     {n:6,d:"Identity",a:"Log creation","db":"INSERT identity.audit_log (tenant.created)"},
+   ],
+   states:[
+     {t:"tenant.tenants.status",f:"—",to:"active",tc:"#10b981"},
+     {t:"tenant.projects",f:"—",to:"default-project seeded",tc:"#10b981"},
+   ]
+  },
+  {id:"J13",num:13,title:"Project Creation",screen:"t_project",phase:"Tenant",
+   actor:"Tenant-admin or resource-admin",actorIc:"📁",
+   trigger:"Admin creates a project to sub-scope resources inside a tenant",
+   domain:"tn",col:"#10b981",
+   tables:[{n:"tenant.projects",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/tenants/{tenant_id}/projects"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate resource.create permission","db":"authz.user_roles lookup"},
+     {n:2,d:"Tenant",a:"Validate project name unique within tenant","db":"SELECT tenant.projects WHERE tenant_id=? AND slug=?"},
+     {n:3,d:"Tenant",a:"INSERT project","db":"INSERT tenant.projects (status='active')"},
+     {n:4,d:"Identity",a:"Log","db":"INSERT identity.audit_log (project.created)"},
+   ],
+   states:[{t:"tenant.projects.status",f:"—",to:"active",tc:"#10b981"}]
+  },
+  {id:"J14",num:14,title:"Member Management",screen:"t_members",phase:"Tenant",
+   actor:"Tenant-admin",actorIc:"👥",
+   trigger:"Admin invites, removes, or changes the role of a member within a specific tenant",
+   domain:"tn",col:"#10b981",
+   tables:[
+     {n:"tenant.tenant_memberships",w:true},{n:"authz.user_roles",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/tenants/{tenant_id}/members"},{m:"DELETE",p:"/tenants/{tenant_id}/members/{user_id}"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate caller has tenant.admin","db":"authz.user_roles lookup"},
+     {n:2,d:"Tenant",a:"INSERT tenant_membership (status='active')","db":"INSERT tenant.tenant_memberships"},
+     {n:3,d:"AuthZ",a:"INSERT role binding for new member","db":"INSERT authz.user_roles (scope_id=tenant)"},
+     {n:4,d:"AuthZ",a:"On removal: revoke role binding (never delete)","db":"UPDATE authz.user_roles SET status='revoked'"},
+     {n:5,d:"Identity",a:"Log action","db":"INSERT identity.audit_log"},
+   ],
+   states:[
+     {t:"tenant.tenant_memberships.status",f:"—",to:"active",tc:"#10b981"},
+     {t:"authz.user_roles.status",f:"—",to:"active / revoked",tc:"#ef4444"},
+   ]
+  },
+  {id:"J15",num:15,title:"Tenant Settings",screen:"t_settings",phase:"Tenant",
+   actor:"Tenant-admin",actorIc:"⚙️",
+   trigger:"Admin edits tenant display name, feature flags, or configuration",
+   domain:"tn",col:"#10b981",
+   tables:[{n:"tenant.tenants",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"PATCH",p:"/tenants/{tenant_id}/settings"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate tenant.admin permission","db":"—"},
+     {n:2,d:"Tenant",a:"PATCH name, settings_json (slug is immutable)","db":"UPDATE tenant.tenants SET name=?, settings_json=?, updated_at=now()"},
+     {n:3,d:"Identity",a:"Log","db":"INSERT identity.audit_log (tenant.settings_updated)"},
+   ],
+   states:[{t:"tenant.tenants.name / settings_json",f:"old",to:"updated",tc:"#0ea5e9"}]
+  },
+  {id:"J16",num:16,title:"Onboarding Checklist",screen:"t_onboard",phase:"Tenant",
+   actor:"Tenant-admin (new tenant)",actorIc:"✅",
+   trigger:"First visit to a new tenant — guided checklist shows setup progress",
+   domain:"tn",col:"#10b981",
+   tables:[{n:"tenant.onboarding_requests",w:false}],
+   api:[{m:"GET",p:"/tenants/{tenant_id}/onboarding"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Compute 'invite_team' step live","db":"COUNT tenant.tenant_memberships"},
+     {n:2,d:"Tenant",a:"Compute 'create_project' step live","db":"COUNT tenant.projects WHERE id != default"},
+     {n:3,d:"Tenant",a:"Compute 'install_offering' step live","db":"COUNT vendor.entitlements WHERE tenant_id=?"},
+     {n:4,d:"Tenant",a:"Return checklist with percent_complete","db":"—"},
+   ],
+   states:[{t:"(read-only — steps computed from live domain state)",f:"",to:"",tc:"#64748b"}]
+  },
+  {id:"J17",num:17,title:"Org Overview",screen:"o_overview",phase:"Tenant",
+   actor:"Any org member",actorIc:"📊",
+   trigger:"Member views organization-level summary screen",
+   domain:"tn",col:"#10b981",
+   tables:[{n:"tenant.organizations",w:false},{n:"tenant.tenants",w:false},{n:"tenant.org_memberships",w:false}],
+   api:[{m:"GET",p:"/organizations/{org_id}/overview"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate caller is org member","db":"SELECT tenant.org_memberships WHERE org_id=? AND user_id=?"},
+     {n:2,d:"Tenant",a:"Aggregate counts: tenants, members, participation","db":"SELECT COUNT(*)..."},
+     {n:3,d:"Tenant",a:"Return overview payload","db":"—"},
+   ],
+   states:[{t:"(read-only — no writes)",f:"",to:"",tc:"#64748b"}]
+  },
+  {id:"J18",num:18,title:"Realm Status",screen:"o_realm",phase:"Tenant",
+   actor:"Org owner",actorIc:"🔐",
+   trigger:"Owner views Keycloak realm status; retries failed provisioning",
+   domain:"id",col:"#0ea5e9",
+   tables:[{n:"identity.identity_realms",w:true},{n:"tenant.organizations",w:false}],
+   api:[{m:"GET",p:"/organizations/{org_id}/realm"},{m:"POST",p:"/organizations/{org_id}/realm/retry"}],
+   steps:[
+     {n:1,d:"Identity",a:"READ realm status","db":"SELECT identity.identity_realms WHERE org_id=?"},
+     {n:2,d:"Identity",a:"If failed: retry realm provisioning pipeline","db":"UPDATE identity.identity_realms WHERE status='failed'"},
+   ],
+   states:[{t:"identity.identity_realms.status",f:"failed",to:"active (on retry)",tc:"#10b981"}]
+  },
+  {id:"J19",num:19,title:"Org Member Management",screen:"o_members",phase:"Tenant",
+   actor:"Org owner / admin",actorIc:"👥",
+   trigger:"Owner invites a new person to the organization (broader than tenant-scoped J14)",
+   domain:"tn",col:"#10b981",
+   tables:[{n:"tenant.org_memberships",w:true},{n:"authz.user_roles",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/organizations/{org_id}/members"},{m:"DELETE",p:"/organizations/{org_id}/members/{user_id}"}],
+   steps:[
+     {n:1,d:"Tenant",a:"Validate org.admin permission","db":"—"},
+     {n:2,d:"Tenant",a:"INSERT org_membership (invited → active on accept)","db":"INSERT tenant.org_memberships"},
+     {n:3,d:"AuthZ",a:"On removal: cascade-revoke all tenant role bindings","db":"UPDATE authz.user_roles SET status='revoked' WHERE user_id=? AND scope_id IN (org's tenants)"},
+     {n:4,d:"Identity",a:"Log","db":"INSERT identity.audit_log"},
+   ],
+   states:[
+     {t:"tenant.org_memberships.status",f:"—",to:"invited → active",tc:"#10b981"},
+     {t:"authz.user_roles (on remove)",f:"active × N",to:"revoked × N",tc:"#ef4444"},
+   ]
+  },
+
+  /* ── Phase 3: Vendor ── */
+  {id:"J20",num:20,title:"Vendor Eligibility",screen:"v_intro",phase:"Vendor",
+   actor:"Org owner",actorIc:"🔍",
+   trigger:"Owner checks if their org qualifies to become a vendor (reads only)",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"tenant.organizations",w:false},{n:"vendor.vendors",w:false}],
+   api:[{m:"GET",p:"/organizations/{org_id}/vendor-eligibility"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Check org_type='organization' (not individual)","db":"SELECT tenant.organizations"},
+     {n:2,d:"Vendor",a:"Check no existing vendor profile","db":"SELECT vendor.vendors WHERE org_id=?"},
+     {n:3,d:"Vendor",a:"Return eligibility result + requirement list","db":"—"},
+   ],
+   states:[{t:"(read-only eligibility check)",f:"",to:"",tc:"#64748b"}]
+  },
+  {id:"J21",num:21,title:"Vendor Registration",screen:"v_register",phase:"Vendor",
+   actor:"Org owner",actorIc:"📋",
+   trigger:"Owner submits vendor registration form (business docs, tax ID, payout info)",
+   domain:"vn",col:"#f97316",
+   tables:[
+     {n:"vendor.vendors",w:true},{n:"tenant.organizations",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/organizations/{org_id}/vendor/register"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate org_type='organization'","db":"SELECT tenant.organizations"},
+     {n:2,d:"Vendor",a:"INSERT vendor profile (unverified)","db":"INSERT vendor.vendors (status='unverified')"},
+     {n:3,d:"Tenant",a:"Update org participation","db":"UPDATE tenant.organizations SET participation='consumer_and_vendor'"},
+     {n:4,d:"Vendor",a:"Queue verification request","db":"INSERT vendor.verifications (status='queued')"},
+     {n:5,d:"Identity",a:"Log registration","db":"INSERT identity.audit_log (vendor.registered)"},
+   ],
+   states:[
+     {t:"vendor.vendors.status",f:"—",to:"unverified",tc:"#f59e0b"},
+     {t:"tenant.organizations.participation",f:"consumer",to:"consumer_and_vendor",tc:"#f97316"},
+   ]
+  },
+  {id:"J22",num:22,title:"Vendor Verification (KYC)",screen:"v_verify",phase:"Vendor",
+   actor:"Platform governance ops (reviewer)",actorIc:"🔎",
+   trigger:"Ops reviewer approves or rejects vendor KYC documents",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"vendor.vendors",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"GET",p:"/vendors/{id}/verification"},{m:"POST",p:"/admin/vendor-verifications/{id}/decision"}],
+   steps:[
+     {n:1,d:"Governance",a:"Review business docs and tax ID","db":"—"},
+     {n:2,d:"Vendor",a:"Update vendor status","db":"UPDATE vendor.vendors SET status='verified'|'rejected'"},
+     {n:3,d:"Vendor",a:"On rejection: roll back participation","db":"UPDATE tenant.organizations SET participation='consumer'"},
+     {n:4,d:"Identity",a:"Log decision","db":"INSERT identity.audit_log (vendor.verification_decided)"},
+   ],
+   states:[
+     {t:"vendor.vendors.status",f:"unverified",to:"verified / rejected",tc:"#10b981"},
+   ]
+  },
+  {id:"J23",num:23,title:"Vendor Portal",screen:"v_portal",phase:"Vendor",
+   actor:"Vendor admin",actorIc:"🏪",
+   trigger:"Verified vendor views their operational dashboard (products, installs, revenue)",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"vendor.vendors",w:false},{n:"vendor.service_plugins",w:false},{n:"vendor.plugin_versions",w:false}],
+   api:[{m:"GET",p:"/vendors/{vendor_id}/portal"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate caller is vendor's admin","db":"—"},
+     {n:2,d:"Vendor",a:"Aggregate: product count, offering count, active installs","db":"SELECT COUNT(*)..."},
+     {n:3,d:"Vendor",a:"Count pending plugin reviews","db":"SELECT COUNT(*) FROM plugin_versions WHERE status='pending_review'"},
+   ],
+   states:[{t:"(read-only dashboard)",f:"",to:"",tc:"#64748b"}]
+  },
+  {id:"J24",num:24,title:"Plugin Registration",screen:"p_register",phase:"Vendor",
+   actor:"Vendor admin",actorIc:"🔌",
+   trigger:"Vendor registers a new plugin (the stable identity before submitting any version)",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"vendor.service_plugins",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/vendors/{vendor_id}/plugins"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate vendor status='verified'","db":"SELECT vendor.vendors WHERE id=? AND status='verified'"},
+     {n:2,d:"Vendor",a:"Validate plugin_key globally unique","db":"SELECT vendor.service_plugins WHERE plugin_key=?"},
+     {n:3,d:"Vendor",a:"INSERT plugin (status='active')","db":"INSERT vendor.service_plugins"},
+     {n:4,d:"Identity",a:"Log","db":"INSERT identity.audit_log (plugin.registered)"},
+   ],
+   states:[{t:"vendor.service_plugins.status",f:"—",to:"active",tc:"#10b981"}]
+  },
+  {id:"J25",num:25,title:"Plugin Version Submission",screen:"p_version",phase:"Vendor",
+   actor:"Vendor admin",actorIc:"📦",
+   trigger:"Vendor submits a signed build artifact as a new version for governance review",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"vendor.plugin_versions",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/plugins/{plugin_id}/versions"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate semver is higher than last version","db":"SELECT vendor.plugin_versions WHERE plugin_id=? ORDER BY semver DESC"},
+     {n:2,d:"Vendor",a:"INSERT plugin_version (submitted)","db":"INSERT vendor.plugin_versions (status='submitted')"},
+     {n:3,d:"Vendor",a:"Emit outbox event for SBOM security scan","db":"INSERT outbox_events (type='scan_plugin_artifact')"},
+     {n:4,d:"Identity",a:"Log submission","db":"INSERT identity.audit_log (plugin_version.submitted)"},
+   ],
+   states:[{t:"vendor.plugin_versions.status",f:"—",to:"submitted",tc:"#f59e0b"}]
+  },
+  {id:"J26",num:26,title:"Governance Review (Inspector)",screen:"p_govern",phase:"Vendor",
+   actor:"Platform governance admin",actorIc:"🔬",
+   trigger:"Reviewer opens a pending version to inspect capabilities, SBOM, and scan results",
+   domain:"gv",col:"#f59e0b",
+   tables:[{n:"vendor.plugin_versions",w:true}],
+   api:[{m:"GET",p:"/plugins/versions/{id}/review"},{m:"POST",p:"/plugins/versions/{id}/request-changes"}],
+   steps:[
+     {n:1,d:"Governance",a:"Read version detail, capabilities, scan status","db":"SELECT vendor.plugin_versions, vendor.capabilities"},
+     {n:2,d:"Governance",a:"Optionally request changes (holds decision)","db":"UPDATE vendor.plugin_versions SET status='changes_requested'"},
+   ],
+   states:[{t:"vendor.plugin_versions.status",f:"submitted",to:"changes_requested (optional)",tc:"#f59e0b"}]
+  },
+  {id:"J27",num:27,title:"Capability Declaration",screen:"p_caps",phase:"Vendor",
+   actor:"Vendor admin",actorIc:"🔑",
+   trigger:"Vendor declares which platform scopes/permissions the plugin needs",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"vendor.capabilities",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"PUT",p:"/plugins/versions/{version_id}/capabilities"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate version is not yet approved (frozen post-approval)","db":"SELECT vendor.plugin_versions WHERE status NOT IN ('approved','published')"},
+     {n:2,d:"Vendor",a:"Replace capability rows","db":"DELETE + INSERT vendor.capabilities (plugin_version_id=?)"},
+     {n:3,d:"Identity",a:"Log","db":"INSERT identity.audit_log (plugin_capabilities.declared)"},
+   ],
+   states:[{t:"vendor.capabilities",f:"—",to:"N rows inserted",tc:"#f97316"}]
+  },
+  {id:"J28",num:28,title:"Version History (Read)",screen:"p_versions",phase:"Vendor",
+   actor:"Vendor admin",actorIc:"📜",
+   trigger:"Vendor views the full timeline of all versions submitted for a plugin",
+   domain:"vn",col:"#f97316",
+   tables:[{n:"vendor.plugin_versions",w:false},{n:"vendor.service_plugins",w:false}],
+   api:[{m:"GET",p:"/plugins/{plugin_id}/versions"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate caller owns this plugin","db":"SELECT vendor.service_plugins WHERE id=? AND vendor_id=?"},
+     {n:2,d:"Vendor",a:"List all versions (never deleted — only superseded)","db":"SELECT vendor.plugin_versions WHERE plugin_id=? ORDER BY created_at DESC"},
+   ],
+   states:[{t:"(read-only — versions never deleted)",f:"",to:"",tc:"#64748b"}]
+  },
+
+  /* ── Phase 4: Marketplace ── */
+  {id:"J29",num:29,title:"Create Product",screen:"m_product",phase:"Marketplace",
+   actor:"Vendor admin",actorIc:"🛍️",
+   trigger:"Vendor creates the commercial product listing backed by a plugin",
+   domain:"mk",col:"#a855f7",
+   tables:[{n:"vendor.products",w:true},{n:"identity.audit_log",w:true}],
+   api:[{m:"POST",p:"/vendors/{vendor_id}/products"}],
+   steps:[
+     {n:1,d:"Vendor",a:"Validate vendor is verified","db":"SELECT vendor.vendors WHERE status='verified'"},
+     {n:2,d:"Vendor",a:"Validate plugin_id owned by vendor","db":"SELECT vendor.service_plugins WHERE id=? AND vendor_id=?"},
+     {n:3,d:"Marketplace",a:"INSERT product (draft)","db":"INSERT vendor.products (status='draft')"},
+     {n:4,d:"Identity",a:"Log","db":"INSERT identity.audit_log (product.created)"},
+   ],
+   states:[{t:"vendor.products.status",f:"—",to:"draft",tc:"#f59e0b"}]
+  },
+  {id:"J30",num:30,title:"Create Offering (SKU)",screen:"m_offering",phase:"Marketplace",
+   actor:"Vendor admin",actorIc:"💰",
+   trigger:"Vendor attaches a pricing plan to a product, creating the installable SKU",
+   domain:"mk",col:"#a855f7",
+   tables:[
+     {n:"vendor.marketplace_offerings",w:true},{n:"billing.plans",w:false},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/products/{product_id}/offerings"},{m:"POST",p:"/offerings/{id}/publish"}],
+   steps:[
+     {n:1,d:"Marketplace",a:"Validate backing plugin_version is published","db":"SELECT vendor.plugin_versions WHERE status='published'"},
+     {n:2,d:"Billing",a:"Validate plan_id exists in billing domain","db":"SELECT billing.plans WHERE id=?"},
+     {n:3,d:"Marketplace",a:"INSERT offering (active)","db":"INSERT vendor.marketplace_offerings (status='active')"},
+     {n:4,d:"Identity",a:"Log","db":"INSERT identity.audit_log (offering.created)"},
+   ],
+   states:[
+     {t:"vendor.marketplace_offerings.status",f:"—",to:"active",tc:"#10b981"},
+   ]
+  },
+  {id:"J31",num:31,title:"Catalog Browse",screen:"m_catalog",phase:"Marketplace",
+   actor:"Tenant-admin (buyer)",actorIc:"🔍",
+   trigger:"Tenant browses the marketplace catalog to discover offerings",
+   domain:"mk",col:"#a855f7",
+   tables:[{n:"vendor.marketplace_offerings",w:false},{n:"vendor.products",w:false},{n:"vendor.vendors",w:false}],
+   api:[{m:"GET",p:"/marketplace/catalog?category=...&q=..."}],
+   steps:[
+     {n:1,d:"Marketplace",a:"Filter published offerings","db":"SELECT vendor.marketplace_offerings WHERE status='active' AND visibility='public'"},
+     {n:2,d:"Marketplace",a:"JOIN products + vendors for display card","db":"JOIN vendor.products, vendor.vendors"},
+     {n:3,d:"Marketplace",a:"Return paginated result","db":"LIMIT + OFFSET"},
+   ],
+   states:[{t:"(read-only — no auth required to browse)",f:"",to:"",tc:"#64748b"}]
+  },
+  {id:"J32",num:32,title:"Install Offering",screen:"m_install",phase:"Marketplace",
+   actor:"Tenant-admin",actorIc:"⬇️",
+   trigger:"Tenant clicks Install on a catalog offering — entitlement granted, async provision kicks off",
+   domain:"mk",col:"#a855f7",
+   tables:[
+     {n:"vendor.entitlements",w:true},{n:"billing.subscriptions",w:true},
+     {n:"vendor.plugin_credentials",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/tenants/{tenant_id}/installations"}],
+   steps:[
+     {n:1,d:"Marketplace",a:"Validate offering status='active'","db":"SELECT vendor.marketplace_offerings WHERE id=? AND status='active'"},
+     {n:2,d:"Marketplace",a:"Validate accepted_capabilities match declared set","db":"SELECT vendor.capabilities WHERE plugin_version_id=?"},
+     {n:3,d:"Marketplace",a:"INSERT entitlement (active)","db":"INSERT vendor.entitlements (status='active')"},
+     {n:4,d:"Billing",a:"INSERT subscription (trialing)","db":"INSERT billing.subscriptions (status='trialing')"},
+     {n:5,d:"Marketplace",a:"Emit provision outbox event","db":"INSERT outbox_events (type='provision_service')"},
+     {n:6,d:"Identity",a:"Log","db":"INSERT identity.audit_log (entitlement.granted)"},
+   ],
+   states:[
+     {t:"vendor.entitlements.status",f:"—",to:"active",tc:"#10b981"},
+     {t:"billing.subscriptions.status",f:"—",to:"trialing",tc:"#3b82f6"},
+   ]
+  },
+  {id:"J33",num:33,title:"My Entitlements",screen:"m_entitle",phase:"Marketplace",
+   actor:"Tenant-admin",actorIc:"🎟️",
+   trigger:"Tenant views all services they have access to with usage stats",
+   domain:"mk",col:"#a855f7",
+   tables:[{n:"vendor.entitlements",w:false},{n:"vendor.marketplace_offerings",w:false},{n:"billing.subscriptions",w:false}],
+   api:[{m:"GET",p:"/tenants/{tenant_id}/entitlements"}],
+   steps:[
+     {n:1,d:"Marketplace",a:"List active entitlements for tenant","db":"SELECT vendor.entitlements WHERE tenant_id=? AND status='active'"},
+     {n:2,d:"Marketplace",a:"JOIN offerings + products for display","db":"JOIN vendor.marketplace_offerings, vendor.products"},
+     {n:3,d:"Billing",a:"Attach usage numbers from metering","db":"External metering read"},
+   ],
+   states:[{t:"(read-only — entitlement view)",f:"",to:"",tc:"#64748b"}]
+  },
+  {id:"J34",num:34,title:"Provision Service (Async)",screen:"m_provision",phase:"Marketplace",
+   actor:"System outbox worker",actorIc:"⚙️",
+   trigger:"Background worker consumes provision_service outbox event from J32",
+   domain:"mk",col:"#a855f7",
+   tables:[
+     {n:"vendor.provisioning_requests",w:true},{n:"vendor.provisioning_results",w:true},
+     {n:"resource.resource_instances",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"(internal — vendor adapter webhook)"}],
+   steps:[
+     {n:1,d:"Marketplace",a:"Read pending outbox event","db":"SELECT outbox_events WHERE type='provision_service' AND status='pending'"},
+     {n:2,d:"Marketplace",a:"INSERT provisioning_request (queued → running)","db":"INSERT vendor.provisioning_requests"},
+     {n:3,d:"Vendor",a:"Call vendor adapter /provision endpoint","db":"HTTP POST adapter_url/provision"},
+     {n:4,d:"Marketplace",a:"INSERT provisioning_result with outputs_json","db":"INSERT vendor.provisioning_results"},
+     {n:5,d:"Resource",a:"Upsert resource_instances from resource_descriptors","db":"UPSERT resource.resource_instances"},
+     {n:6,d:"Identity",a:"Log","db":"INSERT identity.audit_log (service_instance.provisioned)"},
+   ],
+   states:[
+     {t:"vendor.provisioning_requests.status",f:"queued",to:"running → succeeded/failed",tc:"#10b981"},
+     {t:"vendor.entitlements.status",f:"active",to:"active (unchanged) / suspended on fail",tc:"#f59e0b"},
+   ]
+  },
+
+  /* ── Phase 5: Governance ── */
+  {id:"J35",num:35,title:"Review Queue",screen:"g_plugins",phase:"Governance",
+   actor:"Platform governance admin",actorIc:"📋",
+   trigger:"Governance admin views queue of plugin versions pending review and claims one",
+   domain:"gv",col:"#f59e0b",
+   tables:[{n:"vendor.plugin_versions",w:true}],
+   api:[{m:"GET",p:"/admin/plugin-reviews?status=pending"},{m:"POST",p:"/admin/plugin-reviews/{id}/claim"}],
+   steps:[
+     {n:1,d:"Governance",a:"List pending review versions","db":"SELECT vendor.plugin_versions WHERE status IN ('submitted','verified')"},
+     {n:2,d:"Governance",a:"Claim version (prevents double-review)","db":"UPDATE vendor.plugin_versions SET claimed_by=?, claimed_at=now()"},
+   ],
+   states:[{t:"vendor.plugin_versions.claimed_by",f:"NULL",to:"reviewer user_id",tc:"#f59e0b"}]
+  },
+  {id:"J36",num:36,title:"Approve/Reject Version",screen:"g_approve",phase:"Governance",
+   actor:"Platform governance admin",actorIc:"✅",
+   trigger:"Final governance decision — approved versions unlock dependent offerings for publish",
+   domain:"gv",col:"#f59e0b",
+   tables:[
+     {n:"vendor.plugin_versions",w:true},{n:"vendor.capabilities",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"POST",p:"/admin/plugin-reviews/{version_id}/decision"}],
+   steps:[
+     {n:1,d:"Governance",a:"Validate decision is 'approved' or 'rejected'","db":"—"},
+     {n:2,d:"Vendor",a:"Update plugin_version status","db":"UPDATE vendor.plugin_versions SET status='approved'|'rejected'"},
+     {n:3,d:"Vendor",a:"On approval: parse + INSERT capabilities from manifest","db":"INSERT vendor.capabilities (from capability_manifest_json)"},
+     {n:4,d:"Vendor",a:"On first approval: activate plugin","db":"UPDATE vendor.service_plugins SET status='active' (if draft)"},
+     {n:5,d:"Identity",a:"Log decision","db":"INSERT identity.audit_log (plugin_version.approved|rejected)"},
+   ],
+   states:[
+     {t:"vendor.plugin_versions.status",f:"submitted",to:"approved / rejected",tc:"#10b981"},
+     {t:"vendor.capabilities",f:"—",to:"N rows parsed from manifest",tc:"#a855f7"},
+   ]
+  },
+  {id:"J37",num:37,title:"Vendor Directory & Suspension",screen:"g_vendors",phase:"Governance",
+   actor:"Platform governance admin",actorIc:"🚫",
+   trigger:"Admin views all vendors and can suspend one for policy violations",
+   domain:"gv",col:"#f59e0b",
+   tables:[
+     {n:"vendor.vendors",w:true},{n:"vendor.marketplace_offerings",w:true},{n:"identity.audit_log",w:true}
+   ],
+   api:[{m:"GET",p:"/admin/vendors"},{m:"POST",p:"/admin/vendors/{id}/suspend"}],
+   steps:[
+     {n:1,d:"Governance",a:"List all verified vendors","db":"SELECT vendor.vendors WHERE status='verified'"},
+     {n:2,d:"Vendor",a:"Suspend vendor","db":"UPDATE vendor.vendors SET status='suspended'"},
+     {n:3,d:"Marketplace",a:"Bulk-unpublish all active offerings (stops NEW installs)","db":"UPDATE vendor.marketplace_offerings SET status='deprecated' WHERE vendor_id=?"},
+     {n:4,d:"Identity",a:"Log suspension with reason","db":"INSERT identity.audit_log (vendor.suspended)"},
+   ],
+   states:[
+     {t:"vendor.vendors.status",f:"verified",to:"suspended",tc:"#ef4444"},
+     {t:"vendor.marketplace_offerings.status",f:"active × N",to:"deprecated × N",tc:"#ef4444"},
+   ]
+  },
+];
+
+var PHASES = [
+  {id:"Identity & Auth",label:"Identity & Authentication",dot:"#0ea5e9",journeys:["J1","J2","J3","J4","J5","J6","J7","J8","J9","J10","J11"]},
+  {id:"Tenant",label:"Tenant Management",dot:"#10b981",journeys:["J12","J13","J14","J15","J16","J17","J18","J19"]},
+  {id:"Vendor",label:"Vendor & Plugin",dot:"#f97316",journeys:["J20","J21","J22","J23","J24","J25","J26","J27","J28"]},
+  {id:"Marketplace",label:"Marketplace & Commerce",dot:"#a855f7",journeys:["J29","J30","J31","J32","J33","J34"]},
+  {id:"Governance",label:"Platform Governance",dot:"#f59e0b",journeys:["J35","J36","J37"]},
+];
+
+var FLOW_STAGES = [
+  {label:"Sign Up",sub:"J1–J2",jids:["J1","J2"],col:"#0ea5e9"},
+  {label:"Login",sub:"J3–J6",jids:["J3","J4","J5","J6"],col:"#0ea5e9"},
+  {label:"Org Setup",sub:"J7–J8",jids:["J7","J8"],col:"#10b981"},
+  {label:"Create Tenant",sub:"J12",jids:["J12"],col:"#10b981"},
+  {label:"Invite Team",sub:"J14",jids:["J14"],col:"#10b981"},
+  {label:"Become Vendor",sub:"J20–J22",jids:["J20","J21","J22"],col:"#f97316"},
+  {label:"Register Plugin",sub:"J24–J27",jids:["J24","J25","J26","J27"],col:"#f97316"},
+  {label:"Publish Product",sub:"J29–J30",jids:["J29","J30"],col:"#a855f7"},
+  {label:"Browse & Install",sub:"J31–J32",jids:["J31","J32"],col:"#a855f7"},
+  {label:"Provision",sub:"J34",jids:["J34"],col:"#a855f7"},
+  {label:"Govern",sub:"J35–J37",jids:["J35","J36","J37"],col:"#f59e0b"},
+];
+
+var activeJourney = null;
+
+/* ── BUILD SIDEBAR ── */
+function buildSidebar() {
+  var html = "";
+  PHASES.forEach(function(ph) {
+    html += '<div class="sb-sec" style="color:'+ph.dot+'">'+ph.label+'</div>';
+    ph.journeys.forEach(function(jid) {
+      var j = JOURNEYS.find(function(x){return x.id===jid});
+      if(!j) return;
+      html += '<button class="sb-item" data-jid="'+j.id+'" onclick="openDetail(\''+j.id+'\')" style="border-left-color:'+j.col+'">'
+        +'<span class="jnum">'+j.id+'</span>'
+        +'<span class="jname">'+j.title+'</span></button>';
+    });
+  });
+  document.getElementById("sb-items").innerHTML = html;
+}
+
+/* ── BUILD FLOW STRIP ── */
+function buildFlowStrip() {
+  var el = document.getElementById("flow-strip");
+  el.innerHTML = FLOW_STAGES.map(function(s,i) {
+    return '<div class="flow-node" style="border-left:3px solid '+s.col+'" onclick="highlightPhase(\''+s.jids.join(",")+'\',\''+s.col+'\')">'
+      +'<div class="fn-num" style="color:'+s.col+'">'+s.sub+'</div>'
+      +'<div class="fn-title">'+s.label+'</div>'
+      +'</div>';
+  }).join("");
+}
+
+/* ── BUILD PHASES ── */
+function buildPhases() {
+  var el = document.getElementById("phases");
+  el.innerHTML = PHASES.map(function(ph) {
+    var journeys = ph.journeys.map(function(jid){return JOURNEYS.find(function(x){return x.id===jid})}).filter(Boolean);
+    return '<div class="phase" data-phase="'+ph.id+'">'
+      +'<div class="phase-hdr">'
+      +'<div class="phase-line"></div>'
+      +'<div class="phase-label"><div class="ph-dot" style="background:'+ph.dot+'"></div>'+ph.label+'</div>'
+      +'<div class="phase-line"></div>'
+      +'</div>'
+      +'<div class="jblocks">'
+      +journeys.map(function(j){return jBlockHtml(j)}).join("")
+      +'</div></div>';
+  }).join("");
+}
+
+function jBlockHtml(j) {
+  var writeTbls = j.tables.filter(function(t){return t.w});
+  var readTbls = j.tables.filter(function(t){return !t.w});
+  var statesHtml = j.states.length
+    ? '<div class="jblock-states">'
+      +j.states.map(function(s){
+        if(!s.f&&!s.to) return '<div class="state-row" style="color:var(--t3);font-size:9px">'+s.t+'</div>';
+        return '<div class="state-row">'
+          +'<span class="state-from">'+s.f+'</span>'
+          +'<span class="state-arrow">→</span>'
+          +'<span class="state-to" style="background:'+s.tc+'22;color:'+s.tc+';border:1px solid '+s.tc+'44">'+s.to+'</span>'
+          +'</div>';
+      }).join("")
+      +'</div>'
+    : "";
+  return '<div class="jblock" id="block-'+j.id+'" data-jid="'+j.id+'"'
+    +' style="border-top:3px solid '+j.col+'" onclick="openDetail(\''+j.id+'\')">'
+    +'<div class="jblock-top">'
+    +'<span class="jblock-num" style="background:'+j.col+'22;color:'+j.col+';border:1px solid '+j.col+'44">'+j.id+'</span>'
+    +'<span class="jblock-screen">'+j.screen+'</span>'
+    +'</div>'
+    +'<div class="jblock-title">'+j.title+'</div>'
+    +'<div class="jblock-actor"><span class="actor-ic">'+j.actorIc+'</span>'+j.actor+'</div>'
+    +'<div class="jblock-tables">'
+    +writeTbls.map(function(t){return'<span class="tbl-chip write">W: '+t.n+'</span>'}).join("")
+    +readTbls.map(function(t){return'<span class="tbl-chip read">R: '+t.n+'</span>'}).join("")
+    +'</div>'
+    +statesHtml
+    +'</div>';
+}
+
+/* ── DETAIL PANEL ── */
+function openDetail(jid) {
+  var j = JOURNEYS.find(function(x){return x.id===jid});
+  if(!j) return;
+  activeJourney = jid;
+
+  // Update sidebar active
+  document.querySelectorAll(".sb-item").forEach(function(b){b.classList.toggle("on",b.dataset.jid===jid)});
+  // Update block active
+  document.querySelectorAll(".jblock").forEach(function(b){
+    b.classList.toggle("active",b.dataset.jid===jid);
+    if(b.dataset.jid===jid) b.style.borderColor=j.col;
+  });
+
+  document.getElementById("dp-num").innerHTML = '<span style="color:'+j.col+'">'+j.id+'</span> · <span style="color:var(--t3);font-size:10px">'+j.screen+'</span>';
+  document.getElementById("dp-title").textContent = j.title;
+  document.getElementById("dp-actor").innerHTML = j.actorIc + " " + j.actor;
+  document.getElementById("dp-trigger").textContent = j.trigger;
+
+  var body = "";
+
+  // API endpoints
+  if(j.api && j.api.length) {
+    body += '<div class="dp-sec">API Endpoints</div>';
+    j.api.forEach(function(a) {
+      body += '<div class="api-pill">'
+        +'<span class="api-method method-'+a.m.toLowerCase()+'">'+a.m+'</span>'
+        +'<span class="api-path">'+a.p+'</span></div>';
+    });
+  }
+
+  // Steps
+  if(j.steps && j.steps.length) {
+    body += '<div class="dp-sec">Internal Steps</div>';
+    j.steps.forEach(function(s) {
+      body += '<div class="step-row">'
+        +'<div class="step-n">'+s.n+'</div>'
+        +'<div class="step-body">'
+        +'<div class="step-domain" style="color:'+domainColor(j.domain)+'">'+s.d+'</div>'
+        +'<div class="step-action">'+s.a+'</div>'
+        +(s.db&&s.db!=="—"?'<span class="step-db">'+s.db+'</span>':"")
+        +'</div></div>';
+    });
+  }
+
+  // Tables
+  body += '<div class="dp-sec">Tables Touched</div>';
+  var writes = j.tables.filter(function(t){return t.w});
+  var reads = j.tables.filter(function(t){return !t.w});
+  if(writes.length) {
+    body += '<div style="margin-bottom:7px"><div style="font-size:9px;color:var(--t3);margin-bottom:5px">WRITES</div><div style="display:flex;flex-wrap:wrap;gap:4px">'
+      +writes.map(function(t){return'<span class="tbl-chip write">'+t.n+'</span>'}).join("")+'</div></div>';
+  }
+  if(reads.length) {
+    body += '<div style="margin-bottom:7px"><div style="font-size:9px;color:var(--t3);margin-bottom:5px">READS</div><div style="display:flex;flex-wrap:wrap;gap:4px">'
+      +reads.map(function(t){return'<span class="tbl-chip read">'+t.n+'</span>'}).join("")+'</div></div>';
+  }
+
+  // State transitions
+  if(j.states && j.states.length) {
+    body += '<div class="dp-sec">State Changes</div>';
+    j.states.forEach(function(s) {
+      if(!s.f&&!s.to) {
+        body += '<div style="font-size:11px;color:var(--t3);padding:6px 0">'+s.t+'</div>';
+        return;
+      }
+      body += '<div class="sm-row">'
+        +'<div class="sm-table">'+s.t+'</div>'
+        +'<div class="sm-from">'+s.f+'</div>'
+        +'<div class="sm-arr">→</div>'
+        +'<div class="sm-to" style="background:'+s.tc+'22;color:'+s.tc+';border:1px solid '+s.tc+'44">'+s.to+'</div>'
+        +'</div>';
+    });
+  }
+
+  document.getElementById("dp-body").innerHTML = body;
+  document.getElementById("detail-panel").classList.add("open");
+}
+
+function closeDetail() {
+  document.getElementById("detail-panel").classList.remove("open");
+  document.querySelectorAll(".jblock").forEach(function(b){b.classList.remove("active")});
+  document.querySelectorAll(".sb-item").forEach(function(b){b.classList.remove("on")});
+  activeJourney = null;
+}
+
+function domainColor(d) {
+  return {id:"#0ea5e9",tn:"#10b981",az:"#ef4444",vn:"#f97316",mk:"#a855f7",gv:"#f59e0b",bl:"#3b82f6"}[d]||"#94a3b8";
+}
+
+/* ── HIGHLIGHT from flow strip ── */
+function highlightPhase(jidsStr, col) {
+  var jids = jidsStr.split(",");
+  // Scroll to first block
+  var firstBlock = document.getElementById("block-"+jids[0]);
+  if(firstBlock) firstBlock.scrollIntoView({behavior:"smooth",block:"center"});
+  // Flash blocks
+  document.querySelectorAll(".jblock").forEach(function(b){
+    var on = jids.indexOf(b.dataset.jid)>=0;
+    b.style.opacity = on ? "1" : "0.35";
+    b.style.transform = on ? "scale(1.01)" : "";
+  });
+  setTimeout(function(){
+    document.querySelectorAll(".jblock").forEach(function(b){
+      b.style.opacity="1";b.style.transform="";
+    });
+  }, 2000);
+  showToast("Showing: J" + jids.join(", J"));
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  var t=document.getElementById("toast");
+  t.textContent=msg;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show")},2200);
+}
+
+/* ── INIT ── */
+window.onload = function() {
+  buildSidebar();
+  buildFlowStrip();
+  buildPhases();
+};
+</script>
+</body>
+</html>

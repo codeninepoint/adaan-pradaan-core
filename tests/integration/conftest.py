@@ -19,6 +19,7 @@ import identity.infrastructure.models  # noqa: F401
 import tenant.infrastructure.models  # noqa: F401
 import authz.infrastructure.models  # noqa: F401
 import resources.infrastructure.models  # noqa: F401
+import vendor.infrastructure.models  # noqa: F401
 from shared.infrastructure.models import Base
 from identity.infrastructure.models import DeliverySecretRow
 
@@ -60,7 +61,7 @@ def postgres_url():
 async def engine(postgres_url: str) -> AsyncGenerator[AsyncEngine, None]:
     engine = create_async_engine(postgres_url, echo=False)
     async with engine.begin() as conn:
-        for schema in ("platform", "identity", "tenant", "authz", "resource"):
+        for schema in ("platform", "identity", "tenant", "authz", "resource", "vendor"):
             await conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {schema}"))
         await conn.run_sync(Base.metadata.create_all)
 
@@ -105,6 +106,9 @@ async def clean_db(session_factory: async_sessionmaker[AsyncSession]) -> AsyncGe
                   authz.principal_roles,
                   authz.role_permissions,
                   authz.roles,
+                  vendor.verifications,
+                  vendor.profiles,
+                  tenant.organization_registration_requests,
                   tenant.tenant_memberships,
                   tenant.projects,
                   tenant.tenants,

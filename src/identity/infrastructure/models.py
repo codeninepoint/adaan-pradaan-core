@@ -75,6 +75,8 @@ class CredentialRow(Base, TimestampMixin):
         UUID(as_uuid=True), ForeignKey("identity.identity_realms.id"), index=True
     )
     keycloak_subject: Mapped[str] = mapped_column(String(255), index=True)
+    # Local verifier so a correct password still works after the IdP process restarts.
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     credential_type: Mapped[str] = mapped_column(String(32), default="password_delegated")
     status: Mapped[str] = mapped_column(String(32), default="active")
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

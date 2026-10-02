@@ -15,5 +15,8 @@ class ResourceRepository(Protocol):
     async def get_by_id(self, *, tenant_id: UUID, resource_id: UUID) -> Resource | None:
         """Load by id within tenant; never returns another tenant's row."""
 
+    async def list_by_tenant(self, *, tenant_id: UUID) -> list[Resource]:
+        """List resources for a tenant, newest first."""
+
     async def exists_by_name(self, *, tenant_id: UUID, name: str) -> bool:
         """Name uniqueness check scoped to tenant."""

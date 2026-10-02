@@ -29,6 +29,7 @@
 
 ## Workflows
 
+- Keycloak and Temporal (what is stored where, and what the code actually calls): [`docs/KEYCLOAK_TEMPORAL.md`](KEYCLOAK_TEMPORAL.md)
 - Index: [`docs/workflows/README.md`](workflows/README.md)
 - Resource allocation: [`docs/workflows/resource-allocation.md`](workflows/resource-allocation.md)
 - Authentication: [`docs/workflows/authentication-flow.md`](workflows/authentication-flow.md)

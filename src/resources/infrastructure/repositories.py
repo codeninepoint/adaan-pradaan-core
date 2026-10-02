@@ -39,6 +39,14 @@ class SqlAlchemyResourceRepository:
         row = result.scalar_one_or_none()
         return _to_domain(row) if row else None
 
+    async def list_by_tenant(self, *, tenant_id: UUID) -> list[Resource]:
+        result = await self._session.execute(
+            select(ResourceRow)
+            .where(ResourceRow.tenant_id == tenant_id)
+            .order_by(ResourceRow.created_at.desc())
+        )
+        return [_to_domain(row) for row in result.scalars().all()]
+
     async def exists_by_name(self, *, tenant_id: UUID, name: str) -> bool:
         result = await self._session.execute(
             select(ResourceRow.id).where(

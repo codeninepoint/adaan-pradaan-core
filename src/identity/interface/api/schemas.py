@@ -14,6 +14,8 @@ class RegisterResponse(BaseModel):
     tenant_id: str
     status: str
     verification_email_sent: bool
+    # Present only when TENANT_APP_ENV is dev/test (email delivery not wired).
+    dev_otp: str | None = None
 
 
 class VerifyEmailRequest(BaseModel):
@@ -82,6 +84,12 @@ class PasswordResetRequestBody(BaseModel):
     email: EmailStr
 
 
+class PasswordResetRequestResponse(BaseModel):
+    message: str
+    # Present only when TENANT_APP_ENV is dev/test (email delivery not wired).
+    dev_reset_token: str | None = None
+
+
 class PasswordResetBody(BaseModel):
     reset_token: str
     new_password: str
@@ -90,3 +98,33 @@ class PasswordResetBody(BaseModel):
 class PasswordResetResponse(BaseModel):
     message: str
     sessions_revoked: int | None = None
+
+
+class MeOrganization(BaseModel):
+    org_id: str
+    name: str
+    org_type: str
+    participation: str = "consumer"
+    keycloak_realm_ref: str | None = None
+    membership_role: str
+    status: str
+
+
+class MeTenant(BaseModel):
+    tenant_id: str
+    org_id: str
+    name: str
+    slug: str
+    status: str
+    membership_status: str
+
+
+class MeResponse(BaseModel):
+    user_id: str
+    principal_id: str
+    email: str
+    display_name: str
+    status: str
+    is_platform_operator: bool = False
+    organizations: list[MeOrganization]
+    tenants: list[MeTenant]

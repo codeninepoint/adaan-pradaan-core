@@ -9,6 +9,7 @@ from authz.application.authorization_service import AuthorizationService
 from authz.infrastructure.repositories import build_authorization_service
 from identity.interface.api.dependencies import get_session, get_session_factory
 from resources.application.create_resource import CreateResourceHandler
+from resources.application.list_resources import ListResourcesHandler
 from resources.infrastructure.repositories import SqlAlchemyResourceRepository
 from resources.infrastructure.unit_of_work import SessionUnitOfWork
 
@@ -26,6 +27,16 @@ def get_create_resource_handler(
 ) -> CreateResourceHandler:
     return CreateResourceHandler(
         uow=SessionUnitOfWork(session),
+        resources=SqlAlchemyResourceRepository(session),
+        authorization=authorization,
+    )
+
+
+def get_list_resources_handler(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    authorization: Annotated[AuthorizationService, Depends(get_authorization_service)],
+) -> ListResourcesHandler:
+    return ListResourcesHandler(
         resources=SqlAlchemyResourceRepository(session),
         authorization=authorization,
     )

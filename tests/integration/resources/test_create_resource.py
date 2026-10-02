@@ -85,6 +85,39 @@ async def test_create_resource_success(client: AsyncClient, session_factory) -> 
     assert body["tenant_id"] == str(auth.tenant_id)
     assert "id" in body
 
+    listed = await client.get(
+        f"/api/v1/tenants/{auth.tenant_id}/resources",
+        headers={
+            "Authorization": f"Bearer {auth.token}",
+            "X-Tenant-Id": str(auth.tenant_id),
+        },
+    )
+    assert listed.status_code == 200, listed.text
+    items = listed.json()["items"]
+    assert len(items) >= 1
+    assert any(item["name"] == "cluster-1" for item in items)
+
+
+@pytest.mark.asyncio
+async def test_list_resources_forbidden_cross_tenant(
+    client: AsyncClient, session_factory
+) -> None:
+    alice = await register_verify_login(client, session_factory, "res-list-alice@example.com", "Alice")
+    bob = await register_verify_login(client, session_factory, "res-list-bob@example.com", "Bob")
+    create = await client.post(
+        f"/api/v1/tenants/{bob.tenant_id}/resources",
+        headers={"Authorization": f"Bearer {bob.token}"},
+        json={"name": "bob-only", "resource_type": "workspace"},
+    )
+    assert create.status_code == 201, create.text
+
+    listed = await client.get(
+        f"/api/v1/tenants/{bob.tenant_id}/resources",
+        headers={"Authorization": f"Bearer {alice.token}"},
+    )
+    assert listed.status_code == 403
+    assert listed.json()["detail"] == "forbidden"
+
 
 @pytest.mark.asyncio
 async def test_create_resource_missing_membership(client: AsyncClient, session_factory) -> None:
