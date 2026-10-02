@@ -16,6 +16,10 @@
 - User journeys: [`docs/User_Journeys/Adanpradan_identity_auth_journeys.md`](User_Journeys/Adanpradan_identity_auth_journeys.md), [`docs/User_Journeys/02_Tenant_Vendor_Plugin_Journeys.md`](User_Journeys/02_Tenant_Vendor_Plugin_Journeys.md)
 - OpenAPI export: [`openapi/identity-phase1.json`](../openapi/identity-phase1.json)
 
+## Roles and statuses
+
+- Current behavior (org type, participation, vendor, project, workspace, RBAC): [`docs/ROLES_AND_STATUSES.md`](ROLES_AND_STATUSES.md)
+
 ## Domains
 
 - Index: [`docs/domains/README.md`](domains/README.md)

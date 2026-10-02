@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RBAC &amp; Relationships Console</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--p:#ec4899;--pl:#f472b6;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:230px 1fr;grid-template-rows:52px 1fr;height:100vh}
+
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-right:8px}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(139,92,246,.12);color:var(--vl);border:1px solid rgba(139,92,246,.25)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--p));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);
+  text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;
+  border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;
+  font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;
+  border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(139,92,246,.08);border-left-color:var(--vl)}
+.nav-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr);font-size:10px;color:var(--sl);line-height:1.6}
+
+.main{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.page{display:none;padding:24px 28px 48px;max-width:1120px;animation:fadein .18s ease}
+.page.on{display:block}
+.page.wide{max-width:1280px}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.bordered-t{border-left:3px solid var(--tl)}
+.card.bordered-v{border-left:3px solid var(--vl)}
+.card.bordered-g{border-left:3px solid var(--gl)}
+.card.bordered-a{border-left:3px solid var(--al)}
+.card.dashed{border-style:dashed;opacity:.72}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px}
+.stat-n{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat-l{font-size:11px;color:var(--sl);margin-top:5px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;
+  font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl code{font-family:monospace;font-size:11px;color:var(--sll)}
+
+.perm-pill{display:inline-block;font-family:monospace;font-size:10px;background:var(--card2);
+  color:var(--sll);border:1px solid var(--bdr);padding:2px 7px;border-radius:5px;margin:2px 3px 2px 0}
+.perm-pill.unenforced{color:var(--sl);border-style:dashed;text-decoration:line-through;text-decoration-color:var(--sl)}
+
+.btn{padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--vl);color:var(--ink)}
+.btn-primary:hover{background:var(--v)}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}
+.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;
+  margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-t{background:rgba(14,165,233,.07);color:#7dd3fc;border-color:rgba(14,165,233,.2)}
+.alert-v{background:rgba(139,92,246,.07);color:#c4b5fd;border-color:rgba(139,92,246,.2)}
+.alert-a{background:rgba(245,158,11,.07);color:#fcd34d;border-color:rgba(245,158,11,.2)}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;
+  border:1px solid var(--bdr);background:var(--card2);color:var(--sll);transition:all .14s}
+.chip:hover{border-color:var(--bdr2);color:var(--w)}
+.chip.on{background:rgba(139,92,246,.12);border-color:var(--vl);color:var(--vl)}
+
+.role-card{display:flex;flex-direction:column;gap:10px}
+.role-hdr{display:flex;align-items:center;justify-content:space-between}
+.role-name{font-family:monospace;font-size:14px;font-weight:800}
+
+/* relationship tree */
+.tree{display:flex;flex-direction:column;align-items:flex-start;gap:0;font-size:12px}
+.tnode{border:1px solid var(--bdr);background:var(--card2);border-radius:9px;padding:9px 13px;
+  margin-bottom:8px;display:inline-flex;flex-direction:column;gap:2px;position:relative}
+.tnode .tn-t{font-weight:800;font-size:12.5px}
+.tnode .tn-s{font-size:10.5px;color:var(--sl)}
+.tlevel{margin-left:28px;border-left:2px solid var(--bdr);padding-left:18px;position:relative}
+.tnode.user{border-color:var(--tl)}
+.tnode.org{border-color:var(--vl)}
+.tnode.tenant{border-color:var(--gl)}
+.tnode.vendor{border-color:var(--al)}
+.tnode.leaf{background:transparent;border-style:dashed}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
+  justify-content:center;padding:40px 16px;overflow-y:auto;z-index:50}
+.modal-bg.on{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;max-width:460px;width:100%;
+  padding:22px 24px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:15px;font-weight:800}
+.modal-close{background:transparent;border:none;color:var(--sl);font-size:18px;cursor:pointer}
+.modal-foot{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--sll);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--bdr);color:var(--w);
+  padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13px}
+.form-input:focus{outline:none;border-color:var(--vl)}
+.form-hint{font-size:11px;color:var(--sl);margin-top:4px}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--card2);border:1px solid var(--bdr2);color:var(--w);padding:11px 20px;
+  border-radius:9px;font-size:12.5px;font-weight:600;opacity:0;transition:all .25s;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:rgba(239,68,68,.4);color:var(--rl)}
+
+@media(max-width:1000px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="topbar">
+    <div class="brand">Adan<span>Pradan</span> Admin</div>
+    <div class="tb-sep"></div>
+    <span class="tb-badge">&#128274; RBAC &amp; Relationships</span>
+    <div class="tb-right">
+      <div class="tb-stat">&#128100; viewing as <strong>platform-operator</strong></div>
+      <div class="avatar">PO</div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="nav-section">Overview</div>
+    <button class="nav-item active" data-page="overview" onclick="nav(this,'overview')">
+      <span class="nav-ic">&#128202;</span><span class="nav-label">Overview</span>
+    </button>
+
+    <div class="nav-section">Access Model</div>
+    <button class="nav-item" data-page="roles" onclick="nav(this,'roles')">
+      <span class="nav-ic">&#127991;&#65039;</span><span class="nav-label">Roles &amp; Permissions</span>
+    </button>
+    <button class="nav-item" data-page="bindings" onclick="nav(this,'bindings')">
+      <span class="nav-ic">&#128279;</span><span class="nav-label">Role Bindings</span>
+    </button>
+    <button class="nav-item" data-page="checks" onclick="nav(this,'checks')">
+      <span class="nav-ic">&#9989;</span><span class="nav-label">Authorization Checks</span>
+    </button>
+    <button class="nav-item" data-page="serviceaccounts" onclick="nav(this,'serviceaccounts')">
+      <span class="nav-ic">&#129302;</span><span class="nav-label">Service Account Roles</span>
+    </button>
+
+    <div class="nav-section">Relationships</div>
+    <button class="nav-item" data-page="relationships" onclick="nav(this,'relationships')">
+      <span class="nav-ic">&#127795;</span><span class="nav-label">Entity Relationships</span>
+    </button>
+    <button class="nav-item" data-page="operators" onclick="nav(this,'operators')">
+      <span class="nav-ic">&#128081;</span><span class="nav-label">Platform Operators</span>
+    </button>
+
+    <div class="nav-section">Reference</div>
+    <button class="nav-item" data-page="statuses" onclick="nav(this,'statuses')">
+      <span class="nav-ic">&#128203;</span><span class="nav-label">Status Reference</span>
+    </button>
+
+    <div class="sidebar-foot">
+      Built from <code>ROLES_AND_STATUSES.md</code>. Dashed / struck-through items are catalog-only or design-doc-only — not enforced by any route yet.
+    </div>
+  </div>
+
+  <div class="main">
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <div class="page wide on" id="page-overview">
+    <div class="page-hdr">
+      <div class="page-title">RBAC &amp; Relationships — Overview</div>
+      <div class="page-sub">The platform uses role-based access control (RBAC), not relationship-based access control (ReBAC). Authorization is a role lookup per tenant, not a graph walk — the "relationships" here are the organization/tenant/membership hierarchy that roles are bound within.</div>
+    </div>
+
+    <div class="alert alert-v"><span class="alert-ic">&#8505;&#65039;</span><span>
+      <strong>A note on terminology:</strong> this system has no ReBAC engine (no relationship graph, no "user → owns → document → shared-with → team" style checks). Every authorization decision is: does this principal have an <em>active role binding</em> with the needed permission, in the tenant named by <code>X-Tenant-Id</code>? The <strong>Entity Relationships</strong> page visualizes the ownership/membership structure those bindings live inside — that's the closest concept to "ReBAC" this system has.
+    </span></div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-n">5</div><div class="stat-l">Roles in catalog (3 tenant-scoped, 2 platform-scoped)</div></div>
+      <div class="stat-card"><div class="stat-n">22</div><div class="stat-l">Permission codes seeded</div></div>
+      <div class="stat-card"><div class="stat-n">7</div><div class="stat-l">Actions actually enforced by a route</div></div>
+      <div class="stat-card"><div class="stat-n">11</div><div class="stat-l">Permission codes seeded but not yet checked anywhere</div></div>
+    </div>
+
+    <div class="card bordered-v">
+      <div class="card-t">&#127991;&#65039; Two separate role ideas — don't confuse them</div>
+      <div class="detail-row" style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+        <span style="color:var(--sl)"><code>tenant.org_memberships.role</code></span>
+        <span style="font-weight:600;text-align:right">Governance of the organization — <code>owner</code> or <code>member</code>. Controls org/vendor actions. Not an RBAC grant.</span>
+      </div>
+      <div class="detail-row" style="display:flex;justify-content:space-between;padding:10px 0;font-size:12px">
+        <span style="color:var(--sl)"><code>authz.roles</code> + <code>authz.principal_roles</code></span>
+        <span style="font-weight:600;text-align:right">The actual permission bundle checked on API calls. Never stored in the JWT — looked up fresh per request.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-t">&#128272; How a request gets authorized</div>
+      <p style="font-size:12.5px;color:var(--sll);line-height:1.8">
+        The access token carries only <code>sub</code>, <code>uid</code>, <code>pid</code>, and expiry — never roles. Each protected call reads <code>X-Tenant-Id</code>, looks up <code>authz.principal_roles</code> for that principal in that tenant, and checks for an <strong>active</strong> binding with the required permission. Tenant-scoped roles never receive <code>platform.*</code> permissions, and platform-scoped roles never receive tenant permissions — the two catalogs don't mix.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══ ROLES & PERMISSIONS ═══ -->
+  <div class="page wide" id="page-roles">
+    <div class="page-hdr">
+      <div class="page-title">Roles &amp; Permissions</div>
+      <div class="page-sub">The seeded catalog. Struck-through permission codes are defined but not called by any route yet — see Authorization Checks for what's actually enforced.</div>
+    </div>
+
+    <div class="toolbar">
+      <div class="chip-row" id="role-scope-filter"></div>
+    </div>
+    <div id="roles-grid"></div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-t">&#128202; Full permission matrix</div>
+      <div style="overflow-x:auto"><table class="tbl" id="matrix-table"></table></div>
+    </div>
+  </div>
+
+  <!-- ═══ ROLE BINDINGS ═══ -->
+  <div class="page wide" id="page-bindings">
+    <div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="page-title">Role Bindings</div>
+        <div class="page-sub"><code>authz.principal_roles</code> for tenant <strong>acme-corp-default</strong>. Mirrors what <code>/app/members</code> shows a tenant-admin.</div>
+      </div>
+      <button class="btn btn-primary" onclick="openGrantModal()">&#43; Grant a role</button>
+    </div>
+    <div class="alert alert-a"><span class="alert-ic">&#9888;&#65039;</span><span>A binding cannot be revoked if it is the <strong>last active <code>tenant-admin</code></strong> in this tenant — the API returns 409 rather than leave a tenant with no admin.</span></div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th>Principal</th><th>Type</th><th>Role</th><th>Status</th><th>Granted by</th><th>Justification</th><th></th></tr></thead>
+        <tbody id="bindings-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ AUTHORIZATION CHECKS ═══ -->
+  <div class="page wide" id="page-checks">
+    <div class="page-hdr">
+      <div class="page-title">Authorization Checks</div>
+      <div class="page-sub">What each action actually checks today — straight from the code, not the design docs.</div>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th>Action</th><th>Check</th></tr></thead>
+        <tbody id="checks-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card bordered-a">
+      <div class="card-t">&#128679; Seeded but not enforced anywhere yet</div>
+      <div id="unenforced-list"></div>
+      <div class="form-hint" style="margin-top:8px">These permission codes exist in the catalog and can be bound to a role, but no route currently calls <code>authorize()</code> with them — binding one has no effect yet.</div>
+    </div>
+  </div>
+
+  <!-- ═══ SERVICE ACCOUNT ROLES ═══ -->
+  <div class="page wide" id="page-serviceaccounts">
+    <div class="page-hdr">
+      <div class="page-title">Service Account Roles</div>
+      <div class="page-sub">A service account is a machine principal in one tenant — no email, no Keycloak login, no org or tenant membership row. It gets RBAC roles exactly like a user.</div>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th>Service account</th><th>Tenant</th><th>Role</th><th>Key status</th><th>Auth check to manage it</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">sa-deploy-prod</td><td class="mono">acme-corp-default</td><td><span class="perm-pill">resource-admin</span></td><td><span class="badge badge-g">&#10003; active key</span></td><td style="font-size:11.5px;color:var(--sll)"><code>tenant.admin</code> in the tenant</td></tr>
+          <tr><td class="mono">sa-ci-bot</td><td class="mono">acme-corp-default</td><td><span class="perm-pill">viewer</span></td><td><span class="badge badge-g">&#10003; active key</span></td><td style="font-size:11.5px;color:var(--sll)"><code>tenant.admin</code> in the tenant</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-t">&#128272; Rules enforced</div>
+      <ul style="font-size:12.5px;color:var(--sll);line-height:2;padding-left:18px">
+        <li>List, create, assign role, rotate, and revoke all require <code>tenant.admin</code> in that tenant — same permission, not a separate "service account admin" code.</li>
+        <li>One active key at a time. Rotate revokes the old key and issues a new one atomically; revoke alone leaves no replacement.</li>
+        <li>A second active binding of the <em>same</em> role on one service account is <span class="badge badge-r">409</span>.</li>
+        <li>The raw API key is shown once at creation/rotation. Only a hash and an <code>ak_</code> + 8-hex prefix are stored after that.</li>
+        <li>The API key itself is never accepted as a Bearer token for the management APIs — those still require a user's access token.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ RELATIONSHIPS ═══ -->
+  <div class="page wide" id="page-relationships">
+    <div class="page-hdr">
+      <div class="page-title">Entity Relationships</div>
+      <div class="page-sub">The ownership and membership structure every role binding lives inside. Not a ReBAC graph — this hierarchy is fixed at signup/upgrade time, not an arbitrary relationship you can declare.</div>
+    </div>
+    <div class="card">
+      <div class="card-t">&#127795; Structure for one user, from signup onward</div>
+      <div id="tree-root"></div>
+    </div>
+    <div class="card bordered-a dashed">
+      <div class="card-t">&#128679; Not a real entity yet</div>
+      <p style="font-size:12px;color:var(--sll);line-height:1.7">"Workspace" is not a lifecycle object. Signup names the org "{display name} workspace" as a label, and a resource may be created with <code>resource_type = workspace</code> — but there is no workspace status, no workspace table, and no workspace API. Don't model it as a node with its own state.</p>
+    </div>
+  </div>
+
+  <!-- ═══ PLATFORM OPERATORS ═══ -->
+  <div class="page wide" id="page-operators">
+    <div class="page-hdr">
+      <div class="page-title">Platform Operators</div>
+      <div class="page-sub">Organizations whose members may review vendor applications. Not an RBAC role — a flag on the organization itself.</div>
+    </div>
+    <div class="alert alert-t"><span class="alert-ic">&#8505;&#65039;</span><span>
+      <code>is_platform_operator</code> is set the moment a signed-in user calls <code>GET /auth/me</code> if their email is in <code>TENANT_PLATFORM_OPERATOR_EMAILS</code> <strong>and</strong> they are an <code>owner</code> of that organization. There's no admin toggle for this in the product today — it's config-driven.
+    </span></div>
+    <div class="card">
+      <div class="card-t">&#128100; <code>TENANT_PLATFORM_OPERATOR_EMAILS</code></div>
+      <table class="tbl">
+        <thead><tr><th>Email</th><th>Org (once they call /auth/me as owner)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">ops@adanpradan.io</td><td>Adan Pradan Platform Ops</td><td><span class="badge badge-g">&#10003; is_platform_operator</span></td></tr>
+          <tr><td class="mono">trust-safety@adanpradan.io</td><td>Adan Pradan Platform Ops</td><td><span class="badge badge-g">&#10003; is_platform_operator</span></td></tr>
+          <tr><td class="mono">newhire@adanpradan.io</td><td style="color:var(--sl)">— hasn't called /auth/me as owner yet</td><td><span class="badge badge-sl">Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-t">&#9989; What the flag actually unlocks</div>
+      <p style="font-size:12.5px;color:var(--sll);line-height:1.8">Vendor approve and reject check this flag directly — <strong>not</strong> an RBAC permission code. A user needs active membership in a <code>is_platform_operator = true</code> org; nothing else grants access to <code>/app/vendor</code>'s review queue. The platform-scoped <code>platform-admin</code> / <code>platform-support</code> roles exist in the catalog but aren't what this screen checks.</p>
+    </div>
+  </div>
+
+  <!-- ═══ STATUS REFERENCE ═══ -->
+  <div class="page wide" id="page-statuses">
+    <div class="page-hdr">
+      <div class="page-title">Status Reference</div>
+      <div class="page-sub">Every status value the running code actually writes, by entity. Design-doc-only values are shown struck through and labelled.</div>
+    </div>
+    <div id="status-groups"></div>
+  </div>
+
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">&#215;</button></div>
+    <div id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA (straight from ROLES_AND_STATUSES.md) ────────────────────────────
+var ROLES = {
+  'tenant-admin':{scope:'tenant',perms:['resource.read','resource.create','resource.update','resource.delete','tenant.member.read','tenant.member.invite','tenant.member.revoke','tenant.settings.update','vendor.read','vendor.manage','billing.invoice.read','tenant.admin','resource.allocation.create','resource.allocation.approve','audit.read']},
+  'resource-admin':{scope:'tenant',perms:['resource.read','resource.create','resource.update','resource.delete','vendor.read','vendor.manage','resource.allocation.create','resource.allocation.approve']},
+  'viewer':{scope:'tenant',perms:['resource.read','tenant.member.read','vendor.read','billing.invoice.read']},
+  'platform-admin':{scope:'platform',perms:['platform.tenant.read','platform.tenant.suspend']},
+  'platform-support':{scope:'platform',perms:['platform.tenant.read']},
+};
+var UNENFORCED=['resource.update','resource.delete','tenant.member.read','tenant.member.invite','tenant.member.revoke','tenant.settings.update','vendor.read','vendor.manage','billing.invoice.read','platform.tenant.read','platform.tenant.suspend'];
+var ALL_PERMS=Array.from(new Set(Object.keys(ROLES).reduce(function(a,k){return a.concat(ROLES[k].perms);},[]))).sort();
+
+var CHECKS=[
+  ['List resources','resource.read in the tenant'],
+  ['Create a resource','resource.create in the tenant'],
+  ['Invite or remove a tenant member, grant or revoke a tenant role','tenant.admin in the tenant'],
+  ['List, create, assign a role, rotate, or revoke a service account key','tenant.admin in the tenant'],
+  ['Invite, accept, or remove an organization member',"caller's org membership role is owner"],
+  ['Register a vendor','caller is an owner of that org, and the org does not already have a vendor profile'],
+  ['List the vendor review queue, approve, or reject','active membership in an org with is_platform_operator = true'],
+];
+
+var BINDINGS=[
+  {principal:'alice@acme-corp.com',type:'user',role:'tenant-admin',status:'active',grantedBy:'(signup)',justification:'Registering user — bound automatically'},
+  {principal:'bob@acme-corp.com',type:'user',role:'resource-admin',status:'active',grantedBy:'alice@acme-corp.com',justification:'Needs to manage workspace resources'},
+  {principal:'carol@acme-corp.com',type:'user',role:'viewer',status:'active',grantedBy:'alice@acme-corp.com',justification:'Read-only access for reporting'},
+  {principal:'sa-deploy-prod',type:'service_account',role:'resource-admin',status:'active',grantedBy:'alice@acme-corp.com',justification:'initial_role on create'},
+  {principal:'dave@acme-corp.com',type:'user',role:'resource-admin',status:'revoked',grantedBy:'alice@acme-corp.com',justification:'Offboarded — role revoked'},
+];
+
+var STATUS_GROUPS=[
+  {title:'User & principal',rows:[
+    ['identity.users.status','pending_verification → active, or locked','Signup leaves the user at pending_verification. Email verify sets active. Login is refused until then. Lock sets locked.',true],
+    ['identity.principals.status','inactive → active, or locked','A user principal stays inactive until email verify. A service account principal starts active.',true],
+    ['identity.sessions.status','active, revoked','Sign-out and admin revoke set revoked.',true],
+    ['identity.credentials.status','active','Password credential created at signup.',true],
+  ]},
+  {title:'Organization, tenant, project, membership',rows:[
+    ['tenant.organizations.status','active','Signup and org upgrade both leave the org active.',true],
+    ['tenant.organizations.status (design only)','provisioning, suspended, closed','Described in design docs. These transitions are NOT implemented.',false],
+    ['tenant.organizations.org_type','individual, organization','There is no third type called vendor.',true],
+    ['tenant.organizations.participation','consumer, consumer_and_vendor','A bare "vendor" value is described in design docs but never written by signup or vendor registration.',true],
+    ['tenant.org_memberships.role','owner, member','Signup makes the registering user owner.',true],
+    ['tenant.org_memberships.status','active, invited, removed','Invite → invited. Accept → active. Remove → removed.',true],
+    ['tenant.tenants.status','active','Default tenant on signup, and {slug}-default on org upgrade.',true],
+    ['tenant.tenant_memberships.status','active, removed','No role column here — permissions come from RBAC bindings, not this table.',true],
+    ['tenant.projects.status','active','Only default-project is created. No archive/delete path, no project HTTP API.',true],
+    ['tenant.organization_registration_requests.status','processing, completed, failed','Org upgrade. Inline mode finishes completed in the same request.',true],
+  ]},
+  {title:'Vendor',rows:[
+    ['vendor.profiles.status','pending_verification, verified, rejected','Set on register; approve → verified; reject → rejected.',true],
+    ['vendor.verifications.status','queued, then approved or rejected','The review queue also treats pending as still waiting. A decision on any other status is 409.',true],
+  ]},
+  {title:'Resource',rows:[
+    ['resource.resources.status','active','Create always stores active. No other value is written.',true],
+    ['resource.resources.resource_type','any string, e.g. workspace','Not a status — a label. Does not create a workspace entity.',true],
+  ]},
+  {title:'Service account',rows:[
+    ['identity.service_accounts.status','active','Created active. Any other status is treated as not found — there is no disable/delete path.',true],
+    ['identity.api_keys.status','active, revoked','One active key at a time. Rotate and revoke set the old key to revoked.',true],
+  ]},
+  {title:'RBAC records',rows:[
+    ['authz.permissions.status, authz.roles.status','active','Catalog entries.',true],
+    ['authz.principal_roles.status','active, revoked','A binding, not a permission — see Role Bindings page.',true],
+  ]},
+];
+
+var selectedScope='all';
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function toast(msg,err){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast on'+(err?' err':'');
+  clearTimeout(window._tt); window._tt=setTimeout(function(){t.className='toast';},2800);
+}
+function openModal(title,body,foot){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal-foot').innerHTML=foot||'<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  document.getElementById('modal-bg').className='modal-bg on';
+}
+function closeModal(e){ if(!e||e.target.id==='modal-bg') document.getElementById('modal-bg').className='modal-bg'; }
+function nav(btn,page){
+  document.querySelectorAll('.nav-item').forEach(function(n){n.className='nav-item'+(n===btn?' active':'')});
+  document.querySelectorAll('.page').forEach(function(p){p.className=p.className.replace(' on','')});
+  document.getElementById('page-'+page).className+=' on';
+  window.scrollTo(0,0);
+}
+function permPill(p){
+  return '<span class="perm-pill'+(UNENFORCED.indexOf(p)>-1?' unenforced':'')+'">'+p+'</span>';
+}
+
+// ─── ROLES & PERMISSIONS ────────────────────────────────────────────────────
+function renderScopeFilter(){
+  var cont=document.getElementById('role-scope-filter');
+  var opts=[['all','All roles'],['tenant','Tenant-scoped'],['platform','Platform-scoped (catalog only — not used by vendor review)']];
+  cont.innerHTML=opts.map(function(o){
+    return '<span class="chip'+(selectedScope===o[0]?' on':'')+'" onclick="selectedScope=\''+o[0]+'\';renderRoles()">'+o[1]+'</span>';
+  }).join('');
+}
+function renderRoles(){
+  renderScopeFilter();
+  var grid=document.getElementById('roles-grid');
+  var keys=Object.keys(ROLES).filter(function(k){return selectedScope==='all'||ROLES[k].scope===selectedScope;});
+  grid.innerHTML=keys.map(function(k){
+    var r=ROLES[k];
+    return `<div class="card role-card ${r.scope==='platform'?'bordered-a':'bordered-v'}">
+      <div class="role-hdr">
+        <span class="role-name">${k}</span>
+        <span class="badge ${r.scope==='platform'?'badge-a':'badge-v'}">${r.scope==='platform'?'&#9729;&#65039; platform-scoped':'&#127970; tenant-scoped'}</span>
+      </div>
+      <div>${r.perms.map(permPill).join('')}</div>
+      ${r.scope==='platform'?'<div class="form-hint">Exists in the catalog. Vendor review does not check this role — it checks is_platform_operator on the org instead.</div>':''}
+    </div>`;
+  }).join('');
+
+  var mt=document.getElementById('matrix-table');
+  var roleKeys=Object.keys(ROLES);
+  mt.innerHTML='<thead><tr><th>Permission</th>'+roleKeys.map(function(k){return '<th>'+k+'</th>';}).join('')+'</tr></thead><tbody>'+
+    ALL_PERMS.map(function(p){
+      return '<tr><td><code>'+p+'</code>'+(UNENFORCED.indexOf(p)>-1?' <span class="badge badge-sl" style="margin-left:4px">unenforced</span>':'')+'</td>'+
+        roleKeys.map(function(k){return '<td style="text-align:center">'+(ROLES[k].perms.indexOf(p)>-1?'<span style="color:var(--gl)">&#10003;</span>':'<span style="color:var(--bdr2)">&middot;</span>')+'</td>';}).join('')+'</tr>';
+    }).join('')+'</tbody>';
+}
+
+// ─── ROLE BINDINGS ──────────────────────────────────────────────────────────
+function renderBindings(){
+  var tb=document.getElementById('bindings-tbody');
+  tb.innerHTML=BINDINGS.map(function(b,i){
+    var st=b.status==='active'?'<span class="badge badge-g">&#10003; active</span>':'<span class="badge badge-sl">revoked</span>';
+    var isLastAdmin=b.role==='tenant-admin'&&b.status==='active'&&BINDINGS.filter(function(x){return x.role==='tenant-admin'&&x.status==='active';}).length===1;
+    return `<tr>
+      <td class="mono">${b.principal}</td>
+      <td>${b.type==='service_account'?'&#129302; service account':'&#128100; user'}</td>
+      <td><span class="perm-pill">${b.role}</span></td>
+      <td>${st}</td>
+      <td style="font-size:11px;color:var(--sl)">${b.grantedBy}</td>
+      <td style="font-size:11px;color:var(--sll)">${b.justification}</td>
+      <td>${b.status==='active'?'<button class="btn btn-danger btn-sm" onclick="revokeBinding('+i+')">Revoke</button>':'<span style="font-size:11px;color:var(--sl)">—</span>'}${isLastAdmin?' <span class="badge badge-a" title="Cannot be revoked">last admin</span>':''}</td>
+    </tr>`;
+  }).join('');
+}
+function revokeBinding(i){
+  var b=BINDINGS[i];
+  var activeAdmins=BINDINGS.filter(function(x){return x.role==='tenant-admin'&&x.status==='active';}).length;
+  if(b.role==='tenant-admin'&&activeAdmins<=1){
+    toast('409 — cannot revoke the last active tenant-admin in this tenant',true);
+    return;
+  }
+  b.status='revoked';
+  toast('Binding revoked for '+b.principal);
+  renderBindings();
+}
+function openGrantModal(){
+  var roleOpts=Object.keys(ROLES).filter(function(k){return ROLES[k].scope==='tenant';}).map(function(k){return '<option>'+k+'</option>';}).join('');
+  var body=`
+    <div class="form-group"><label class="form-label">User or service account</label><input class="form-input" id="gb-principal" placeholder="name@acme-corp.com or sa-name"></div>
+    <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="gb-role">${roleOpts}</select></div>
+    <div class="form-group"><label class="form-label">Justification</label><input class="form-input" id="gb-justification" placeholder="Why this access is needed"></div>
+    <div class="form-hint">Grants write <code>authz.principal_roles</code> with <code>status=active</code> and require caller to hold <code>tenant.admin</code> in this tenant.</div>`;
+  openModal('Grant a role',body,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="confirmGrant()">Grant role</button>`);
+}
+function confirmGrant(){
+  var principal=document.getElementById('gb-principal').value.trim();
+  var role=document.getElementById('gb-role').value;
+  var justification=document.getElementById('gb-justification').value.trim()||'—';
+  if(!principal){ toast('Enter a user or service account',true); return; }
+  var type=principal.indexOf('@')>-1?'user':'service_account';
+  var existing=BINDINGS.find(function(b){return b.principal===principal&&b.role===role&&b.status==='active';});
+  if(existing){ toast('409 — an active binding of this role already exists for '+principal,true); return; }
+  BINDINGS.unshift({principal:principal,type:type,role:role,status:'active',grantedBy:'you',justification:justification});
+  closeModal(); toast('Granted '+role+' to '+principal); renderBindings();
+}
+
+// ─── AUTHORIZATION CHECKS ───────────────────────────────────────────────────
+function renderChecks(){
+  document.getElementById('checks-tbody').innerHTML=CHECKS.map(function(c){
+    return '<tr><td>'+c[0]+'</td><td><code>'+c[1]+'</code></td></tr>';
+  }).join('');
+  document.getElementById('unenforced-list').innerHTML=UNENFORCED.map(permPill).join('');
+}
+
+// ─── RELATIONSHIPS TREE ─────────────────────────────────────────────────────
+function renderTree(){
+  document.getElementById('tree-root').innerHTML=`
+  <div class="tnode user"><div class="tn-t">&#128100; User — alice@acme-corp.com</div><div class="tn-s">status: active</div></div>
+  <div class="tlevel">
+    <div class="tnode org"><div class="tn-t">&#127970; Organization — Acme Corp</div><div class="tn-s">org_type: organization &middot; participation: consumer_and_vendor &middot; is_platform_operator: false &middot; status: active</div></div>
+    <div class="tlevel">
+      <div class="tnode"><div class="tn-t">&#128081; Org membership</div><div class="tn-s">role: owner &middot; status: active</div></div>
+      <div class="tnode vendor"><div class="tn-t">&#127973; Vendor profile <span class="badge badge-sl" style="margin-left:6px">optional, one per org</span></div><div class="tn-s">status: pending_verification</div></div>
+      <div class="tnode tenant"><div class="tn-t">&#127970; Tenant — acme-corp-default</div><div class="tn-s">status: active</div></div>
+      <div class="tlevel">
+        <div class="tnode"><div class="tn-t">&#128100; Tenant membership</div><div class="tn-s">status: active &middot; no role column — RBAC bindings decide permissions</div></div>
+        <div class="tnode"><div class="tn-t">&#128193; Project — default-project</div><div class="tn-s">status: active &middot; only project created &middot; no project API</div></div>
+        <div class="tnode"><div class="tn-t">&#127991;&#65039; RBAC role — tenant-admin</div><div class="tn-s">authz.principal_roles status: active</div></div>
+        <div class="tnode"><div class="tn-t">&#129302; Service account — sa-deploy-prod</div><div class="tn-s">principal_type: service_account &middot; same tenant roles as a user</div></div>
+        <div class="tnode leaf"><div class="tn-t">&#128230; Resource — workspace-1</div><div class="tn-s">resource_type: workspace (a label, not an entity) &middot; status: active</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── STATUS REFERENCE ───────────────────────────────────────────────────────
+function renderStatusGroups(){
+  document.getElementById('status-groups').innerHTML=STATUS_GROUPS.map(function(g){
+    return `<div class="card"><div class="card-t">${g.title}</div>
+      <table class="tbl"><thead><tr><th>Record</th><th>Values</th><th>Meaning</th></tr></thead><tbody>
+      ${g.rows.map(function(r){
+        var implemented=r[3];
+        var style=implemented?'':'opacity:.6;text-decoration:line-through';
+        return '<tr><td><code>'+r[0]+'</code></td><td style="'+style+'">'+r[1]+'</td><td style="font-size:11.5px;color:var(--sll)">'+r[2]+(implemented?'':' <span class="badge badge-a" style="text-decoration:none;display:inline-flex">design doc only</span>')+'</td></tr>';
+      }).join('')}
+      </tbody></table></div>`;
+  }).join('');
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+renderRoles(); renderBindings(); renderChecks(); renderTree(); renderStatusGroups();
+</script>
+</body>
+</html>
