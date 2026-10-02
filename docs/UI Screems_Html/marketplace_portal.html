@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Marketplace</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--p:#ec4899;--pl:#f472b6;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr;height:100vh}
+
+/* TOP BAR */
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-right:4px;white-space:nowrap}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 2px}
+.tb-search{flex:1;max-width:460px;position:relative}
+.tb-search input{width:100%;background:var(--card2);border:1px solid var(--bdr);color:var(--w);
+  padding:8px 12px 8px 34px;border-radius:8px;font-family:inherit;font-size:12.5px}
+.tb-search input:focus{outline:none;border-color:var(--tl)}
+.tb-search .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--sl)}
+.tb-ctx{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tb-ctx strong{color:var(--w);font-weight:700}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.tb-icon-btn{position:relative;background:transparent;border:none;color:var(--sll);font-size:16px;cursor:pointer;
+  padding:5px;border-radius:7px;transition:all .14s}
+.tb-icon-btn:hover{background:var(--card2);color:var(--w)}
+.tb-icon-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--rl);
+  border:1.5px solid var(--card)}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--v));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;cursor:pointer}
+
+/* SIDEBAR */
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);
+  text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;
+  border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;
+  font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;
+  border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(14,165,233,.08);border-left-color:var(--tl)}
+.nav-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.help-btn{width:100%;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);
+  color:var(--tl);padding:9px;border-radius:8px;cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:8px}
+
+/* MAIN */
+.main{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.page{display:none;padding:24px 28px 48px;max-width:1120px;animation:fadein .18s ease}
+.page.on{display:block}
+.page.wide{max-width:1280px}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.clickable{cursor:pointer;transition:border-color .14s,transform .1s}
+.card.clickable:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.card.bordered-t{border-left:3px solid var(--tl)}
+.card.bordered-g{border-left:3px solid var(--gl)}
+.card.bordered-a{border-left:3px solid var(--al)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;
+  font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.clickable-row{cursor:pointer;transition:background .12s}
+.tbl tr.clickable-row:hover td{background:rgba(255,255,255,.02)}
+.tbl .action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);
+  padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;
+  font-weight:600;transition:all .12s}
+.tbl .action-btn:hover{border-color:var(--tl);color:var(--tl)}
+
+/* FORMS */
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--sll);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--bdr);color:var(--w);
+  padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13px;transition:border-color .14s}
+.form-input:focus{outline:none;border-color:var(--tl)}
+.form-hint{font-size:11px;color:var(--sl);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--tl);color:var(--ink)}
+.btn-primary:hover{background:var(--t)}
+.btn-success{background:var(--gl);color:var(--ink)}
+.btn-success:hover{background:var(--g)}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}
+.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-block{width:100%;justify-content:center}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+/* ALERTS */
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;
+  margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-t{background:rgba(14,165,233,.07);color:#7dd3fc;border-color:rgba(14,165,233,.2)}
+.alert-g{background:rgba(16,185,129,.07);color:#6ee7b7;border-color:rgba(16,185,129,.2)}
+.alert-a{background:rgba(245,158,11,.07);color:#fcd34d;border-color:rgba(245,158,11,.2)}
+
+/* DETAIL ROWS */
+.detail-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--sl)}
+.detail-val{color:var(--w);font-weight:600;text-align:right}
+
+/* ── Marketplace-specific ── */
+.cat-strip{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;margin-bottom:22px}
+.cat-tile{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px 8px;
+  text-align:center;cursor:pointer;transition:all .14s}
+.cat-tile:hover{border-color:var(--tl);transform:translateY(-2px)}
+.cat-tile .ic{font-size:20px;margin-bottom:6px}
+.cat-tile .lbl{font-size:10px;color:var(--sll);font-weight:600;line-height:1.3}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;
+  border:1px solid var(--bdr);background:var(--card2);color:var(--sll);transition:all .14s;white-space:nowrap}
+.chip:hover{border-color:var(--bdr2);color:var(--w)}
+.chip.on{background:rgba(14,165,233,.12);border-color:var(--tl);color:var(--tl)}
+.sort-sel{background:var(--card2);border:1px solid var(--bdr);color:var(--sll);border-radius:8px;
+  padding:7px 10px;font-family:inherit;font-size:11.5px}
+
+.browse-layout{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
+.filter-group{margin-bottom:18px}
+.filter-h{font-size:10px;font-weight:800;color:var(--sl);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.filter-opt{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sll);padding:4px 0;cursor:pointer}
+.filter-opt input{accent-color:var(--tl)}
+.filter-opt:hover{color:var(--w)}
+
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pcard{background:var(--card);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:all .14s;display:flex;flex-direction:column}
+.pcard:hover{border-color:var(--bdr2);transform:translateY(-2px)}
+.pcard-art{height:120px;display:flex;align-items:center;justify-content:center;font-size:34px;position:relative}
+.pcard-wish{position:absolute;top:8px;right:8px;background:rgba(15,17,23,.55);border:none;color:#fff;
+  width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.pcard-wish.on{color:var(--rl)}
+.pcard-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.pcard-vendor{font-size:10px;color:var(--sl);display:flex;align-items:center;gap:4px}
+.pcard-name{font-size:13px;font-weight:700;line-height:1.3}
+.pcard-rating{font-size:11px;color:var(--al);display:flex;align-items:center;gap:4px}
+.pcard-rating .cnt{color:var(--sl)}
+.pcard-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:8px}
+.pcard-price{font-size:14px;font-weight:800}
+.pcard-plan{font-size:9px;color:var(--sl)}
+
+/* detail page */
+.breadcrumb{font-size:11px;color:var(--sl);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.breadcrumb span{cursor:pointer}
+.breadcrumb span:hover{color:var(--tl)}
+.detail-grid{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start}
+.gallery-main{height:280px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:10px}
+.gallery-thumbs{display:flex;gap:8px}
+.gallery-thumbs .th{width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;cursor:pointer;border:2px solid transparent}
+.gallery-thumbs .th.on{border-color:var(--tl)}
+.vendor-chip{display:flex;align-items:center;gap:8px;margin:12px 0}
+.vendor-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--p));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.stars{color:var(--al);font-size:13px;letter-spacing:1px}
+.buy-box{position:sticky;top:0}
+.buy-price{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.buy-plan{font-size:11px;color:var(--sl);margin-bottom:14px}
+.spec-table td{font-size:12px}
+.screenshot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.screenshot-grid .sh{height:90px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.plan-card{border:1px solid var(--bdr);border-radius:10px;padding:14px;background:var(--card2)}
+.plan-card.reco{border-color:var(--tl);background:rgba(14,165,233,.06)}
+.plan-card .pn{font-size:12px;font-weight:800;margin-bottom:4px}
+.plan-card .pp{font-size:16px;font-weight:800;margin-bottom:8px}
+.plan-card ul{list-style:none;font-size:11px;color:var(--sll);line-height:1.9}
+.lesson{border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;
+  align-items:center;gap:10px;font-size:12px}
+.lesson .n{width:20px;height:20px;border-radius:50%;background:var(--card2);display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;color:var(--sll);flex-shrink:0}
+.lesson .dur{margin-left:auto;color:var(--sl);font-size:11px}
+.slot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.slot{border:1px solid var(--bdr);border-radius:8px;padding:9px;text-align:center;font-size:11.5px;
+  cursor:pointer;color:var(--sll);background:var(--card2)}
+.slot:hover{border-color:var(--bdr2);color:var(--w)}
+.slot.on{border-color:var(--tl);background:rgba(14,165,233,.1);color:var(--tl);font-weight:700}
+.review{padding:12px 0;border-bottom:1px solid var(--bdr)}
+.review:last-child{border-bottom:none}
+.review-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.review-name{font-size:12px;font-weight:700}
+.review-date{font-size:10px;color:var(--sl);margin-left:auto}
+.review-body{font-size:12px;color:var(--sll);line-height:1.6}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;
+  justify-content:center;padding:40px 16px;overflow-y:auto;z-index:50}
+.modal-bg.on{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;max-width:480px;width:100%;
+  padding:22px 24px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:15px;font-weight:800}
+.modal-close{background:transparent;border:none;color:var(--sl);font-size:18px;cursor:pointer}
+.modal-foot{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+
+/* toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--card2);border:1px solid var(--bdr2);color:var(--w);padding:11px 20px;
+  border-radius:9px;font-size:12.5px;font-weight:600;opacity:0;transition:all .25s;z-index:60;
+  display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.empty{text-align:center;padding:50px 20px;color:var(--sl)}
+.empty .ic{font-size:30px;margin-bottom:10px}
+
+/* deliver-to + cart */
+.tb-deliver{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sll);cursor:pointer;
+  padding:5px 9px;border-radius:7px;transition:all .14s;white-space:nowrap}
+.tb-deliver:hover{background:var(--card2)}
+.tb-deliver .lbl{color:var(--sl);font-size:9.5px;display:block;line-height:1.3}
+.tb-deliver .val{font-weight:700;color:var(--w)}
+.cart-badge-wrap{position:relative}
+.cart-count{position:absolute;top:-4px;right:-4px;background:var(--tl);color:var(--ink);font-size:9px;
+  font-weight:800;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+
+/* carousel */
+.carousel{position:relative;margin-bottom:24px;border-radius:14px;overflow:hidden}
+.carousel-track{display:flex;transition:transform .35s ease}
+.carousel-slide{min-width:100%;height:150px;display:flex;align-items:center;padding:0 36px;gap:18px;position:relative}
+.carousel-slide .cs-ic{font-size:46px}
+.carousel-slide .cs-eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.85;margin-bottom:4px}
+.carousel-slide .cs-title{font-size:19px;font-weight:800;margin-bottom:4px}
+.carousel-slide .cs-sub{font-size:12px;opacity:.9}
+.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;
+  background:rgba(15,17,23,.5);border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;z-index:2}
+.carousel-arrow.prev{left:10px} .carousel-arrow.next{right:10px}
+.carousel-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:6px}
+.carousel-dots .d{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer}
+.carousel-dots .d.on{background:#fff}
+
+/* horizontal rails */
+.rail{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.rail .pcard{min-width:190px;max-width:190px}
+
+.sponsor-tag{position:absolute;bottom:6px;left:6px;background:rgba(15,17,23,.65);color:var(--sll);
+  font-size:9px;padding:2px 7px;border-radius:6px;font-weight:700}
+.new-tag{position:absolute;top:8px;left:8px;background:var(--gl);color:var(--ink);font-size:9px;
+  padding:2px 7px;border-radius:6px;font-weight:800}
+
+/* cart */
+.cart-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--bdr)}
+.cart-row:last-child{border-bottom:none}
+.cart-art{width:56px;height:56px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.qty-stepper{display:flex;align-items:center;border:1px solid var(--bdr);border-radius:8px;overflow:hidden}
+.qty-stepper button{width:26px;height:26px;background:var(--card2);border:none;color:var(--w);cursor:pointer;font-size:13px}
+.qty-stepper span{width:30px;text-align:center;font-size:12px;font-weight:700}
+.summary-row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;color:var(--sll)}
+.summary-row.total{border-top:1px solid var(--bdr);margin-top:6px;padding-top:12px;font-size:15px;font-weight:800;color:var(--w)}
+
+/* checkout */
+.checkout-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.addr-card{border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;position:relative}
+.addr-card.on{border-color:var(--tl);background:rgba(14,165,233,.06)}
+.addr-card .at{font-size:9px;font-weight:800;background:var(--card2);color:var(--sll);padding:2px 7px;border-radius:5px;display:inline-block;margin-bottom:6px}
+.pay-opt{display:flex;align-items:center;gap:10px;border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.pay-opt.on{border-color:var(--tl);background:rgba(14,165,233,.06)}
+.pay-opt .ic{font-size:18px}
+
+/* tracking */
+.tracking{display:flex;margin:18px 0 6px}
+.tstep{flex:1;text-align:center;position:relative}
+.tstep .tdot{width:26px;height:26px;border-radius:50%;background:var(--card2);border:2px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;font-size:12px;margin:0 auto 6px;color:var(--sl)}
+.tstep.done .tdot{background:var(--gl);border-color:var(--gl);color:var(--ink)}
+.tstep.active .tdot{background:var(--tl);border-color:var(--tl);color:var(--ink)}
+.tstep:not(:last-child)::after{content:'';position:absolute;top:13px;left:60%;width:80%;height:2px;background:var(--bdr);z-index:0}
+.tstep.done:not(:last-child)::after{background:var(--gl)}
+.tstep .tl{font-size:10px;color:var(--sl);font-weight:600}
+.tstep.done .tl,.tstep.active .tl{color:var(--w)}
+
+@media(max-width:1000px){
+  .checkout-grid{grid-template-columns:1fr}
+  .cat-strip{grid-template-columns:repeat(3,1fr)}
+  .pgrid{grid-template-columns:repeat(2,1fr)}
+  .browse-layout{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">Adan<span>Pradan</span> Marketplace</div>
+    <div class="tb-sep"></div>
+    <div class="tb-search">
+      <span class="ic">&#128269;</span>
+      <input type="text" id="global-search" placeholder="Search products, courses, services…" onkeyup="if(event.key==='Enter')runSearch(this.value)">
+    </div>
+    <div class="tb-deliver" onclick="openAddressPicker()">
+      <span>&#128205;</span>
+      <span><span class="lbl">Deliver to MindBloom Studio</span><span class="val" id="tb-deliver-pin">Mumbai 400001</span></span>
+    </div>
+    <div class="tb-right">
+      <button class="tb-icon-btn" title="Wishlist" onclick="nav(document.querySelector('[data-page=wishlist]'),'wishlist')">&#9825;</button>
+      <div class="cart-badge-wrap">
+        <button class="tb-icon-btn" title="Cart" onclick="nav(document.querySelector('[data-page=cart]'),'cart')">&#128722;</button>
+        <span class="cart-count" id="cart-count" style="display:none">0</span>
+      </div>
+      <button class="tb-icon-btn" title="Notifications" onclick="toast('No new notifications')">&#128276;<span class="tb-icon-dot"></span></button>
+      <div class="avatar" title="Account">MB</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-section">Discover</div>
+    <button class="nav-item active" data-page="home" onclick="nav(this,'home')">
+      <span class="nav-ic">&#127968;</span><span class="nav-label">Marketplace Home</span>
+    </button>
+    <button class="nav-item" data-page="browse" onclick="nav(this,'browse')">
+      <span class="nav-ic">&#128203;</span><span class="nav-label">Browse All</span>
+    </button>
+    <button class="nav-item" data-page="wishlist" onclick="nav(this,'wishlist')">
+      <span class="nav-ic">&#9825;</span><span class="nav-label">Wishlist</span>
+    </button>
+    <button class="nav-item" data-page="cart" onclick="nav(this,'cart')">
+      <span class="nav-ic">&#128722;</span><span class="nav-label">Cart</span>
+    </button>
+
+    <div class="nav-section">My Marketplace</div>
+    <button class="nav-item" data-page="installs" onclick="nav(this,'installs')">
+      <span class="nav-ic">&#9881;&#65039;</span><span class="nav-label">My Installs</span>
+    </button>
+    <button class="nav-item" data-page="orders" onclick="nav(this,'orders')">
+      <span class="nav-ic">&#128230;</span><span class="nav-label">Orders &amp; Tracking</span>
+    </button>
+    <button class="nav-item" data-page="returns" onclick="nav(this,'returns')">
+      <span class="nav-ic">&#8617;&#65039;</span><span class="nav-label">Returns &amp; Refunds</span>
+    </button>
+    <button class="nav-item" data-page="billing" onclick="nav(this,'billing')">
+      <span class="nav-ic">&#128179;</span><span class="nav-label">Subscriptions &amp; Billing</span>
+    </button>
+
+    <div class="nav-section">Account</div>
+    <button class="nav-item" data-page="addresses" onclick="nav(this,'addresses')">
+      <span class="nav-ic">&#128205;</span><span class="nav-label">Addresses</span>
+    </button>
+    <button class="nav-item" data-page="settings" onclick="nav(this,'settings')">
+      <span class="nav-ic">&#9881;</span><span class="nav-label">Settings</span>
+    </button>
+
+    <div class="sidebar-foot">
+      <button class="help-btn" onclick="toast('Opening vendor portal…')">&#128722; Become a vendor</button>
+      <div style="font-size:10px;color:var(--sl);line-height:1.6">Bearer + X-Tenant-Id on every install/purchase call.</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+  <!-- ═══ PAGE: HOME ═══ -->
+  <div class="page wide on" id="page-home">
+    <div class="page-hdr">
+      <div class="page-title">Find what your organisation needs</div>
+      <div class="page-sub">Products and services from verified vendors. Every install is fulfilled automatically by the vendor's plugin.</div>
+    </div>
+
+    <div class="carousel" id="hero-carousel">
+      <div class="carousel-track" id="hero-track"></div>
+      <button class="carousel-arrow prev" onclick="carouselMove(-1)">&#8249;</button>
+      <button class="carousel-arrow next" onclick="carouselMove(1)">&#8250;</button>
+      <div class="carousel-dots" id="hero-dots"></div>
+    </div>
+
+    <div class="cat-strip" id="cat-strip"></div>
+
+    <div class="toolbar"><div class="card-t" style="margin:0">&#11088; New launches</div></div>
+    <div class="rail" id="home-new"></div>
+
+    <div class="toolbar" style="margin-top:26px"><div class="card-t" style="margin:0">&#128202; Sponsored</div></div>
+    <div class="rail" id="home-sponsored"></div>
+
+    <div class="toolbar" style="margin-top:26px"><div class="card-t" style="margin:0">&#128200; Trending with similar organisations</div></div>
+    <div class="pgrid" id="home-trending"></div>
+
+    <div class="toolbar" style="margin-top:26px" id="recent-toolbar"><div class="card-t" style="margin:0">&#128340; Recently viewed</div></div>
+    <div class="rail" id="home-recent"></div>
+  </div>
+
+  <!-- ═══ PAGE: BROWSE ═══ -->
+  <div class="page wide" id="page-browse">
+    <div class="page-hdr">
+      <div class="page-title" id="browse-title">Browse All</div>
+      <div class="page-sub" id="browse-sub">Every listing on the marketplace, filterable by category and price.</div>
+    </div>
+    <div class="browse-layout">
+      <div>
+        <div class="filter-group">
+          <div class="filter-h">Category</div>
+          <div id="filter-cats"></div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-h">Pricing</div>
+          <label class="filter-opt"><input type="checkbox" value="One-time" onchange="toggleFilter('plan',this)"> One-time purchase</label>
+          <label class="filter-opt"><input type="checkbox" value="Monthly subscription" onchange="toggleFilter('plan',this)"> Monthly subscription</label>
+          <label class="filter-opt"><input type="checkbox" value="Per unit" onchange="toggleFilter('plan',this)"> Per order / per session</label>
+        </div>
+        <div class="filter-group">
+          <div class="filter-h">Price range</div>
+          <label class="filter-opt"><input type="radio" name="pricerange" value="0" checked onchange="setPriceRange(0,999999)"> Any price</label>
+          <label class="filter-opt"><input type="radio" name="pricerange" onchange="setPriceRange(0,500)"> Under &#8377;500</label>
+          <label class="filter-opt"><input type="radio" name="pricerange" onchange="setPriceRange(500,1500)"> &#8377;500 &ndash; &#8377;1,500</label>
+          <label class="filter-opt"><input type="radio" name="pricerange" onchange="setPriceRange(1500,5000)"> &#8377;1,500 &ndash; &#8377;5,000</label>
+          <label class="filter-opt"><input type="radio" name="pricerange" onchange="setPriceRange(5000,999999)"> Above &#8377;5,000</label>
+        </div>
+        <div class="filter-group">
+          <div class="filter-h">Rating</div>
+          <label class="filter-opt"><input type="radio" name="rating" value="0" checked onchange="setMinRating(0)"> Any rating</label>
+          <label class="filter-opt"><input type="radio" name="rating" value="4.5" onchange="setMinRating(4.5)"> 4.5 &amp; up</label>
+          <label class="filter-opt"><input type="radio" name="rating" value="4" onchange="setMinRating(4)"> 4.0 &amp; up</label>
+        </div>
+        <div class="filter-group">
+          <div class="filter-h">Brand / Vendor</div>
+          <div id="filter-vendors"></div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-opt"><input type="checkbox" id="filter-verified-only" onchange="toggleVerifiedOnly(this)"> Verified vendors only</label>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-block" onclick="clearFilters()">Clear filters</button>
+      </div>
+      <div>
+        <div class="toolbar">
+          <div class="chip-row" id="active-chips"></div>
+          <select class="sort-sel" id="sort-sel" onchange="renderBrowse()">
+            <option value="relevance">Sort: Relevance</option>
+            <option value="rating">Sort: Highest rated</option>
+            <option value="installs">Sort: Most installed</option>
+            <option value="price-low">Sort: Price low to high</option>
+            <option value="price-high">Sort: Price high to low</option>
+          </select>
+        </div>
+        <div class="pgrid" id="browse-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: PRODUCT DETAIL ═══ -->
+  <div class="page wide" id="page-detail">
+    <div class="breadcrumb">
+      <span onclick="nav(document.querySelector('[data-page=home]'),'home')">Marketplace</span> &#8250;
+      <span id="bc-cat" onclick="goCategory(currentProduct&&currentProduct.type)"></span> &#8250;
+      <span id="bc-name" style="color:var(--w)"></span>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+
+  <!-- ═══ PAGE: WISHLIST ═══ -->
+  <div class="page wide" id="page-wishlist">
+    <div class="page-hdr">
+      <div class="page-title">Wishlist</div>
+      <div class="page-sub">Products saved for later. Nothing here is installed yet.</div>
+    </div>
+    <div class="pgrid" id="wishlist-grid"></div>
+  </div>
+
+  <!-- ═══ PAGE: CART ═══ -->
+  <div class="page" id="page-cart">
+    <div class="page-hdr">
+      <div class="page-title">Cart</div>
+      <div class="page-sub">Review items before checkout. Prices lock in once you place the order.</div>
+    </div>
+    <div id="cart-content"></div>
+  </div>
+
+  <!-- ═══ PAGE: CHECKOUT ═══ -->
+  <div class="page" id="page-checkout">
+    <div class="page-hdr">
+      <div class="page-title">Checkout</div>
+      <div class="page-sub">Confirm delivery, pay, and your vendor's plugin takes it from here.</div>
+    </div>
+    <div class="checkout-grid">
+      <div>
+        <div class="card">
+          <div class="card-t">&#128205; Deliver to</div>
+          <div id="checkout-addresses"></div>
+          <button class="btn btn-ghost btn-sm" onclick="openAddAddressModal()">&#43; Add a new address</button>
+          <div class="form-hint" id="checkout-no-address-note" style="display:none;margin-top:8px">No physical items in this order — delivery address isn't required.</div>
+        </div>
+        <div class="card">
+          <div class="card-t">&#128179; Payment method</div>
+          <div id="checkout-payments"></div>
+        </div>
+      </div>
+      <div class="card buy-box">
+        <div class="card-t" style="margin-bottom:14px">&#128203; Order summary</div>
+        <div id="checkout-summary"></div>
+        <button class="btn btn-success btn-block" style="margin-top:12px" onclick="placeOrder()">&#128274; Place order</button>
+        <div class="form-hint" style="margin-top:8px;text-align:center">By placing this order you authorise payment and the vendor's plugin to fulfil it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: MY INSTALLS ═══ -->
+  <div class="page" id="page-installs">
+    <div class="page-hdr">
+      <div class="page-title">My Installs</div>
+      <div class="page-sub">Everything your tenant has installed from the marketplace, and who fulfils it.</div>
+    </div>
+    <div id="installs-list"></div>
+  </div>
+
+  <!-- ═══ PAGE: ORDERS ═══ -->
+  <div class="page" id="page-orders">
+    <div class="page-hdr">
+      <div class="page-title">Orders &amp; Tracking</div>
+      <div class="page-sub">One-time purchases, shipments, and bookings. Click an order to track it.</div>
+    </div>
+    <div class="card">
+      <table class="tbl" id="orders-table">
+        <thead><tr><th>Order</th><th>Product</th><th>Vendor</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: ORDER DETAIL ═══ -->
+  <div class="page" id="page-order-detail">
+    <div class="breadcrumb"><span onclick="nav(document.querySelector('[data-page=orders]'),'orders')">Orders</span> &#8250; <span id="od-id" style="color:var(--w)"></span></div>
+    <div id="order-detail-content"></div>
+  </div>
+
+  <!-- ═══ PAGE: RETURNS ═══ -->
+  <div class="page" id="page-returns">
+    <div class="page-hdr">
+      <div class="page-title">Returns &amp; Refunds</div>
+      <div class="page-sub">Track a return you've requested, or start a new one from a delivered order.</div>
+    </div>
+    <div id="returns-list"></div>
+  </div>
+
+  <!-- ═══ PAGE: ADDRESSES ═══ -->
+  <div class="page" id="page-addresses">
+    <div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="page-title">Addresses</div>
+        <div class="page-sub">Delivery addresses used for physical products shipped to this tenant.</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddAddressModal()">&#43; Add address</button>
+    </div>
+    <div id="addresses-list"></div>
+  </div>
+
+  <!-- ═══ PAGE: BILLING ═══ -->
+  <div class="page" id="page-billing">
+    <div class="page-hdr">
+      <div class="page-title">Subscriptions &amp; Billing</div>
+      <div class="page-sub">Active subscriptions across every vendor, and this tenant's combined invoice history.</div>
+    </div>
+    <div class="card bordered-t">
+      <div class="card-t">&#128179; This month</div>
+      <div class="detail-row"><span class="detail-label">Active subscriptions</span><span class="detail-val" id="bill-active-count">—</span></div>
+      <div class="detail-row"><span class="detail-label">Monthly recurring total</span><span class="detail-val" id="bill-mrr">—</span></div>
+      <div class="detail-row"><span class="detail-label">Next charge date</span><span class="detail-val">1 Nov 2026</span></div>
+    </div>
+    <div class="card">
+      <div class="card-t">&#128257; Active subscriptions</div>
+      <table class="tbl" id="subs-table"><thead><tr><th>Product</th><th>Vendor</th><th>Plan</th><th>Next billing</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <div class="card-t">&#128196; Invoice history</div>
+      <table class="tbl">
+        <thead><tr><th>Invoice</th><th>Period</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="mono">INV-2026-09</td><td>Sep 2026</td><td>&#8377;2,596</td><td><span class="badge badge-g">Paid</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('Downloading invoice…')">Download</button></td></tr>
+          <tr><td class="mono">INV-2026-08</td><td>Aug 2026</td><td>&#8377;2,596</td><td><span class="badge badge-g">Paid</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('Downloading invoice…')">Download</button></td></tr>
+          <tr><td class="mono">INV-2026-07</td><td>Jul 2026</td><td>&#8377;1,298</td><td><span class="badge badge-g">Paid</span></td><td><button class="btn btn-ghost btn-sm" onclick="toast('Downloading invoice…')">Download</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: SETTINGS ═══ -->
+  <div class="page" id="page-settings">
+    <div class="page-hdr">
+      <div class="page-title">Marketplace Settings</div>
+      <div class="page-sub">Preferences for this tenant's marketplace activity.</div>
+    </div>
+    <div class="card">
+      <div class="card-t">&#128276; Notifications</div>
+      <label class="filter-opt" style="margin-bottom:8px"><input type="checkbox" checked> Email me when a subscription is about to renew</label>
+      <label class="filter-opt" style="margin-bottom:8px"><input type="checkbox" checked> Email me when a vendor publishes a new version of an installed product</label>
+      <label class="filter-opt"><input type="checkbox"> Email me about new products in categories I've installed from</label>
+    </div>
+    <div class="card">
+      <div class="card-t">&#128272; Install approval</div>
+      <label class="filter-opt" style="margin-bottom:8px"><input type="radio" name="approval" checked> Any tenant member can install products directly</label>
+      <label class="filter-opt"><input type="radio" name="approval"> Installs require tenant-admin approval first</label>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────
+var FT_META = {
+  SHIP_PHYSICAL:{icon:'📦',label:'Ecommerce',color:'t'},
+  DELIVER_DIGITAL:{icon:'💾',label:'Digital Products',color:'v'},
+  LICENSE_SOFTWARE:{icon:'💻',label:'Software Products',color:'a'},
+  PROVISION_SOFTWARE:{icon:'🧩',label:'Software & SaaS',color:'t'},
+  PROVISION_CLOUD:{icon:'☁️',label:'Cloud Services',color:'v'},
+  STREAM_LMS_COURSE:{icon:'🎓',label:'LMS & Courses',color:'g'},
+  DELIVER_MULTIMEDIA:{icon:'🎬',label:'Multimedia',color:'p'},
+  DISPATCH_SERVICE:{icon:'🔧',label:'Field Services',color:'a'},
+  BOOK_APPOINTMENT:{icon:'📅',label:'Appointments',color:'t'},
+};
+var GRAD = {
+  t:'linear-gradient(135deg,#0ea5e9,#0369a1)', v:'linear-gradient(135deg,#8b5cf6,#5b21b6)',
+  a:'linear-gradient(135deg,#f59e0b,#b45309)', g:'linear-gradient(135deg,#10b981,#047857)',
+  p:'linear-gradient(135deg,#ec4899,#9d174d)'
+};
+
+var CART_ELIGIBLE = ['SHIP_PHYSICAL','DELIVER_DIGITAL','LICENSE_SOFTWARE','DELIVER_MULTIMEDIA','STREAM_LMS_COURSE'];
+
+var PRODUCTS = [
+  {id:'p1',name:'Gratitude Journal Pro',type:'SHIP_PHYSICAL',vendor:'MindfulCo',verified:true,
+   price:'₹499',plan:'Per order',priceN:499,rating:4.6,reviews:128,installs:340,sponsored:true,
+   desc:'Hardcover A5 gratitude journal with guided daily prompts, shipped across India in 3–5 days.',
+   images:['📔','📖','✒️','🎁'],variants:['A5 — Teal','A5 — Charcoal','A5 — Blush']},
+  {id:'p2',name:'Journal Templates Pack',type:'DELIVER_DIGITAL',vendor:'MindfulCo',verified:true,
+   price:'₹199',plan:'One-time',priceN:199,rating:4.4,reviews:52,installs:190,
+   desc:'12 printable PDF journal templates — gratitude, habit tracking, and reflection layouts.',
+   files:['gratitude-template.pdf','habit-tracker.pdf','reflection-pages.pdf'],license:'Personal use only'},
+  {id:'p3',name:'FocusFlow Desktop',type:'LICENSE_SOFTWARE',vendor:'Flowstate Labs',verified:true,
+   price:'₹2,499',plan:'One-time',priceN:2499,rating:4.7,reviews:310,installs:860,isNew:true,
+   desc:'A distraction-blocking desktop app with session timers and a weekly focus report.',
+   screenshots:['🖥️','📊','⏱️','🔔'],platforms:'Windows 10+, macOS 12+',version:'2.4.1'},
+  {id:'p4',name:'TaskPilot SaaS',type:'PROVISION_SOFTWARE',vendor:'Flowstate Labs',verified:true,
+   price:'₹999',plan:'Monthly subscription',priceN:999,rating:4.5,reviews:180,installs:420,
+   desc:'Team task management with automated status rollups, built for ops teams.',
+   plans:[{name:'Starter',price:'₹999/mo',feats:['Up to 10 seats','Core boards','Email support']},
+     {name:'Growth',price:'₹2,499/mo',feats:['Up to 50 seats','Automations','Priority support'],reco:true},
+     {name:'Scale',price:'₹5,999/mo',feats:['Unlimited seats','SSO','Dedicated CSM']}]},
+  {id:'p5',name:'SecureVault Cloud Backup',type:'PROVISION_CLOUD',vendor:'DataGuard',verified:true,
+   price:'₹299',plan:'Monthly subscription',priceN:299,rating:4.8,reviews:96,installs:510,sponsored:true,
+   desc:'Encrypted, automated backup for tenant data with point-in-time restore.',
+   regions:'ap-south-1, us-east-1, eu-west-1',sla:'99.9% monthly uptime',
+   specs:{'Storage':'500GB included, pay-as-you-grow','Encryption':'AES-256 at rest, TLS 1.3 in transit','Restore window':'90 days'}},
+  {id:'p6',name:'Mindful Living — Video Course',type:'STREAM_LMS_COURSE',vendor:'MindfulCo',verified:true,
+   price:'₹1,499',plan:'One-time',priceN:1499,rating:4.9,reviews:420,installs:1200,
+   desc:'An 8-lesson course on building a daily mindfulness practice, with downloadable workbooks.',
+   instructor:'Asha Rao — mindfulness coach, 12 years teaching experience',level:'All levels',certificate:true,
+   lessons:[['Why mindfulness, why now','6 min'],['Setting up your practice space','8 min'],['Breath as an anchor','11 min'],
+     ['Working with distraction','14 min'],['Gratitude practice','9 min'],['Mindful movement','12 min'],
+     ['Handling difficult emotions','15 min'],['Building a lasting habit','10 min']]},
+  {id:'p7',name:'Calm Sounds — Sleep Audio Pack',type:'DELIVER_MULTIMEDIA',vendor:'SereneSound',verified:false,
+   price:'₹349',plan:'One-time',priceN:349,rating:4.3,reviews:75,installs:230,isNew:true,
+   desc:'12 hours of licensed ambient audio for sleep and focus, DRM-protected streaming.',
+   mediaType:'Audio',drm:true,runtime:'12 hours total across 8 tracks'},
+  {id:'p8',name:'HomeFix Plumbing Visit',type:'DISPATCH_SERVICE',vendor:'HomeFix Services',verified:true,
+   price:'₹599',plan:'Per visit',priceN:599,rating:4.2,reviews:60,installs:95,
+   desc:'A vetted plumber dispatched to your office for routine maintenance or repairs.',
+   area:'15km around central Mumbai',responseSla:'Within 4 hours of booking'},
+  {id:'p9',name:'1:1 Wellness Coaching Session',type:'BOOK_APPOINTMENT',vendor:'MindfulCo',verified:true,
+   price:'₹899',plan:'Per session',priceN:899,rating:4.9,reviews:210,installs:640,
+   desc:'A 45-minute 1:1 video session with a certified wellness coach.',
+   duration:'45 minutes',format:'Video call',
+   slots:['Mon 10:00 AM','Mon 2:00 PM','Tue 11:00 AM','Tue 4:00 PM','Wed 9:30 AM','Wed 1:00 PM','Thu 10:00 AM','Fri 3:00 PM']},
+  {id:'p10',name:'Mindfulness Journal Kit',type:'SHIP_PHYSICAL',vendor:'MindfulCo',verified:true,
+   price:'₹699',plan:'Per order',priceN:699,rating:4.5,reviews:34,installs:80,isNew:true,
+   desc:'Premium wellness kit with journal, pen, and mood tracker — our newest ecommerce launch.',
+   images:['🎁','📔','🖊️','🧘'],variants:['Kit — Standard','Kit — Deluxe (+candle)']},
+];
+
+var HERO_SLIDES = [
+  {color:'t',ic:'🆕',eyebrow:'New launch',title:'Mindfulness Journal Kit is here',sub:'Journal + pen + mood tracker, shipped in 3–5 days',action:'p10'},
+  {color:'g',ic:'🎓',eyebrow:'Most loved this month',title:'Mindful Living Video Course',sub:'4.9★ across 420 reviews · certificate included',action:'p6'},
+  {color:'v',ic:'☁️',eyebrow:'Sponsored',title:'SecureVault Cloud Backup',sub:'99.9% uptime SLA · encrypted point-in-time restore',action:'p5'},
+];
+var heroIdx=0, heroTimer=null;
+
+var ADDRESSES = [
+  {id:'ad1',label:'Head Office',name:'MindBloom Studio',line1:'402, Lotus Business Park, Andheri East',city:'Mumbai',state:'Maharashtra',pincode:'400069',phone:'+91 98200 11223',isDefault:true},
+  {id:'ad2',label:'Warehouse',name:'MindBloom Studio — Stores',line1:'Plot 14, MIDC Industrial Area',city:'Pune',state:'Maharashtra',pincode:'411019',phone:'+91 98200 44556',isDefault:false},
+];
+var selectedAddressId='ad1', selectedPayment='upi';
+
+var CART = {};          // {productId: {qty, variant}}
+var RECENT = [];        // product ids, most recent first
+var RETURNS = [];
+var checkoutItems=null; // null = checkout from cart; array of {id,qty} = Buy Now single-item flow
+
+var REVIEWS = {
+  p1:[['Rhea K.','2 weeks ago',5,'Gorgeous cover, thick paper — no bleed-through with fountain pens.'],
+      ['Sam T.','1 month ago',4,'Prompts are genuinely useful. Shipping took 5 days to Pune.']],
+  p6:[['Nisha P.','3 days ago',5,'Changed my morning routine completely. Lesson 7 alone was worth it.'],
+      ['Arjun M.','2 weeks ago',5,'Asha is a great teacher — clear, warm, no fluff. Certificate was a nice touch.'],
+      ['Kavya S.','1 month ago',4,'Great content, wish lessons were a bit longer.']],
+  p4:[['Devika R.','1 week ago',4,'Automations saved our ops team hours every week. Onboarding was quick.']],
+  p9:[['Meera J.','4 days ago',5,'My coach was excellent and genuinely listened. Booking was effortless.']],
+};
+
+var WISHLIST = {};
+var INSTALLS = [];
+var ORDERS = [];
+var filters = {cats:[],plans:[],minRating:0,priceMin:0,priceMax:999999,vendors:[],verifiedOnly:false};
+var currentProduct = null;
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function stars(r){
+  var full=Math.round(r);
+  return '<span class="stars">'+'★'.repeat(full)+'<span style="color:var(--bdr)">'+'★'.repeat(5-full)+'</span></span>';
+}
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast on';
+  clearTimeout(window._tt); window._tt=setTimeout(function(){t.className='toast';},2600);
+}
+function openModal(title,body,foot){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal-foot').innerHTML=foot||'<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  document.getElementById('modal-bg').className='modal-bg on';
+}
+function closeModal(e){ if(!e||e.target.id==='modal-bg') document.getElementById('modal-bg').className='modal-bg'; }
+
+function nav(btn,page){
+  document.querySelectorAll('.nav-item').forEach(function(n){n.className='nav-item'+(n===btn?' active':'')});
+  document.querySelectorAll('.page').forEach(function(p){p.className=p.className.replace(' on','')});
+  document.getElementById('page-'+page).className+=' on';
+  if(page==='browse') renderBrowse();
+  if(page==='wishlist') renderWishlist();
+  if(page==='installs') renderInstalls();
+  if(page==='orders') renderOrders();
+  if(page==='billing') renderBilling();
+  if(page==='cart') renderCart();
+  if(page==='checkout') renderCheckout();
+  if(page==='returns') renderReturns();
+  if(page==='addresses') renderAddressesPage();
+  window.scrollTo(0,0);
+}
+
+function productCard(p){
+  var meta=FT_META[p.type];
+  var wished=WISHLIST[p.id]?' on':'';
+  var tag=p.isNew?'<span class="new-tag">NEW</span>':(p.sponsored?'<span class="sponsor-tag">Sponsored</span>':'');
+  var cartBtn=CART_ELIGIBLE.indexOf(p.type)>-1?
+    '<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();addToCart(\''+p.id+'\')" title="Add to cart">&#128722;+</button>':'';
+  return `
+    <div class="pcard" onclick="openDetail('${p.id}')">
+      <div class="pcard-art" style="background:${GRAD[meta.color]}">${meta.icon}
+        ${tag}
+        <button class="pcard-wish${wished}" onclick="event.stopPropagation();toggleWish('${p.id}')">&#9825;</button>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-vendor">${p.vendor}${p.verified?' <span style="color:var(--gl)">&#10003;</span>':''}</div>
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-rating">${stars(p.rating)} ${p.rating} <span class="cnt">(${p.reviews})</span></div>
+        <div class="pcard-foot">
+          <div><div class="pcard-price">${p.price}</div><div class="pcard-plan">${p.plan}</div></div>
+          ${cartBtn}
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleWish(id){
+  WISHLIST[id]=!WISHLIST[id];
+  toast(WISHLIST[id]?'Saved to wishlist':'Removed from wishlist');
+  renderHome(); renderBrowse(); renderWishlist();
+  if(currentProduct && currentProduct.id===id) openDetail(id);
+}
+
+// ─── HOME ───────────────────────────────────────────────────────────────────
+function renderHeroCarousel(){
+  var track=document.getElementById('hero-track');
+  track.innerHTML=HERO_SLIDES.map(function(s){
+    return `<div class="carousel-slide" style="background:${GRAD[s.color]}" onclick="openDetail('${s.action}')">
+      <div class="cs-ic">${s.ic}</div>
+      <div><div class="cs-eyebrow">${s.eyebrow}</div><div class="cs-title">${s.title}</div><div class="cs-sub">${s.sub}</div></div>
+    </div>`;
+  }).join('');
+  var dots=document.getElementById('hero-dots');
+  dots.innerHTML=HERO_SLIDES.map(function(s,i){return '<span class="d'+(i===heroIdx?' on':'')+'" onclick="event.stopPropagation();carouselGo('+i+')"></span>';}).join('');
+  carouselGo(heroIdx);
+  clearInterval(heroTimer);
+  heroTimer=setInterval(function(){carouselMove(1);},5000);
+}
+function carouselMove(dir){ carouselGo((heroIdx+dir+HERO_SLIDES.length)%HERO_SLIDES.length); }
+function carouselGo(i){
+  heroIdx=i;
+  document.getElementById('hero-track').style.transform='translateX(-'+(i*100)+'%)';
+  document.querySelectorAll('#hero-dots .d').forEach(function(d,idx){d.className='d'+(idx===i?' on':'')});
+}
+
+function renderHome(){
+  var strip=document.getElementById('cat-strip');
+  strip.innerHTML=Object.keys(FT_META).map(function(k){
+    var m=FT_META[k];
+    return `<div class="cat-tile" onclick="goCategory('${k}')"><div class="ic">${m.icon}</div><div class="lbl">${m.label}</div></div>`;
+  }).join('');
+  renderHeroCarousel();
+  document.getElementById('home-new').innerHTML=
+    PRODUCTS.filter(function(p){return p.isNew;}).map(productCard).join('');
+  document.getElementById('home-sponsored').innerHTML=
+    PRODUCTS.filter(function(p){return p.sponsored;}).map(productCard).join('');
+  document.getElementById('home-trending').innerHTML=
+    PRODUCTS.slice().sort(function(a,b){return b.installs-a.installs;}).slice(0,6).map(productCard).join('');
+  var recentP=RECENT.map(function(id){return PRODUCTS.find(function(p){return p.id===id});}).filter(Boolean);
+  document.getElementById('recent-toolbar').style.display=recentP.length?'flex':'none';
+  document.getElementById('home-recent').innerHTML=recentP.map(productCard).join('');
+}
+
+function goCategory(type){
+  filters.cats=type?[type]:[];
+  nav(document.querySelector('[data-page=browse]'),'browse');
+}
+
+function runSearch(q){
+  nav(document.querySelector('[data-page=browse]'),'browse');
+  window._searchQ=q.trim().toLowerCase();
+  renderBrowse();
+}
+
+// ─── BROWSE ─────────────────────────────────────────────────────────────────
+function renderFilterCats(){
+  var cont=document.getElementById('filter-cats');
+  cont.innerHTML=Object.keys(FT_META).map(function(k){
+    var checked=filters.cats.indexOf(k)>-1?'checked':'';
+    return `<label class="filter-opt"><input type="checkbox" value="${k}" ${checked} onchange="toggleFilter('cats',this)"> ${FT_META[k].icon} ${FT_META[k].label}</label>`;
+  }).join('');
+}
+function toggleFilter(kind,el){
+  var arr=filters[kind];
+  var i=arr.indexOf(el.value);
+  if(el.checked && i===-1) arr.push(el.value);
+  if(!el.checked && i>-1) arr.splice(i,1);
+  renderBrowse();
+}
+function setMinRating(v){ filters.minRating=v; renderBrowse(); }
+function setPriceRange(min,max){ filters.priceMin=min; filters.priceMax=max; renderBrowse(); }
+function toggleVerifiedOnly(el){ filters.verifiedOnly=el.checked; renderBrowse(); }
+function renderFilterVendors(){
+  var cont=document.getElementById('filter-vendors');
+  var vendors=Array.from(new Set(PRODUCTS.map(function(p){return p.vendor;}))).sort();
+  cont.innerHTML=vendors.map(function(v){
+    var checked=filters.vendors.indexOf(v)>-1?'checked':'';
+    return `<label class="filter-opt"><input type="checkbox" value="${v}" ${checked} onchange="toggleFilter('vendors',this)"> ${v}</label>`;
+  }).join('');
+}
+function clearFilters(){
+  filters={cats:[],plans:[],minRating:0,priceMin:0,priceMax:999999,vendors:[],verifiedOnly:false}; window._searchQ='';
+  document.querySelectorAll('.browse-layout input[type=checkbox]').forEach(function(c){c.checked=false});
+  document.querySelectorAll('.browse-layout input[name=rating]')[0].checked=true;
+  document.querySelectorAll('.browse-layout input[name=pricerange]')[0].checked=true;
+  renderBrowse();
+}
+
+function renderBrowse(){
+  renderFilterCats();
+  renderFilterVendors();
+  var q=window._searchQ||'';
+  var list=PRODUCTS.filter(function(p){
+    if(filters.cats.length && filters.cats.indexOf(p.type)===-1) return false;
+    if(filters.plans.length && filters.plans.indexOf(p.plan)===-1) return false;
+    if(p.rating<filters.minRating) return false;
+    if(p.priceN<filters.priceMin || p.priceN>filters.priceMax) return false;
+    if(filters.vendors.length && filters.vendors.indexOf(p.vendor)===-1) return false;
+    if(filters.verifiedOnly && !p.verified) return false;
+    if(q && p.name.toLowerCase().indexOf(q)===-1 && p.vendor.toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  });
+  var sort=document.getElementById('sort-sel').value;
+  if(sort==='rating') list.sort(function(a,b){return b.rating-a.rating});
+  if(sort==='installs') list.sort(function(a,b){return b.installs-a.installs});
+  if(sort==='price-low') list.sort(function(a,b){return a.priceN-b.priceN});
+  if(sort==='price-high') list.sort(function(a,b){return b.priceN-a.priceN});
+
+  document.getElementById('browse-title').textContent=filters.cats.length===1?FT_META[filters.cats[0]].label:'Browse All';
+  document.getElementById('browse-sub').textContent=q?('Results for "'+q+'"'):'Every listing on the marketplace, filterable by category and price.';
+
+  var chips=[];
+  filters.cats.forEach(function(c){chips.push(['cats',c,FT_META[c].icon+' '+FT_META[c].label]);});
+  filters.plans.forEach(function(p){chips.push(['plans',p,p]);});
+  if(filters.minRating) chips.push(['rating',filters.minRating,filters.minRating+'★ & up']);
+  document.getElementById('active-chips').innerHTML=chips.length?chips.map(function(c){
+    return '<span class="chip on">'+c[2]+' &times;</span>';
+  }).join(''):'<span style="font-size:11px;color:var(--sl)">'+list.length+' result'+(list.length===1?'':'s')+'</span>';
+
+  var grid=document.getElementById('browse-grid');
+  grid.innerHTML=list.length?list.map(productCard).join(''):
+    '<div class="empty" style="grid-column:1/-1"><div class="ic">&#128269;</div>No products match these filters.<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="clearFilters()">Clear filters</button></div>';
+}
+
+// ─── WISHLIST ───────────────────────────────────────────────────────────────
+function renderWishlist(){
+  var ids=Object.keys(WISHLIST).filter(function(id){return WISHLIST[id];});
+  var grid=document.getElementById('wishlist-grid');
+  grid.innerHTML=ids.length?ids.map(function(id){return productCard(PRODUCTS.find(function(p){return p.id===id}));}).join(''):
+    '<div class="empty" style="grid-column:1/-1"><div class="ic">&#9825;</div>Nothing saved yet.<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="nav(document.querySelector(\'[data-page=home]\'),\'home\')">Browse the marketplace</button></div>';
+}
+
+// ─── PRODUCT DETAIL ─────────────────────────────────────────────────────────
+function openDetail(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  currentProduct=p;
+  var meta=FT_META[p.type];
+  document.getElementById('bc-cat').textContent=meta.label;
+  document.getElementById('bc-name').textContent=p.name;
+
+  var left='';
+  if(p.type==='SHIP_PHYSICAL'){
+    left+=`<div class="gallery-main" style="background:${GRAD[meta.color]}">${p.images[0]}</div>
+      <div class="gallery-thumbs">${p.images.map(function(i,idx){return '<div class="th'+(idx===0?' on':'')+'" style="background:'+GRAD[meta.color]+'">'+i+'</div>';}).join('')}</div>`;
+  } else if(p.type==='LICENSE_SOFTWARE'){
+    left+=`<div class="card"><div class="card-t">Screenshots</div><div class="screenshot-grid">${p.screenshots.map(function(s){return '<div class="sh" style="background:'+GRAD[meta.color]+'">'+s+'</div>';}).join('')}</div></div>`;
+  } else {
+    left+=`<div class="gallery-main" style="background:${GRAD[meta.color]};height:200px">${meta.icon}</div>`;
+  }
+
+  left+=`<h2 style="font-size:19px;font-weight:800;margin-top:16px">${p.name}</h2>
+    <div class="vendor-chip"><div class="vendor-av">${p.vendor.slice(0,2).toUpperCase()}</div>
+      <span style="font-size:12.5px;font-weight:600">${p.vendor}</span>
+      ${p.verified?'<span class="badge badge-g">&#10003; Verified vendor</span>':'<span class="badge badge-sl">Unverified</span>'}
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">${stars(p.rating)} <strong>${p.rating}</strong> <span style="color:var(--sl);font-size:12px">(${p.reviews} reviews · ${p.installs} installs)</span></div>
+    <p style="font-size:13px;color:var(--sll);line-height:1.7;margin-bottom:16px">${p.desc}</p>`;
+
+  left+=typeSpecificSection(p);
+  left+=reviewsSection(p);
+
+  var isCart=CART_ELIGIBLE.indexOf(p.type)>-1;
+  var ctas=isCart?
+    `<button class="btn btn-primary btn-block" onclick="addToCart('${p.id}');toast('Added to cart')">&#128722; Add to Cart</button>
+     <button class="btn btn-success btn-block" style="margin-top:8px" onclick="buyNow('${p.id}')">&#9889; Buy Now</button>`
+    :`<button class="btn btn-primary btn-block" onclick="openAcquireModal('${p.id}')">${acquireLabel(p)}</button>`;
+
+  var right=`
+    <div class="card buy-box">
+      <div class="buy-price">${p.price}</div>
+      <div class="buy-plan">${p.plan}</div>
+      ${p.type==='SHIP_PHYSICAL'?'<div class="badge badge-g" style="margin-bottom:12px">&#10003; In stock</div>':''}
+      ${buyBoxExtra(p)}
+      ${ctas}
+      <button class="btn btn-ghost btn-block" style="margin-top:8px" onclick="toggleWish('${p.id}')">${WISHLIST[p.id]?'&#10003; Saved':'&#9825; Save for later'}</button>
+      <div class="alert alert-t" style="margin-top:14px;margin-bottom:0"><span class="alert-ic">&#128268;</span><span>Fulfilled automatically by ${p.vendor}'s plugin once installed. Bearer + X-Tenant-Id handles authorization.</span></div>
+    </div>`;
+
+  document.getElementById('detail-content').innerHTML=`<div class="detail-grid"><div>${left}</div><div>${right}</div></div>`;
+  nav(document.querySelector('[data-page=browse]')||document.querySelectorAll('.nav-item')[0],'detail');
+
+  RECENT=RECENT.filter(function(r){return r!==id});
+  RECENT.unshift(id); if(RECENT.length>8) RECENT.pop();
+}
+
+function buyBoxExtra(p){
+  if(p.type==='SHIP_PHYSICAL' && p.variants) return `<div class="form-group"><label class="form-label">Variant</label>
+    <select class="form-input" id="pick-variant">${p.variants.map(function(v){return '<option>'+v+'</option>';}).join('')}</select></div>`;
+  return '';
+}
+function acquireLabel(p){
+  if(p.type==='SHIP_PHYSICAL') return '🛒 Place order';
+  if(p.type==='BOOK_APPOINTMENT') return '📅 Book session';
+  if(p.type==='DISPATCH_SERVICE') return '🔧 Request visit';
+  if(p.plan==='Monthly subscription') return '🧩 Subscribe & install';
+  return '⬇️ Install now';
+}
+
+function typeSpecificSection(p){
+  if(p.type==='DELIVER_DIGITAL'){
+    return `<div class="card"><div class="card-t">💾 What you get</div>
+      ${p.files.map(function(f){return '<div class="detail-row"><span class="detail-label">📄 '+f+'</span><span class="detail-val">Included</span></div>';}).join('')}
+      <div class="detail-row"><span class="detail-label">License</span><span class="detail-val">${p.license}</span></div></div>`;
+  }
+  if(p.type==='LICENSE_SOFTWARE'){
+    return `<div class="card"><div class="card-t">💻 Compatibility</div>
+      <div class="detail-row"><span class="detail-label">Platforms</span><span class="detail-val">${p.platforms}</span></div>
+      <div class="detail-row"><span class="detail-label">Version</span><span class="detail-val">${p.version}</span></div></div>`;
+  }
+  if(p.type==='PROVISION_SOFTWARE'){
+    return `<div class="card"><div class="card-t">🧩 Choose a plan</div><div class="plan-cards">
+      ${p.plans.map(function(pl){return '<div class="plan-card'+(pl.reco?' reco':'')+'">'+(pl.reco?'<span class="badge badge-t" style="margin-bottom:6px">Recommended</span><br>':'')+'<div class="pn">'+pl.name+'</div><div class="pp">'+pl.price+'</div><ul>'+pl.feats.map(function(f){return '<li>✓ '+f+'</li>';}).join('')+'</ul></div>';}).join('')}
+      </div></div>`;
+  }
+  if(p.type==='PROVISION_CLOUD'){
+    return `<div class="card"><div class="card-t">☁️ Technical specs</div>
+      ${Object.keys(p.specs).map(function(k){return '<div class="detail-row"><span class="detail-label">'+k+'</span><span class="detail-val">'+p.specs[k]+'</span></div>';}).join('')}
+      <div class="detail-row"><span class="detail-label">Regions</span><span class="detail-val">${p.regions}</span></div>
+      <div class="detail-row"><span class="detail-label">SLA</span><span class="detail-val"><span class="badge badge-g">${p.sla}</span></span></div></div>`;
+  }
+  if(p.type==='STREAM_LMS_COURSE'){
+    return `<div class="card"><div class="card-t">🎓 Curriculum — ${p.lessons.length} lessons</div>
+      ${p.lessons.map(function(l,i){return '<div class="lesson"><span class="n">'+(i+1)+'</span>'+l[0]+'<span class="dur">'+l[1]+'</span></div>';}).join('')}
+      </div>
+      <div class="card"><div class="card-t">👤 Instructor</div><p style="font-size:12.5px;color:var(--sll)">${p.instructor}</p>
+      <div class="detail-row"><span class="detail-label">Skill level</span><span class="detail-val">${p.level}</span></div>
+      <div class="detail-row"><span class="detail-label">Certificate</span><span class="detail-val">${p.certificate?'<span class="badge badge-g">Included</span>':'Not included'}</span></div></div>`;
+  }
+  if(p.type==='DELIVER_MULTIMEDIA'){
+    return `<div class="card"><div class="card-t">🎬 Media details</div>
+      <div class="detail-row"><span class="detail-label">Type</span><span class="detail-val">${p.mediaType}</span></div>
+      <div class="detail-row"><span class="detail-label">Runtime</span><span class="detail-val">${p.runtime}</span></div>
+      <div class="detail-row"><span class="detail-label">DRM protected</span><span class="detail-val">${p.drm?'Yes':'No'}</span></div></div>`;
+  }
+  if(p.type==='DISPATCH_SERVICE'){
+    return `<div class="card"><div class="card-t">🔧 Coverage</div>
+      <div class="detail-row"><span class="detail-label">Service area</span><span class="detail-val">${p.area}</span></div>
+      <div class="detail-row"><span class="detail-label">Response time</span><span class="detail-val">${p.responseSla}</span></div></div>`;
+  }
+  if(p.type==='BOOK_APPOINTMENT'){
+    return `<div class="card"><div class="card-t">📅 Available this week</div>
+      <div class="slot-grid" id="slot-grid">${p.slots.map(function(s){return '<div class="slot" onclick="pickSlot(this,\''+s+'\')">'+s+'</div>';}).join('')}</div>
+      <div class="form-hint" style="margin-top:8px">Session duration: ${p.duration} · Format: ${p.format}</div></div>`;
+  }
+  return '';
+}
+function pickSlot(el,s){
+  document.querySelectorAll('#slot-grid .slot').forEach(function(n){n.className='slot'});
+  el.className='slot on'; window._pickedSlot=s;
+}
+
+function reviewsSection(p){
+  var rv=REVIEWS[p.id];
+  if(!rv || !rv.length) return `<div class="card"><div class="card-t">💬 Reviews</div><div style="font-size:12px;color:var(--sl)">No reviews yet.</div></div>`;
+  return `<div class="card"><div class="card-t">💬 Reviews (${rv.length})</div>
+    ${rv.map(function(r){return '<div class="review"><div class="review-top"><span class="review-name">'+r[0]+'</span>'+stars(r[2])+'<span class="review-date">'+r[1]+'</span></div><div class="review-body">'+r[3]+'</div></div>';}).join('')}
+    </div>`;
+}
+
+// ─── CART ───────────────────────────────────────────────────────────────────
+function addToCart(id){
+  if(!CART[id]) CART[id]={qty:1};
+  else CART[id].qty++;
+  updateCartCount();
+}
+function changeCartQty(id,delta){
+  if(!CART[id]) return;
+  CART[id].qty+=delta;
+  if(CART[id].qty<=0) delete CART[id];
+  updateCartCount(); renderCart();
+}
+function removeFromCart(id){ delete CART[id]; updateCartCount(); renderCart(); toast('Removed from cart'); }
+function updateCartCount(){
+  var n=Object.keys(CART).reduce(function(s,k){return s+CART[k].qty;},0);
+  var el=document.getElementById('cart-count');
+  el.textContent=n; el.style.display=n>0?'flex':'none';
+}
+function cartLines(src){
+  return Object.keys(src).map(function(id){
+    var p=PRODUCTS.find(function(x){return x.id===id});
+    return p?{p:p,qty:src[id].qty}:null;
+  }).filter(Boolean);
+}
+function renderCart(){
+  var cont=document.getElementById('cart-content');
+  var lines=cartLines(CART);
+  if(!lines.length){
+    cont.innerHTML='<div class="empty"><div class="ic">&#128722;</div>Your cart is empty.<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="nav(document.querySelector(\'[data-page=home]\'),\'home\')">Browse the marketplace</button></div>';
+    return;
+  }
+  var subtotal=lines.reduce(function(s,l){return s+l.p.priceN*l.qty;},0);
+  var hasPhysical=lines.some(function(l){return l.p.type==='SHIP_PHYSICAL';});
+  var shipping=hasPhysical?49:0;
+  var rows=lines.map(function(l){
+    var meta=FT_META[l.p.type];
+    return `<div class="cart-row">
+      <div class="cart-art" style="background:${GRAD[meta.color]}">${meta.icon}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${l.p.name}</div>
+        <div style="font-size:11px;color:var(--sl)">${l.p.vendor} · ${l.p.plan}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="removeFromCart('${l.p.id}')">Remove</button>
+      </div>
+      <div class="qty-stepper"><button onclick="changeCartQty('${l.p.id}',-1)">&minus;</button><span>${l.qty}</span><button onclick="changeCartQty('${l.p.id}',1)">&#43;</button></div>
+      <div style="width:80px;text-align:right;font-weight:800">₹${(l.p.priceN*l.qty).toLocaleString('en-IN')}</div>
+    </div>`;
+  }).join('');
+  cont.innerHTML=`<div class="checkout-grid"><div class="card">${rows}</div>
+    <div class="card buy-box">
+      <div class="card-t">Order summary</div>
+      <div class="summary-row"><span>Subtotal</span><span>₹${subtotal.toLocaleString('en-IN')}</span></div>
+      <div class="summary-row"><span>${hasPhysical?'Shipping':'Shipping (no physical items)'}</span><span>${shipping?('₹'+shipping):'₹0'}</span></div>
+      <div class="summary-row total"><span>Total</span><span>₹${(subtotal+shipping).toLocaleString('en-IN')}</span></div>
+      <button class="btn btn-success btn-block" style="margin-top:12px" onclick="checkoutItems=null;nav(document.querySelector('[data-page=checkout]'),'checkout')">Proceed to Checkout</button>
+    </div></div>`;
+}
+function buyNow(id){
+  checkoutItems=[{id:id,qty:1}];
+  nav(document.querySelector('[data-page=checkout]'),'checkout');
+}
+function openAcquireModal(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  if(p.type==='BOOK_APPOINTMENT' && !window._pickedSlot){ toast('Pick a time slot first'); return; }
+  buyNow(id);
+}
+
+// ─── ADDRESSES ──────────────────────────────────────────────────────────────
+function addrCardHtml(a,selectable){
+  return `<div class="addr-card${selectable && a.id===selectedAddressId?' on':''}" ${selectable?`onclick="selectAddress('${a.id}')"`:''}>
+    <span class="at">${a.label}${a.isDefault?' · DEFAULT':''}</span>
+    <div style="font-size:12.5px;font-weight:700">${a.name}</div>
+    <div style="font-size:11.5px;color:var(--sll);line-height:1.6">${a.line1}, ${a.city}, ${a.state} ${a.pincode}<br>&#128222; ${a.phone}</div>
+  </div>`;
+}
+function openAddressPicker(){
+  var body=ADDRESSES.map(function(a){return addrCardHtml(a,true);}).join('')+
+    '<button class="btn btn-ghost btn-sm btn-block" style="margin-top:4px" onclick="closeModal();openAddAddressModal()">&#43; Add a new address</button>';
+  openModal('Choose delivery location',body,
+    `<button class="btn btn-primary" onclick="confirmDeliverTo()">Use this address</button>`);
+}
+function selectAddress(id){ selectedAddressId=id; openAddressPicker(); renderCheckout(); }
+function confirmDeliverTo(){
+  var a=ADDRESSES.find(function(x){return x.id===selectedAddressId});
+  if(a) document.getElementById('tb-deliver-pin').textContent=a.city+' '+a.pincode;
+  closeModal(); toast('Delivery location updated');
+}
+function openAddAddressModal(){
+  var body=`
+    <div class="form-row"><div class="form-group"><label class="form-label">Label</label><input class="form-input" id="na-label" placeholder="e.g. Head Office"></div>
+    <div class="form-group"><label class="form-label">Contact name</label><input class="form-input" id="na-name" value="MindBloom Studio"></div></div>
+    <div class="form-group"><label class="form-label">Address line</label><input class="form-input" id="na-line1" placeholder="Building, street, area"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">City</label><input class="form-input" id="na-city"></div>
+    <div class="form-group"><label class="form-label">State</label><input class="form-input" id="na-state"></div></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Pincode</label><input class="form-input" id="na-pincode"></div>
+    <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="na-phone" placeholder="+91"></div></div>`;
+  openModal('Add a new address',body,`<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveNewAddress()">Save address</button>`);
+}
+function saveNewAddress(){
+  var label=document.getElementById('na-label').value.trim()||'Address';
+  var name=document.getElementById('na-name').value.trim()||'MindBloom Studio';
+  var line1=document.getElementById('na-line1').value.trim();
+  var city=document.getElementById('na-city').value.trim();
+  var state=document.getElementById('na-state').value.trim();
+  var pincode=document.getElementById('na-pincode').value.trim();
+  var phone=document.getElementById('na-phone').value.trim();
+  if(!line1||!city||!pincode){ toast('Fill in address line, city and pincode'); return; }
+  var a={id:'ad'+Date.now(),label:label,name:name,line1:line1,city:city,state:state||'—',pincode:pincode,phone:phone||'—',isDefault:false};
+  ADDRESSES.push(a); selectedAddressId=a.id;
+  closeModal(); toast('Address saved'); renderAddressesPage(); renderCheckout();
+}
+function setDefaultAddress(id){
+  ADDRESSES.forEach(function(a){a.isDefault=(a.id===id);});
+  renderAddressesPage(); toast('Default address updated');
+}
+function deleteAddress(id){
+  ADDRESSES=ADDRESSES.filter(function(a){return a.id!==id});
+  if(selectedAddressId===id) selectedAddressId=ADDRESSES.length?ADDRESSES[0].id:null;
+  renderAddressesPage(); toast('Address removed');
+}
+function renderAddressesPage(){
+  var cont=document.getElementById('addresses-list');
+  cont.innerHTML=ADDRESSES.map(function(a){
+    return `<div class="card">
+      <span class="at">${a.label}${a.isDefault?' · DEFAULT':''}</span>
+      <div style="font-weight:700;font-size:13px;margin-top:4px">${a.name}</div>
+      <div style="font-size:12px;color:var(--sll);line-height:1.7;margin:4px 0 10px">${a.line1}, ${a.city}, ${a.state} ${a.pincode}<br>&#128222; ${a.phone}</div>
+      <div style="display:flex;gap:8px">
+        ${a.isDefault?'':'<button class="btn btn-ghost btn-sm" onclick="setDefaultAddress(\''+a.id+'\')">Set as default</button>'}
+        <button class="btn btn-danger btn-sm" onclick="deleteAddress('${a.id}')">Remove</button>
+      </div></div>`;
+  }).join('')||'<div class="empty"><div class="ic">&#128205;</div>No addresses yet.</div>';
+}
+
+// ─── CHECKOUT ───────────────────────────────────────────────────────────────
+function checkoutLines(){
+  var src=checkoutItems?checkoutItems.reduce(function(o,i){o[i.id]={qty:i.qty};return o;},{}):CART;
+  return cartLines(src);
+}
+function selectPayment(method){ selectedPayment=method; renderCheckout(); }
+function renderCheckout(){
+  var lines=checkoutLines();
+  var hasPhysical=lines.some(function(l){return l.p.type==='SHIP_PHYSICAL';});
+  document.getElementById('checkout-addresses').style.display=hasPhysical?'block':'none';
+  document.getElementById('checkout-no-address-note').style.display=hasPhysical?'none':'block';
+  document.getElementById('checkout-addresses').innerHTML=ADDRESSES.map(function(a){return addrCardHtml(a,true);}).join('');
+
+  var payOpts=[['upi','&#128241;','UPI'],['card','&#128179;','Credit / Debit Card'],['netbanking','&#127974;','Net Banking']];
+  if(hasPhysical) payOpts.push(['cod','&#128176;','Cash on Delivery']);
+  document.getElementById('checkout-payments').innerHTML=payOpts.map(function(o){
+    return `<div class="pay-opt${selectedPayment===o[0]?' on':''}" onclick="selectPayment('${o[0]}')"><span class="ic">${o[1]}</span>${o[2]}</div>`;
+  }).join('');
+
+  var subtotal=lines.reduce(function(s,l){return s+l.p.priceN*l.qty;},0);
+  var shipping=hasPhysical?49:0;
+  var tax=Math.round(subtotal*0.05);
+  document.getElementById('checkout-summary').innerHTML=
+    lines.map(function(l){return '<div class="summary-row"><span>'+l.p.name+' &times;'+l.qty+'</span><span>₹'+(l.p.priceN*l.qty).toLocaleString('en-IN')+'</span></div>';}).join('')+
+    `<div class="summary-row"><span>Shipping</span><span>${shipping?('₹'+shipping):'₹0'}</span></div>
+     <div class="summary-row"><span>Taxes (5%)</span><span>₹${tax.toLocaleString('en-IN')}</span></div>
+     <div class="summary-row total"><span>Total</span><span>₹${(subtotal+shipping+tax).toLocaleString('en-IN')}</span></div>`;
+}
+
+var ORDER_STEP_PROFILES = {
+  physical:{labels:['Placed','Confirmed','Shipped','Out for delivery','Delivered'],timings:[0,1500,4500,8000,12000]},
+  instant:{labels:['Placed','Confirmed','Delivered'],timings:[0,1200,2600]},
+  subscribe:{labels:['Placed','Confirmed','Active'],timings:[0,1200,2600]},
+  scheduled:{labels:['Requested','Confirmed','Completed'],timings:[0,1500]},
+};
+var COURIERS=['BlueDart Express','Delhivery','Ekart Logistics','Xpressbees'];
+
+function placeOrder(){
+  var lines=checkoutLines();
+  if(!lines.length){ toast('Your cart is empty'); return; }
+  var hasPhysical=lines.some(function(l){return l.p.type==='SHIP_PHYSICAL';});
+  var isAppt=lines.length===1 && lines[0].p.type==='BOOK_APPOINTMENT';
+  var isService=lines.length===1 && lines[0].p.type==='DISPATCH_SERVICE';
+  var isSub=!hasPhysical && !isAppt && !isService && lines.some(function(l){return l.p.plan==='Monthly subscription';});
+  if(hasPhysical && !selectedAddressId){ toast('Select a delivery address'); return; }
+
+  var profile=hasPhysical?ORDER_STEP_PROFILES.physical:isAppt||isService?ORDER_STEP_PROFILES.scheduled:isSub?ORDER_STEP_PROFILES.subscribe:ORDER_STEP_PROFILES.instant;
+  var subtotal=lines.reduce(function(s,l){return s+l.p.priceN*l.qty;},0);
+  var shipping=hasPhysical?49:0;
+  var tax=Math.round(subtotal*0.05);
+  var address=hasPhysical?ADDRESSES.find(function(a){return a.id===selectedAddressId}):null;
+
+  var order={
+    id:'ORD-'+Math.floor(10000+Math.random()*89999),
+    items:lines.map(function(l){return {name:l.p.name,vendor:l.p.vendor,type:l.p.type,qty:l.qty,priceN:l.p.priceN,id:l.p.id};}),
+    vendor:lines.length===1?lines[0].p.vendor:lines.length+' vendors',
+    product:lines[0].p.name+(lines.length>1?' +'+(lines.length-1)+' more':''),
+    date:'Today',amountN:subtotal+shipping+tax,amount:'₹'+(subtotal+shipping+tax).toLocaleString('en-IN'),
+    payment:selectedPayment,physical:hasPhysical,address:address,
+    stepLabels:profile.labels,stepIndex:0,trackingId:null,courier:null,eta:null,
+    canReturn:false,returned:false
+  };
+  ORDERS.unshift(order);
+
+  // non-physical purchases activate as installs/subscriptions a tenant can manage
+  lines.forEach(function(l){
+    if(l.p.type!=='SHIP_PHYSICAL'){
+      INSTALLS.push({id:l.p.id+'-'+Date.now()+Math.random().toString(16).slice(2,6),product:l.p.name,vendor:l.p.vendor,type:l.p.type,since:'Today',status:'Provisioning',plan:l.p.plan});
+    }
+  });
+
+  if(checkoutItems) checkoutItems=null; else { CART={}; updateCartCount(); }
+  closeModal();
+  toast('Order placed — '+order.id);
+  progressOrder(order.id, profile.timings);
+  openOrderDetail(order.id);
+}
+
+function progressOrder(orderId,timings){
+  timings.forEach(function(ms,idx){
+    if(idx===0) return;
+    setTimeout(function(){
+      var o=ORDERS.find(function(x){return x.id===orderId});
+      if(!o) return;
+      o.stepIndex=idx;
+      var label=o.stepLabels[idx];
+      if(label==='Shipped'){ o.trackingId='TRK'+Math.floor(100000000+Math.random()*899999999); o.courier=COURIERS[Math.floor(Math.random()*COURIERS.length)]; o.eta='in 3–4 days'; }
+      if(label==='Delivered'){ o.canReturn=o.physical; o.eta=null; }
+      // flip matching installs to Active once order has progressed past "Placed"
+      o.items.forEach(function(it){
+        if(it.type!=='SHIP_PHYSICAL'){
+          var inst=INSTALLS.filter(function(i){return i.product===it.name;}).pop();
+          if(inst) inst.status='Active';
+        }
+      });
+      toast(o.product+' — now '+label);
+      renderOrders(); renderInstalls(); renderBilling();
+      if(document.getElementById('page-order-detail').className.indexOf(' on')>-1 && document.getElementById('od-id').textContent===orderId) openOrderDetail(orderId);
+    },ms);
+  });
+}
+
+// ─── MY INSTALLS ────────────────────────────────────────────────────────────
+function renderInstalls(){
+  var cont=document.getElementById('installs-list');
+  if(!INSTALLS.length){
+    cont.innerHTML='<div class="empty"><div class="ic">&#9881;&#65039;</div>Nothing installed yet.<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="nav(document.querySelector(\'[data-page=home]\'),\'home\')">Browse the marketplace</button></div>';
+    return;
+  }
+  cont.innerHTML=INSTALLS.map(function(i){
+    var meta=FT_META[i.type];
+    var badge=i.status==='Active'?'<span class="badge badge-g">&#10003; Active</span>':'<span class="badge badge-a">&#9203; Provisioning</span>';
+    return `<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;background:${GRAD[meta.color]}">${meta.icon}</div>
+        <div><div style="font-weight:700;font-size:13px">${i.product}</div>
+        <div style="font-size:11px;color:var(--sl)">${i.vendor} · installed ${i.since} · ${i.plan}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">${badge}
+        <button class="btn btn-ghost btn-sm" onclick="toast('Opening ${i.product}…')">Open</button>
+        <button class="btn btn-danger btn-sm" onclick="uninstall('${i.id}')">Uninstall</button>
+      </div></div>`;
+  }).join('');
+}
+function uninstall(id){
+  INSTALLS=INSTALLS.filter(function(i){return i.id!==id});
+  renderInstalls(); toast('Uninstalled');
+}
+
+// ─── ORDERS & TRACKING ──────────────────────────────────────────────────────
+function statusBadgeHtml(status){
+  var done=['Delivered','Active','Completed'].indexOf(status)>-1;
+  var cls=done?'badge-g':(status==='Placed'||status==='Requested')?'badge-a':'badge-t';
+  return '<span class="badge '+cls+'">'+(done?'&#10003; ':'')+status+'</span>';
+}
+function renderOrders(){
+  var tb=document.querySelector('#orders-table tbody');
+  if(!ORDERS.length){ tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--sl);padding:30px">No orders yet.</td></tr>'; return; }
+  tb.innerHTML=ORDERS.map(function(o){
+    var status=o.stepLabels[o.stepIndex];
+    return `<tr class="clickable-row" onclick="openOrderDetail('${o.id}')">
+      <td class="mono">${o.id}</td><td>${o.product}</td><td>${o.vendor}</td><td>${o.date}</td><td>${o.amount}</td><td>${statusBadgeHtml(status)}</td>
+      <td><button class="action-btn" onclick="event.stopPropagation();openOrderDetail('${o.id}')">Track</button></td></tr>`;
+  }).join('');
+}
+function trackingTimelineHtml(o){
+  return '<div class="tracking">'+o.stepLabels.map(function(l,i){
+    var cls=i<o.stepIndex?'done':i===o.stepIndex?'active':'';
+    return '<div class="tstep '+cls+'"><div class="tdot">'+(i<o.stepIndex?'&#10003;':(i+1))+'</div><div class="tl">'+l+'</div></div>';
+  }).join('')+'</div>';
+}
+function openOrderDetail(id){
+  var o=ORDERS.find(function(x){return x.id===id});
+  if(!o) return;
+  document.getElementById('od-id').textContent=id;
+  var status=o.stepLabels[o.stepIndex];
+  var html=`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div><div style="font-weight:800;font-size:15px">${o.product}</div><div style="font-size:11px;color:var(--sl)">${o.vendor} · placed ${o.date}</div></div>
+      ${statusBadgeHtml(status)}
+    </div>
+    ${trackingTimelineHtml(o)}
+    ${o.trackingId?`<div class="alert alert-t" style="margin-top:6px"><span class="alert-ic">&#128230;</span><span>Tracking ID <strong>${o.trackingId}</strong> via ${o.courier}${o.eta?' · arriving '+o.eta:''}</span></div>`:''}
+    ${o.physical&&o.address?`<div class="detail-row"><span class="detail-label">Delivering to</span><span class="detail-val">${o.address.name}, ${o.address.city} ${o.address.pincode}</span></div>`:''}
+    <div class="detail-row"><span class="detail-label">Payment method</span><span class="detail-val">${({upi:'UPI',card:'Card',netbanking:'Net Banking',cod:'Cash on Delivery'})[o.payment]||o.payment}</span></div>
+    <div class="detail-row"><span class="detail-label">Order total</span><span class="detail-val">${o.amount}</span></div>
+  </div>
+  <div class="card"><div class="card-t">Items in this order</div>
+    ${o.items.map(function(it){return '<div class="detail-row"><span class="detail-label">'+it.name+' &times;'+it.qty+'</span><span class="detail-val">'+FT_META[it.type].icon+' '+FT_META[it.type].label+'</span></div>';}).join('')}
+  </div>`;
+  if(o.canReturn && !o.returned) html+=`<button class="btn btn-danger" onclick="openReturnModal('${o.id}')">&#8617;&#65039; Return or replace items</button>`;
+  if(o.returned) html+=`<div class="alert alert-a"><span class="alert-ic">&#8617;&#65039;</span><span>A return has been requested for this order. Check <strong>Returns &amp; Refunds</strong> for status.</span></div>`;
+  document.getElementById('order-detail-content').innerHTML=html;
+  nav(document.querySelector('[data-page=orders]'),'order-detail');
+}
+
+// ─── RETURNS & REFUNDS ──────────────────────────────────────────────────────
+var RETURN_REASONS=['Item damaged or defective','Wrong item received','No longer needed','Item not as described','Better price available elsewhere'];
+function openReturnModal(orderId){
+  var body=`<p style="font-size:12.5px;color:var(--sll);margin-bottom:12px">Refund goes to your original payment method within 5–7 business days once the item is received back.</p>
+    <div class="form-group"><label class="form-label">Reason for return</label>
+    <select class="form-input" id="return-reason">${RETURN_REASONS.map(function(r){return '<option>'+r+'</option>';}).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Additional details (optional)</label><textarea class="form-input" rows="2" id="return-notes"></textarea></div>`;
+  openModal('Return items — '+orderId, body,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-danger" onclick="confirmReturn('${orderId}')">Submit return request</button>`);
+}
+function confirmReturn(orderId){
+  var o=ORDERS.find(function(x){return x.id===orderId});
+  if(!o) return;
+  var reason=document.getElementById('return-reason').value;
+  o.returned=true;
+  var ret={id:'RET-'+Math.floor(1000+Math.random()*8999),orderId:orderId,product:o.product,amount:o.amount,reason:reason,status:'Requested',stepIndex:0,
+    stepLabels:['Requested','Approved','Refund initiated','Refunded']};
+  RETURNS.unshift(ret);
+  closeModal(); toast('Return requested for '+o.product);
+  [2000,5000,8000].forEach(function(ms,idx){
+    setTimeout(function(){ ret.stepIndex=idx+1; toast(ret.product+' return — '+ret.stepLabels[ret.stepIndex]); renderReturns(); },ms);
+  });
+  renderReturns();
+  if(document.getElementById('page-order-detail').className.indexOf(' on')>-1) openOrderDetail(orderId);
+}
+function renderReturns(){
+  var cont=document.getElementById('returns-list');
+  if(!RETURNS.length){
+    cont.innerHTML='<div class="empty"><div class="ic">&#8617;&#65039;</div>No returns requested.<br><button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="nav(document.querySelector(\'[data-page=orders]\'),\'orders\')">Go to Orders</button></div>';
+    return;
+  }
+  cont.innerHTML=RETURNS.map(function(r){
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div><div style="font-weight:700;font-size:13px">${r.product}</div><div style="font-size:11px;color:var(--sl)">${r.id} · for order ${r.orderId} · ${r.amount}</div></div>
+        ${statusBadgeHtml(r.stepLabels[r.stepIndex])}
+      </div>
+      <div style="font-size:11.5px;color:var(--sll);margin-bottom:6px">Reason: ${r.reason}</div>
+      ${trackingTimelineHtml(r)}
+    </div>`;
+  }).join('');
+}
+
+// ─── BILLING ────────────────────────────────────────────────────────────────
+function renderBilling(){
+  var subs=INSTALLS.filter(function(i){return i.plan==='Monthly subscription';});
+  var tb=document.querySelector('#subs-table tbody');
+  document.getElementById('bill-active-count').textContent=subs.length;
+  var mrr=subs.reduce(function(sum,s){
+    var p=PRODUCTS.find(function(x){return x.name===s.product});
+    return sum+(p?p.priceN:0);
+  },0);
+  document.getElementById('bill-mrr').textContent='₹'+mrr.toLocaleString('en-IN');
+  tb.innerHTML=subs.length?subs.map(function(s){
+    return '<tr><td>'+s.product+'</td><td>'+s.vendor+'</td><td>Monthly</td><td>1 Nov 2026</td><td><button class="btn btn-ghost btn-sm" onclick="toast(\'Cancel flow would open here\')">Cancel</button></td></tr>';
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--sl);padding:20px">No active subscriptions.</td></tr>';
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+renderHome();
+updateCartCount();
+</script>
+</body>
+</html>

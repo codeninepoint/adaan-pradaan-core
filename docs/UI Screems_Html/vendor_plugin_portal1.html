@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vendor Plugin Portal</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--p:#ec4899;--pl:#f472b6;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr;height:100vh}
+
+/* TOP BAR */
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-right:8px}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.verified{background:rgba(16,185,129,.12);color:var(--gl);border:1px solid rgba(16,185,129,.25)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--v));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;cursor:pointer}
+
+/* SIDEBAR */
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);
+  text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;
+  border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;
+  font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;
+  border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(14,165,233,.08);border-left-color:var(--tl)}
+.nav-item.active.green{background:rgba(16,185,129,.08);border-left-color:var(--gl)}
+.nav-item.active.amber{background:rgba(245,158,11,.08);border-left-color:var(--al)}
+.nav-item.active.red{background:rgba(239,68,68,.08);border-left-color:var(--rl)}
+.nav-item.active.purple{background:rgba(139,92,246,.08);border-left-color:var(--vl)}
+.nav-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.help-btn{width:100%;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);
+  color:var(--tl);padding:9px;border-radius:8px;cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px}
+
+/* MAIN */
+.main{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.page{display:none;padding:24px 28px 48px;max-width:900px;animation:fadein .18s ease}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.clickable{cursor:pointer;transition:border-color .14s,transform .1s}
+.card.clickable:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.card.bordered-t{border-left:3px solid var(--tl)}
+.card.bordered-g{border-left:3px solid var(--gl)}
+.card.bordered-a{border-left:3px solid var(--al)}
+.card.bordered-r{border-left:3px solid var(--rl)}
+.card.bordered-v{border-left:3px solid var(--vl)}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .14s}
+.stat-card:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.stat-n{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat-l{font-size:11px;color:var(--sl);margin-top:5px}
+.stat-ch{font-size:11px;margin-top:6px;font-weight:600}
+
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;
+  font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.clickable-row{cursor:pointer;transition:background .12s}
+.tbl tr.clickable-row:hover td{background:rgba(255,255,255,.02)}
+.tbl .action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);
+  padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;
+  font-weight:600;transition:all .12s}
+.tbl .action-btn:hover{border-color:var(--tl);color:var(--tl)}
+
+/* FLOW STEPS */
+.flow{display:flex;gap:0;margin-bottom:18px;overflow-x:auto}
+.flow-step{flex:1;min-width:130px;padding:14px 12px;text-align:center;position:relative;cursor:pointer;
+  background:var(--card2);border:1px solid var(--bdr);transition:all .14s}
+.flow-step:not(:last-child)::after{content:"›";position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+  font-size:18px;color:var(--sl);z-index:1}
+.flow-step:first-child{border-radius:10px 0 0 10px}
+.flow-step:last-child{border-radius:0 10px 10px 0}
+.flow-step.done{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.25)}
+.flow-step.active{background:rgba(14,165,233,.08);border-color:var(--tl)}
+.flow-step.locked{opacity:.5}
+.flow-step:hover:not(.locked){border-color:var(--bdr2);transform:translateY(-1px)}
+.flow-n{font-size:18px;margin-bottom:5px}
+.flow-t{font-size:11px;font-weight:700;color:var(--w);margin-bottom:3px}
+.flow-s{font-size:10px;color:var(--sl)}
+
+/* FORMS */
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--sll);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--bdr);color:var(--w);
+  padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13px;transition:border-color .14s}
+.form-input:focus{outline:none;border-color:var(--tl)}
+.form-input::placeholder{color:var(--sl)}
+textarea.form-input{resize:vertical;min-height:80px}
+select.form-input option{background:var(--card)}
+.form-hint{font-size:11px;color:var(--sl);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.required{color:var(--rl)}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--tl);color:var(--ink)}
+.btn-primary:hover{background:var(--t)}
+.btn-success{background:var(--gl);color:var(--ink)}
+.btn-success:hover{background:var(--g)}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}
+.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+/* ALERTS */
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;
+  margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-t{background:rgba(14,165,233,.07);color:#7dd3fc;border-color:rgba(14,165,233,.2)}
+.alert-g{background:rgba(16,185,129,.07);color:#6ee7b7;border-color:rgba(16,185,129,.2)}
+.alert-a{background:rgba(245,158,11,.07);color:#fcd34d;border-color:rgba(245,158,11,.2)}
+.alert-r{background:rgba(239,68,68,.06);color:#fca5a5;border-color:rgba(239,68,68,.2)}
+
+/* PROGRESS */
+.progress-bar{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s}
+
+/* DETAIL ROWS */
+.detail-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--sl)}
+.detail-val{color:var(--w);font-weight:600;text-align:right}
+.detail-val.mono{font-family:monospace;font-size:11px}
+
+/* INSTALL CARD */
+.install-card{background:var(--card2);border:1px solid var(--bdr);border-radius:10px;
+  padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .14s}
+.install-card:hover{border-color:var(--bdr2)}
+.install-avatar{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--t),var(--v));
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.install-info{flex:1}
+.install-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.install-meta{font-size:11px;color:var(--sl)}
+.install-status{text-align:right}
+.install-rev{font-size:11px;color:var(--sll);margin-top:3px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;
+  align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr);border-radius:14px;
+  width:100%;max-width:540px;max-height:85vh;overflow-y:auto;animation:fadein .18s ease}
+.modal-hdr{padding:18px 20px 0;border-bottom:1px solid var(--bdr);margin-bottom:18px;padding-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;color:var(--sl);font-size:20px;cursor:pointer;padding:2px 6px;border-radius:5px}
+.modal-close:hover{color:var(--w)}
+.modal-body{padding:0 20px 20px}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--bdr);display:flex;gap:10px;justify-content:flex-end}
+
+/* STEPS WIZARD */
+.wizard-steps{display:flex;margin-bottom:22px;gap:0}
+.wstep{flex:1;text-align:center;padding:10px 5px;position:relative;cursor:pointer}
+.wstep::after{content:"";position:absolute;top:16px;left:55%;right:0;height:2px;background:var(--bdr)}
+.wstep:last-child::after{display:none}
+.wstep-dot{width:28px;height:28px;border-radius:50%;background:var(--card2);border:2px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:800;
+  position:relative;z-index:1;transition:all .2s}
+.wstep.done .wstep-dot{background:var(--g);border-color:var(--g);color:var(--ink)}
+.wstep.current .wstep-dot{background:var(--tl);border-color:var(--tl);color:var(--ink)}
+.wstep-lbl{font-size:10px;color:var(--sl)}
+.wstep.done .wstep-lbl,.wstep.current .wstep-lbl{color:var(--w)}
+.wform{display:none}.wform.on{display:block}
+
+/* MISC */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.sep{height:1px;background:var(--bdr);margin:16px 0}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;
+  font-size:10px;font-weight:700;background:var(--card2);border:1px solid var(--bdr);color:var(--sll);margin:2px}
+.mono{font-family:monospace}
+.fw7{font-weight:700}
+.col-g{color:var(--gl)}.col-a{color:var(--al)}.col-r{color:var(--rl)}.col-t{color:var(--tl)}.col-sl{color:var(--sl)}.col-v{color:var(--vl)}.col-w{color:var(--w)}
+.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}
+.toast{position:fixed;bottom:22px;right:22px;padding:12px 18px;border-radius:10px;
+  font-weight:700;font-size:12px;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;
+  pointer-events:none;background:var(--gl);color:var(--ink);border:1px solid rgba(16,185,129,.4)}
+.toast.show{transform:translateY(0);opacity:1}
+.empty-state{text-align:center;padding:40px 20px;color:var(--sl)}
+.empty-state .ei{font-size:36px;margin-bottom:12px}
+.empty-state p{font-size:13px;line-height:1.6;max-width:280px;margin:0 auto 16px}
+.usage-bar-row{display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:8px}
+.usage-bar-row .ubl{width:130px;color:var(--sl);flex-shrink:0}
+.usage-bar-row .ubr{width:50px;text-align:right;font-family:monospace;font-size:11px;color:var(--sll)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">Fair<span>Share</span></div>
+  <div class="tb-sep"></div>
+  <span style="font-size:12px;color:var(--sl)">Vendor Portal</span>
+  <div class="tb-sep"></div>
+  <span class="tb-badge verified">&#10003; Verified Vendor</span>
+  <div class="tb-right">
+    <div class="tb-stat"><span>&#128717;</span><strong id="hdr-products">4</strong> products</div>
+    <div class="tb-stat"><span>&#128101;</span><strong id="hdr-installs">42</strong> active installs</div>
+    <div class="tb-stat"><span>&#128200;</span><strong class="col-g">&#8377;2,34,890</strong> this month</div>
+    <div class="tb-sep"></div>
+    <div class="avatar" title="Happy Minds Pvt Ltd">HM</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div style="padding:8px 8px 0">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" data-page="dashboard" onclick="nav(this,'dashboard')">
+      <span class="nav-ic">&#127968;</span><span class="nav-label">Dashboard</span>
+    </button>
+    <button class="nav-item" data-page="installs" onclick="nav(this,'installs','green')">
+      <span class="nav-ic">&#128101;</span><span class="nav-label">Active Installs</span>
+      <span style="font-size:10px;font-weight:800;color:var(--gl)">42</span>
+    </button>
+    <button class="nav-item" data-page="revenue" onclick="nav(this,'revenue','amber')">
+      <span class="nav-ic">&#128200;</span><span class="nav-label">Revenue &amp; Payouts</span>
+    </button>
+
+    <div class="nav-section">Products</div>
+    <button class="nav-item" data-page="products" onclick="nav(this,'products')">
+      <span class="nav-ic">&#128717;</span><span class="nav-label">My Products</span>
+    </button>
+    <button class="nav-item" data-page="new-product" onclick="nav(this,'new-product','green')">
+      <span class="nav-ic">&#43;</span><span class="nav-label">Add New Product</span>
+    </button>
+    <button class="nav-item" data-page="standards" onclick="nav(this,'standards')">
+      <span class="nav-ic">&#128203;</span><span class="nav-label">Listing Standards</span>
+    </button>
+
+    <div class="nav-section">Plugin</div>
+    <button class="nav-item" data-page="plugin" onclick="nav(this,'plugin')">
+      <span class="nav-ic">&#128268;</span><span class="nav-label">My Plugin</span>
+      <span class="nav-pill">1 pending</span>
+    </button>
+    <button class="nav-item" data-page="plugin-version" onclick="nav(this,'plugin-version')">
+      <span class="nav-ic">&#128640;</span><span class="nav-label">Submit New Version</span>
+    </button>
+
+    <div class="nav-section">Account</div>
+    <button class="nav-item" data-page="settings" onclick="nav(this,'settings')">
+      <span class="nav-ic">&#9881;</span><span class="nav-label">Business Settings</span>
+    </button>
+    <button class="nav-item" data-page="support" onclick="nav(this,'support')">
+      <span class="nav-ic">&#128172;</span><span class="nav-label">Support</span>
+    </button>
+  </div>
+  <div class="sidebar-foot">
+    <button class="help-btn" onclick="nav(document.querySelector('[data-page=support]'),'support')">
+      &#10067; Need help?
+    </button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="mainScroll">
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: DASHBOARD
+════════════════════════════════════════════════ -->
+<div class="page on" id="page-dashboard">
+  <div class="page-hdr">
+    <div class="page-title">Good morning, Happy Minds &#128075;</div>
+    <div class="page-sub">Here's what's happening with your products today.</div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stats-row">
+    <div class="stat-card" onclick="nav(document.querySelector('[data-page=installs]'),'installs','green')">
+      <div class="stat-n col-g">42</div>
+      <div class="stat-l">Active Installs</div>
+      <div class="stat-ch col-g">&#8593; 8 this week</div>
+    </div>
+    <div class="stat-card" onclick="nav(document.querySelector('[data-page=revenue]'),'revenue','amber')">
+      <div class="stat-n col-a">&#8377;2.34L</div>
+      <div class="stat-l">Revenue this month</div>
+      <div class="stat-ch col-a">&#8593; 12% vs last month</div>
+    </div>
+    <div class="stat-card" onclick="nav(document.querySelector('[data-page=products]'),'products')">
+      <div class="stat-n col-t">4</div>
+      <div class="stat-l">Published Products</div>
+      <div class="stat-ch" style="color:var(--sl)">2 in draft</div>
+    </div>
+    <div class="stat-card" onclick="nav(document.querySelector('[data-page=plugin]'),'plugin')">
+      <div class="stat-n col-v">v1.2</div>
+      <div class="stat-l">Plugin Version Live</div>
+      <div class="stat-ch col-a">&#9888; v1.3 under review</div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST (first time) -->
+  <div class="card bordered-t" id="setup-checklist">
+    <div class="card-t">&#9989; Setup Checklist — You're almost there</div>
+    <div id="checklist-items">
+      <div class="detail-row" style="cursor:pointer" onclick="nav(document.querySelector('[data-page=plugin]'),'plugin')">
+        <span style="font-size:12px;display:flex;align-items:center;gap:8px">
+          <span style="color:var(--gl);font-size:14px">&#10003;</span> Register your plugin
+        </span>
+        <span class="badge badge-g">Done</span>
+      </div>
+      <div class="detail-row" style="cursor:pointer" onclick="nav(document.querySelector('[data-page=plugin]'),'plugin')">
+        <span style="font-size:12px;display:flex;align-items:center;gap:8px">
+          <span style="color:var(--gl);font-size:14px">&#10003;</span> Submit plugin version &amp; get approved
+        </span>
+        <span class="badge badge-g">Done — v1.2</span>
+      </div>
+      <div class="detail-row" style="cursor:pointer" onclick="nav(document.querySelector('[data-page=products]'),'products')">
+        <span style="font-size:12px;display:flex;align-items:center;gap:8px">
+          <span style="color:var(--gl);font-size:14px">&#10003;</span> Create your first product
+        </span>
+        <span class="badge badge-g">3 products</span>
+      </div>
+      <div class="detail-row" style="cursor:pointer" onclick="nav(document.querySelector('[data-page=settings]'),'settings')">
+        <span style="font-size:12px;display:flex;align-items:center;gap:8px">
+          <span style="color:var(--al);font-size:14px">&#9711;</span> Add payout bank account
+        </span>
+        <span class="badge badge-a">Pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITY -->
+  <div class="g2">
+    <div class="card">
+      <div class="card-t">&#128203; Recent Orders / Installs</div>
+      <table class="tbl">
+        <thead><tr><th>Tenant</th><th>Product</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr class="clickable-row" onclick="showInstallDetail('Serenity Clinic','Gratitude Journal Pro','active','2h ago')">
+            <td><strong>Serenity Clinic</strong><br><span class="col-sl fs11">Mumbai</span></td>
+            <td class="fs11">Gratitude Journal Pro</td>
+            <td><span class="badge badge-g"><span class="dot"></span> Active</span></td>
+          </tr>
+          <tr class="clickable-row" onclick="showInstallDetail('MindBloom Studio','Journal Templates','active','5h ago')">
+            <td><strong>MindBloom Studio</strong><br><span class="col-sl fs11">Bengaluru</span></td>
+            <td class="fs11">Journal Templates</td>
+            <td><span class="badge badge-g"><span class="dot"></span> Active</span></td>
+          </tr>
+          <tr class="clickable-row" onclick="showInstallDetail('ZenSpace','Guided Journal','provisioning','10m ago')">
+            <td><strong>ZenSpace</strong><br><span class="col-sl fs11">Pune</span></td>
+            <td class="fs11">Guided Journal</td>
+            <td><span class="badge badge-a"><span class="dot"></span> Provisioning</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="nav(document.querySelector('[data-page=installs]'),'installs','green')">View all installs &#8594;</button>
+    </div>
+
+    <div class="card">
+      <div class="card-t">&#128268; Plugin Status</div>
+      <div class="detail-row">
+        <span class="detail-label">Plugin key</span>
+        <span class="detail-val mono fs11">universal.vendor.marketplace</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Live version</span>
+        <span class="detail-val"><span class="badge badge-g">v1.2 — Live</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Under review</span>
+        <span class="detail-val"><span class="badge badge-a">v1.3 — Pending review</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Adapter health</span>
+        <span class="detail-val col-g">&#10003; Healthy</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Capabilities</span>
+        <span class="detail-val">5 types active</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="nav(document.querySelector('[data-page=plugin]'),'plugin')">Manage plugin &#8594;</button>
+    </div>
+  </div>
+
+  <!-- REVENUE CHART (fake bars) -->
+  <div class="card">
+    <div class="card-t" style="justify-content:space-between">
+      <span>&#128200; Revenue — Last 6 Months</span>
+      <span style="font-size:12px;color:var(--sl)">Vendor payout after 20% platform fee</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:8px;height:80px;padding-bottom:4px">
+      <div id="rev-bars" style="display:flex;align-items:flex-end;gap:8px;width:100%;height:80px"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px" id="rev-labels"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: MY PRODUCTS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-products">
+  <div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div class="page-title">My Products</div>
+      <div class="page-sub">Products visible in the marketplace. Each product is powered by your plugin.</div>
+    </div>
+    <button class="btn btn-primary" onclick="nav(document.querySelector('[data-page=new-product]'),'new-product','green')">&#43; New Product</button>
+  </div>
+
+  <div class="alert alert-t"><span class="alert-ic">&#128268;</span>
+    <span>All products run on your plugin <strong>universal.vendor.marketplace v1.2</strong>. Tenants install the offering — your plugin handles fulfilment automatically.</span>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap" id="product-filters"></div>
+  <div id="products-list"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: NEW PRODUCT (WIZARD)
+════════════════════════════════════════════════ -->
+<div class="page" id="page-new-product">
+  <div class="page-hdr">
+    <div class="page-title">Add New Product</div>
+    <div class="page-sub">4 steps. Takes about 5&ndash;8 minutes. Content &amp; media requirements adapt to what you're selling.</div>
+  </div>
+
+  <!-- WIZARD STEPS -->
+  <div class="wizard-steps">
+    <div class="wstep current" id="ws1">
+      <div class="wstep-dot">1</div>
+      <div class="wstep-lbl">Product Details</div>
+    </div>
+    <div class="wstep" id="ws2">
+      <div class="wstep-dot">2</div>
+      <div class="wstep-lbl">Fulfilment Type</div>
+    </div>
+    <div class="wstep" id="ws3">
+      <div class="wstep-dot">3</div>
+      <div class="wstep-lbl">Content &amp; Media</div>
+    </div>
+    <div class="wstep" id="ws4">
+      <div class="wstep-dot">4</div>
+      <div class="wstep-lbl">Pricing Plan</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: PRODUCT DETAILS -->
+  <div class="wform on" id="wf1">
+    <div class="card">
+      <div class="card-t">&#128717; What are you selling?</div>
+      <div class="form-group">
+        <label class="form-label">Product name <span class="required">*</span></label>
+        <input class="form-input" placeholder="e.g. Gratitude Journal Pro — Teal A5" id="np-name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Short description (shown in marketplace) <span class="required">*</span></label>
+        <textarea class="form-input" rows="2" placeholder="e.g. Hardcover A5 gratitude journal with guided daily prompts. Ships across India." id="np-desc"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category <span class="required">*</span></label>
+          <select class="form-input" id="np-cat">
+            <option value="">Select category</option>
+            <option>Ecommerce &amp; Physical Products</option>
+            <option>Digital Products</option>
+            <option>Software Products</option>
+            <option>Software &amp; SaaS Services</option>
+            <option>Cloud &amp; Infrastructure Services</option>
+            <option>Multimedia &amp; Streaming Services</option>
+            <option>LMS &amp; Education / Courses</option>
+            <option>Professional &amp; Field Services</option>
+            <option>Lifestyle &amp; Wellness</option>
+            <option>Home Services</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags (optional)</label>
+          <input class="form-input" placeholder="journal, gratitude, wellness" id="np-tags">
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="nav(document.querySelector('[data-page=products]'),'products')">Cancel</button>
+      <button class="btn btn-primary" onclick="wStep(2)">Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: FULFILMENT TYPE -->
+  <div class="wform" id="wf2">
+    <div class="card">
+      <div class="card-t">&#128268; How does this product get delivered?</div>
+      <div class="form-hint" style="margin-bottom:14px">This tells your plugin which handler to use. Pick the one that matches how your product reaches the buyer.</div>
+      <div id="ft-options" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="wStep(1)">&#8592; Back</button>
+      <button class="btn btn-primary" onclick="goToContentStep()">Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: CONTENT & MEDIA (dynamic per fulfilment type) -->
+  <div class="wform" id="wf3">
+    <div class="card">
+      <div class="card-t">&#128247; Content &amp; media</div>
+      <div class="form-hint" style="margin-bottom:14px" id="content-step-hint">Requirements below are tailored to the fulfilment type you picked in Step 2.</div>
+      <div id="type-fields"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="wStep(2)">&#8592; Back</button>
+      <button class="btn btn-primary" onclick="validateContentStep()">Continue &#8594;</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: PRICING -->
+  <div class="wform" id="wf4">
+    <div class="card">
+      <div class="card-t">&#128196; Pricing — how do you charge?</div>
+      <div class="alert alert-a"><span class="alert-ic">&#128274;</span>
+        <span>Billing model is locked once submitted. You can update the price later, but not the billing type.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Billing model <span class="required">*</span></label>
+        <select class="form-input" id="np-billing" onchange="updatePriceFields()">
+          <option value="perunit">Per order / per unit (one-time per purchase)</option>
+          <option value="sub">Monthly subscription</option>
+          <option value="onetime">One-time purchase (no recurring)</option>
+          <option value="hourly">Per hour / per session</option>
+        </select>
+      </div>
+      <div class="form-row" id="price-fields">
+        <div class="form-group">
+          <label class="form-label" id="price-label">Price per unit (&#8377;) <span class="required">*</span></label>
+          <input class="form-input" type="number" placeholder="e.g. 499" id="np-price">
+        </div>
+        <div class="form-group" id="trial-field">
+          <label class="form-label">Free trial days</label>
+          <input class="form-input" type="number" placeholder="0" id="np-trial">
+          <div class="form-hint">0 = no trial. Only for subscriptions.</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Included quota (optional)</label>
+        <input class="form-input" placeholder="e.g. 1 journal per month, 10 GB storage" id="np-quota">
+        <div class="form-hint">What's included at the base price before overage charges apply.</div>
+      </div>
+    </div>
+    <div class="card" style="background:rgba(16,185,129,.04);border-color:rgba(16,185,129,.2)">
+      <div class="card-t col-g">&#10003; What happens after you submit</div>
+      <div style="font-size:12px;color:var(--sll);line-height:1.8">
+        1. Product is created as <strong class="col-w">Draft</strong> — not visible in marketplace.<br>
+        2. Your media &amp; content from Step 3 is validated automatically against listing standards.<br>
+        3. Click <strong class="col-w">Publish</strong> when ready — product goes live instantly.<br>
+        4. Tenants install your offering. Your plugin handles every order automatically.
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="wStep(3)">&#8592; Back</button>
+      <button class="btn btn-success" onclick="submitNewProduct()">&#10003; Create Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: LISTING STANDARDS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-standards">
+  <div class="page-hdr">
+    <div class="page-title">Listing Standards</div>
+    <div class="page-sub">What every fulfilment type must include before a product can be published. Your plugin enforces these automatically.</div>
+  </div>
+
+  <div class="alert alert-t"><span class="alert-ic">&#8505;&#65039;</span>
+    <span>These are the baseline requirements across every product category on the marketplace. Step 3 (Content &amp; Media) of the product wizard only shows the fields relevant to the fulfilment type you picked — this page is the full reference.</span>
+  </div>
+
+  <div class="card bordered-t">
+    <div class="card-t">&#128247; Ecommerce &amp; physical products — <span class="col-sl fs11" style="font-weight:600">SHIP_PHYSICAL</span></div>
+    <div class="detail-row"><span class="detail-label">Primary image</span><span class="detail-val">1:1 square, min 1000&times;1000px, JPG/PNG/WebP, max 5MB, plain/white background</span></div>
+    <div class="detail-row"><span class="detail-label">Gallery images</span><span class="detail-val">Up to 8 additional, same size standard, lifestyle + detail shots recommended</span></div>
+    <div class="detail-row"><span class="detail-label">Variants</span><span class="detail-val">Size / colour / material options with per-variant stock</span></div>
+    <div class="detail-row"><span class="detail-label">Logistics</span><span class="detail-val">SKU, weight, package dimensions, ships-from pincode</span></div>
+  </div>
+
+  <div class="card bordered-v">
+    <div class="card-t">&#127891; LMS &amp; education / courses — <span class="col-sl fs11" style="font-weight:600">STREAM_LMS_COURSE</span></div>
+    <div class="detail-row"><span class="detail-label">Course thumbnail</span><span class="detail-val">16:9, min 1280&times;720px, JPG/PNG/WebP, max 5MB</span></div>
+    <div class="detail-row"><span class="detail-label">Intro / promo video</span><span class="detail-val">Hosted URL (YouTube/Vimeo/CDN), 1&ndash;5 min recommended</span></div>
+    <div class="detail-row"><span class="detail-label">Curriculum</span><span class="detail-val">Lesson-by-lesson list, each with title, video URL, duration</span></div>
+    <div class="detail-row"><span class="detail-label">Study material</span><span class="detail-val">Downloadable PDFs/slides/worksheets per course or per lesson</span></div>
+    <div class="detail-row"><span class="detail-label">Metadata</span><span class="detail-val">Skill level, language, total duration, certificate on/off, instructor bio</span></div>
+  </div>
+
+  <div class="card bordered-g">
+    <div class="card-t">&#128190; Digital products — <span class="col-sl fs11" style="font-weight:600">DELIVER_DIGITAL</span></div>
+    <div class="detail-row"><span class="detail-label">Preview image</span><span class="detail-val">1:1 square, min 1000&times;1000px</span></div>
+    <div class="detail-row"><span class="detail-label">Deliverable file(s)</span><span class="detail-val">The actual file(s) buyers receive — PDF, ZIP, font, template, etc.</span></div>
+    <div class="detail-row"><span class="detail-label">Licensing</span><span class="detail-val">Personal / commercial / extended use terms stated clearly</span></div>
+  </div>
+
+  <div class="card bordered-t">
+    <div class="card-t">&#128187; Software products — <span class="col-sl fs11" style="font-weight:600">LICENSE_SOFTWARE</span></div>
+    <div class="detail-row"><span class="detail-label">Icon / screenshot</span><span class="detail-val">App icon (square) + at least 2 product screenshots</span></div>
+    <div class="detail-row"><span class="detail-label">Compatibility</span><span class="detail-val">OS / platform support, minimum system requirements</span></div>
+    <div class="detail-row"><span class="detail-label">Delivery</span><span class="detail-val">Installer/download URL, version number, license key mechanism</span></div>
+  </div>
+
+  <div class="card bordered-a">
+    <div class="card-t">&#9729;&#65039; Software &amp; SaaS services — <span class="col-sl fs11" style="font-weight:600">PROVISION_SOFTWARE</span></div>
+    <div class="detail-row"><span class="detail-label">Product logo</span><span class="detail-val">Square icon, min 512&times;512px</span></div>
+    <div class="detail-row"><span class="detail-label">Plan tiers</span><span class="detail-val">What's included at each plan level, seat/usage limits</span></div>
+    <div class="detail-row"><span class="detail-label">Onboarding</span><span class="detail-val">What happens immediately after a tenant installs (account/workspace setup)</span></div>
+  </div>
+
+  <div class="card bordered-v">
+    <div class="card-t">&#9729;&#65039; Cloud &amp; infrastructure services — <span class="col-sl fs11" style="font-weight:600">PROVISION_CLOUD</span></div>
+    <div class="detail-row"><span class="detail-label">Service icon</span><span class="detail-val">Square icon, min 512&times;512px</span></div>
+    <div class="detail-row"><span class="detail-label">Technical specs</span><span class="detail-val">Available regions, compute/storage specs, API endpoint docs</span></div>
+    <div class="detail-row"><span class="detail-label">SLA</span><span class="detail-val">Uptime commitment, data residency, support response times</span></div>
+  </div>
+
+  <div class="card bordered-g">
+    <div class="card-t">&#127916; Multimedia &amp; streaming services — <span class="col-sl fs11" style="font-weight:600">DELIVER_MULTIMEDIA</span></div>
+    <div class="detail-row"><span class="detail-label">Cover art / thumbnail</span><span class="detail-val">1:1 or 16:9 depending on media type, min 1280px on the long edge</span></div>
+    <div class="detail-row"><span class="detail-label">Sample / preview</span><span class="detail-val">Short preview clip URL for buyers to evaluate before purchase</span></div>
+    <div class="detail-row"><span class="detail-label">Format &amp; rights</span><span class="detail-val">Resolution/bitrate options, DRM status, usage rights/runtime</span></div>
+  </div>
+
+  <div class="card bordered-a">
+    <div class="card-t">&#128295; Professional &amp; field services — <span class="col-sl fs11" style="font-weight:600">DISPATCH_SERVICE</span></div>
+    <div class="detail-row"><span class="detail-label">Provider photo</span><span class="detail-val">Headshot or team photo, square, min 500&times;500px</span></div>
+    <div class="detail-row"><span class="detail-label">Coverage</span><span class="detail-val">Service area / radius, response time SLA</span></div>
+  </div>
+
+  <div class="card bordered-t">
+    <div class="card-t">&#128197; Appointments &amp; sessions — <span class="col-sl fs11" style="font-weight:600">BOOK_APPOINTMENT</span></div>
+    <div class="detail-row"><span class="detail-label">Profile photo</span><span class="detail-val">Square, min 500&times;500px</span></div>
+    <div class="detail-row"><span class="detail-label">Session details</span><span class="detail-val">Duration, format (video/in-person), calendar availability</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: ACTIVE INSTALLS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-installs">
+  <div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div class="page-title">Active Installs</div>
+      <div class="page-sub">Every tenant currently using your products. Click any row for details.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <select class="form-input" style="width:auto;font-size:12px" onchange="filterInstalls(this.value)">
+        <option value="all">All products</option>
+        <option>Gratitude Journal Pro</option>
+        <option>Journal Templates</option>
+        <option>Guided Journal Suite</option>
+      </select>
+    </div>
+  </div>
+  <div id="installs-table-container"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: REVENUE & PAYOUTS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-revenue">
+  <div class="page-hdr">
+    <div class="page-title">Revenue &amp; Payouts</div>
+    <div class="page-sub">Your earnings after the 20% platform commission. Payouts processed weekly.</div>
+  </div>
+
+  <div class="g3" style="margin-bottom:16px">
+    <div class="card" style="text-align:center">
+      <div style="font-size:24px;font-weight:800;color:var(--gl)">&#8377;2,34,890</div>
+      <div style="font-size:11px;color:var(--sl);margin-top:4px">This month (June 2024)</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:24px;font-weight:800;color:var(--al)">&#8377;18,790</div>
+      <div style="font-size:11px;color:var(--sl);margin-top:4px">Pending payout (7 days)</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:24px;font-weight:800;color:var(--t)">&#8377;10,44,200</div>
+      <div style="font-size:11px;color:var(--sl);margin-top:4px">All time earned</div>
+    </div>
+  </div>
+
+  <div class="alert alert-g"><span class="alert-ic">&#128260;</span>
+    <span><strong>Fair Share attribution:</strong> Part of your earnings come from the 75% vendor payout split. The remaining 5% of each transaction goes to the platform builder attribution pool — separate from your revenue.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-t">&#128196; Payout History</div>
+    <table class="tbl">
+      <thead><tr><th>Period</th><th>Gross Revenue</th><th>Platform Fee (20%)</th><th>Your Payout</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr class="clickable-row">
+          <td><strong>June 2024</strong></td>
+          <td class="mono">&#8377;2,93,612</td>
+          <td class="mono col-sl">&#8377;58,722</td>
+          <td class="mono fw7 col-g">&#8377;2,34,890</td>
+          <td><span class="badge badge-g">Paid</span></td>
+          <td><button class="action-btn tbl" onclick="showPayout('June 2024','₹2,34,890')">View invoice</button></td>
+        </tr>
+        <tr class="clickable-row">
+          <td><strong>May 2024</strong></td>
+          <td class="mono">&#8377;2,61,875</td>
+          <td class="mono col-sl">&#8377;52,375</td>
+          <td class="mono fw7 col-g">&#8377;2,09,500</td>
+          <td><span class="badge badge-g">Paid</span></td>
+          <td><button class="action-btn tbl" onclick="showPayout('May 2024','₹2,09,500')">View invoice</button></td>
+        </tr>
+        <tr class="clickable-row">
+          <td><strong>April 2024</strong></td>
+          <td class="mono">&#8377;2,32,500</td>
+          <td class="mono col-sl">&#8377;46,500</td>
+          <td class="mono fw7 col-g">&#8377;1,86,000</td>
+          <td><span class="badge badge-g">Paid</span></td>
+          <td><button class="action-btn tbl" onclick="showPayout('April 2024','₹1,86,000')">View invoice</button></td>
+        </tr>
+        <tr>
+          <td><strong>July 2024</strong></td>
+          <td class="mono col-sl">In progress</td>
+          <td class="mono col-sl">—</td>
+          <td class="mono fw7 col-a">&#8377;18,790</td>
+          <td><span class="badge badge-a">Pending</span></td>
+          <td><button class="action-btn tbl">View details</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-t">&#128201; Revenue by Product</div>
+    <div id="rev-by-product"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: MY PLUGIN
+════════════════════════════════════════════════ -->
+<div class="page" id="page-plugin">
+  <div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div class="page-title">My Plugin</div>
+      <div class="page-sub">Your plugin connects the marketplace to your fulfilment system. Platform calls it automatically.</div>
+    </div>
+    <button class="btn btn-primary" onclick="nav(document.querySelector('[data-page=plugin-version]'),'plugin-version')">&#128640; Submit New Version</button>
+  </div>
+
+  <!-- PLUGIN IDENTITY -->
+  <div class="card bordered-t">
+    <div class="card-t">&#128268; Plugin Identity</div>
+    <div class="g2">
+      <div>
+        <div class="detail-row"><span class="detail-label">Plugin name</span><span class="detail-val">Universal Vendor Marketplace</span></div>
+        <div class="detail-row"><span class="detail-label">Plugin key</span><span class="detail-val mono fs11">universal.vendor.marketplace</span></div>
+        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val"><span class="badge badge-g">&#10003; Active</span></span></div>
+      </div>
+      <div>
+        <div class="detail-row"><span class="detail-label">Live version</span><span class="detail-val"><span class="badge badge-g">v1.2.0</span></span></div>
+        <div class="detail-row"><span class="detail-label">Adapter URL</span><span class="detail-val mono fs11">api.universalplugin.com</span></div>
+        <div class="detail-row"><span class="detail-label">Health</span><span class="detail-val col-g">&#10003; Healthy (checked 2m ago)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERSION HISTORY -->
+  <div class="card">
+    <div class="card-t">&#128218; Version History</div>
+    <table class="tbl">
+      <thead><tr><th>Version</th><th>Submitted</th><th>Status</th><th>Fulfilment types</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>v1.3.0</strong></td>
+          <td class="col-sl fs11">2 Jun 2024</td>
+          <td><span class="badge badge-a">&#9203; Under review</span></td>
+          <td class="fs11">5 types + new BOOK_APPOINTMENT updates</td>
+          <td><button class="action-btn tbl" onclick="showVersionDetail('v1.3.0','Under review')">Details</button></td>
+        </tr>
+        <tr>
+          <td><strong>v1.2.0</strong> <span class="badge badge-g" style="font-size:9px">LIVE</span></td>
+          <td class="col-sl fs11">1 May 2024</td>
+          <td><span class="badge badge-g">&#10003; Live</span></td>
+          <td class="fs11">5 fulfilment types</td>
+          <td><button class="action-btn tbl" onclick="showVersionDetail('v1.2.0','Live')">Details</button></td>
+        </tr>
+        <tr>
+          <td><strong>v1.1.0</strong></td>
+          <td class="col-sl fs11">10 Apr 2024</td>
+          <td><span class="badge badge-sl">Superseded</span></td>
+          <td class="fs11">4 fulfilment types</td>
+          <td><button class="action-btn tbl" onclick="showVersionDetail('v1.1.0','Superseded')">Details</button></td>
+        </tr>
+        <tr>
+          <td><strong>v1.0.0</strong></td>
+          <td class="col-sl fs11">1 Mar 2024</td>
+          <td><span class="badge badge-sl">Superseded</span></td>
+          <td class="fs11">3 fulfilment types</td>
+          <td><button class="action-btn tbl">Details</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WHAT YOUR PLUGIN HANDLES -->
+  <div class="card">
+    <div class="card-t">&#128256; What your plugin handles automatically</div>
+    <div class="alert alert-g" style="margin-bottom:12px"><span class="alert-ic">&#9729;</span>
+      <span>You never touch individual orders directly. When a tenant installs your offering, the platform calls your plugin's <strong>/provision</strong> endpoint. Your plugin does the rest.</span>
+    </div>
+    <div id="cap-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: SUBMIT NEW VERSION
+════════════════════════════════════════════════ -->
+<div class="page" id="page-plugin-version">
+  <div class="page-hdr">
+    <div class="page-title">Submit New Plugin Version</div>
+    <div class="page-sub">Platform reviews it before going live. Your current v1.2 stays active during review.</div>
+  </div>
+
+  <div class="alert alert-t"><span class="alert-ic">&#128203;</span>
+    <span>You only need to submit a new version when your <strong>adapter code changes</strong>. Updating product details, prices, or images does NOT require a new plugin version.</span>
+  </div>
+
+  <div class="card">
+    <div class="card-t">&#128640; Version Details</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">New version number <span class="required">*</span></label>
+        <input class="form-input" placeholder="e.g. 1.3.0" id="pv-semver">
+        <div class="form-hint">Must be higher than current live version (v1.2.0)</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">What changed? <span class="required">*</span></label>
+        <input class="form-input" placeholder="e.g. Improved appointment rescheduling" id="pv-changelog">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Adapter container image (OCI URL) <span class="required">*</span></label>
+      <input class="form-input" placeholder="e.g. registry.io/happyminds/uvp:1.3.0@sha256:abc123..." id="pv-artifact">
+      <div class="form-hint">Must be a fully qualified OCI image reference with digest (sha256:...).</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">SBOM file URL <span class="required">*</span></label>
+      <input class="form-input" placeholder="e.g. https://uploads.platform.io/sbom/uvp-1.3.0.json" id="pv-sbom">
+      <div class="form-hint">Software Bill of Materials required for security scan. Generate with <code style="background:var(--card2);padding:1px 5px;border-radius:4px;font-size:11px">syft</code> or <code style="background:var(--card2);padding:1px 5px;border-radius:4px;font-size:11px">cyclonedx</code>.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">&#9203; What happens after you submit</div>
+    <div class="flow" style="flex-direction:column;gap:0">
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(14,165,233,.1);border:2px solid var(--tl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--tl);flex-shrink:0">1</div>
+        <div><div style="font-size:12px;font-weight:700">Automated scan</div><div class="col-sl fs11">SBOM security scan + container signature verification. Usually done in minutes.</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,.1);border:2px solid var(--al);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--al);flex-shrink:0">2</div>
+        <div><div style="font-size:12px;font-weight:700">Governance review</div><div class="col-sl fs11">Platform ops checks permissions, adapter endpoint changes. Usually 3–5 business days.</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid var(--gl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--gl);flex-shrink:0">3</div>
+        <div><div style="font-size:12px;font-weight:700">Goes live</div><div class="col-sl fs11">Your v1.2 stays active until this is approved. No downtime for your customers.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="nav(document.querySelector('[data-page=plugin]'),'plugin')">Cancel</button>
+    <button class="btn btn-primary" onclick="submitVersion()">&#128640; Submit for Review</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: SETTINGS
+════════════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <div class="page-hdr">
+    <div class="page-title">Business Settings</div>
+    <div class="page-sub">Your vendor profile, payout details, and notification preferences.</div>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="card">
+        <div class="card-t">&#127968; Business Profile</div>
+        <div class="form-group">
+          <label class="form-label">Legal business name</label>
+          <input class="form-input" value="Happy Minds Pvt Ltd" readonly style="opacity:.7">
+        </div>
+        <div class="form-group">
+          <label class="form-label">GST / Tax ID</label>
+          <input class="form-input" value="27AADCH1234A1Z5" readonly style="opacity:.7">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Support email</label>
+          <input class="form-input" value="support@happyminds.io" id="set-email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Business category</label>
+          <input class="form-input" value="Lifestyle &amp; Wellness" readonly style="opacity:.7">
+        </div>
+        <div style="font-size:11px;color:var(--sl);margin-top:6px">Legal name and Tax ID are verified — contact support to change.</div>
+        <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="toast('Support email updated')">Save changes</button>
+      </div>
+
+      <div class="card">
+        <div class="card-t">&#128276; Notifications</div>
+        <div id="notif-rows"></div>
+        <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="toast('Notification settings saved')">Save</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="card bordered-a">
+        <div class="card-t">&#128176; Payout Account</div>
+        <div class="alert alert-a" style="margin-bottom:12px"><span class="alert-ic">&#9888;</span>
+          <span>No payout account configured. Add your bank account to receive payments.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account holder name <span class="required">*</span></label>
+          <input class="form-input" placeholder="As per bank records" id="bank-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account number <span class="required">*</span></label>
+          <input class="form-input" placeholder="XXXXXXXXXXXXXXXX" id="bank-acc">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">IFSC code <span class="required">*</span></label>
+            <input class="form-input" placeholder="e.g. HDFC0001234" id="bank-ifsc">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Account type</label>
+            <select class="form-input"><option>Current</option><option>Savings</option></select>
+          </div>
+        </div>
+        <button class="btn btn-success btn-sm" onclick="toast('Bank account saved — verification pending')">Add Bank Account</button>
+      </div>
+
+      <div class="card">
+        <div class="card-t">&#128273; API Credentials</div>
+        <div class="detail-row">
+          <span class="detail-label">Vendor ID</span>
+          <span class="detail-val mono fs11">vnd-uuid-happyminds</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Plugin key</span>
+          <span class="detail-val mono fs11">universal.vendor.marketplace</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Webhook secret</span>
+          <span class="detail-val mono fs11">••••••••••••••••<button onclick="this.textContent=this.textContent==='Show'?'wh_sec_abc123xyz':'Show'" style="background:none;border:none;color:var(--tl);cursor:pointer;font-size:11px;margin-left:6px">Show</button></span>
+        </div>
+        <div class="form-hint" style="margin-top:8px">Use these in your adapter to verify platform requests. Never share your webhook secret.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: SUPPORT
+════════════════════════════════════════════════ -->
+<div class="page" id="page-support">
+  <div class="page-hdr">
+    <div class="page-title">Support &amp; Documentation</div>
+    <div class="page-sub">Get help with your plugin, products, or account.</div>
+  </div>
+
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card clickable" style="text-align:center;padding:24px" onclick="window.open('https://docs.platform.io/vendor','_blank')">
+      <div style="font-size:32px;margin-bottom:8px">&#128218;</div>
+      <div style="font-weight:700;margin-bottom:4px">Plugin Documentation</div>
+      <div class="col-sl fs11">How to build and test your adapter</div>
+    </div>
+    <div class="card clickable" style="text-align:center;padding:24px" onclick="window.open('https://docs.platform.io/billing','_blank')">
+      <div style="font-size:32px;margin-bottom:8px">&#128196;</div>
+      <div style="font-weight:700;margin-bottom:4px">Billing &amp; Payouts</div>
+      <div class="col-sl fs11">How revenue split and payouts work</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-t">&#128172; Contact Support</div>
+    <div class="form-group">
+      <label class="form-label">Topic</label>
+      <select class="form-input">
+        <option>Plugin review query</option>
+        <option>Missing payout</option>
+        <option>Product listing issue</option>
+        <option>API / adapter issue</option>
+        <option>Account / billing question</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-input" rows="4" placeholder="Describe your issue..." id="support-msg"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="submitSupport()">Send message</button>
+  </div>
+
+  <div class="card">
+    <div class="card-t">&#9201; Typical Response Times</div>
+    <div class="detail-row"><span class="detail-label">Plugin governance review</span><span class="detail-val">3–5 business days</span></div>
+    <div class="detail-row"><span class="detail-label">Payout queries</span><span class="detail-val">1 business day</span></div>
+    <div class="detail-row"><span class="detail-label">Technical support</span><span class="detail-val">4–8 hours</span></div>
+    <div class="detail-row"><span class="detail-label">Account issues</span><span class="detail-val">1 business day</span></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MODALS -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">Detail</div>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+var PRODUCTS = [
+  {id:'p1',name:'Gratitude Journal Pro',category:'Lifestyle & Wellness',type:'SHIP_PHYSICAL',
+   status:'published',installs:28,price:'₹499/order',plan:'Per unit',
+   desc:'Hardcover A5 gratitude journal with guided daily prompts. Ships across India.'},
+  {id:'p2',name:'Guided Journal Suite',category:'Lifestyle & Wellness',type:'SHIP_PHYSICAL',
+   status:'published',installs:11,price:'₹349/month',plan:'Monthly subscription',
+   desc:'Monthly subscription delivering a new guided journal every month.'},
+  {id:'p3',name:'Journal Templates (Digital)',category:'Digital Products',type:'DELIVER_DIGITAL',
+   status:'published',installs:3,price:'₹199 one-time',plan:'One-time',
+   desc:'Printable PDF journal templates, delivered instantly after purchase.'},
+  {id:'p4',name:'Mindfulness Journal Kit',category:'Lifestyle & Wellness',type:'SHIP_PHYSICAL',
+   status:'draft',installs:0,price:'₹699/order',plan:'Per unit',
+   desc:'Premium wellness kit with journal, pen, and mood tracker.'},
+  {id:'p5',name:'Mindful Living — Video Course',category:'LMS & Education / Courses',type:'STREAM_LMS_COURSE',
+   status:'published',installs:14,price:'₹1,499 one-time',plan:'One-time',
+   desc:'8-lesson video course with downloadable workbooks and a completion certificate.'},
+  {id:'p6',name:'JournalSync Cloud Backup',category:'Cloud & Infrastructure Services',type:'PROVISION_CLOUD',
+   status:'draft',installs:0,price:'₹299/month',plan:'Monthly subscription',
+   desc:'Encrypted cloud backup for tenant journal data, 99.9% uptime SLA.'},
+  {id:'p7',name:'Journal Templates 2022 Edition',category:'Digital Products',type:'DELIVER_DIGITAL',
+   status:'archived',installs:0,price:'₹149 one-time',plan:'One-time',archivedAt:'2024-01-10',
+   desc:'Superseded by the current Journal Templates pack. Kept for historical records only.'},
+  {id:'p8',name:'Mindful Living — Course (v1)',category:'LMS & Education / Courses',type:'STREAM_LMS_COURSE',
+   status:'archived',installs:2,price:'₹999 one-time',plan:'One-time',archivedAt:'2026-07-15',
+   desc:'Original course edition, replaced by the current video course. A couple of installs still active.'},
+];
+
+var PURGE_RETENTION_MONTHS = 24;
+var PURGE_WARNING_DAYS = 30;
+
+function monthsSince(dateStr){
+  var then=new Date(dateStr), now=new Date();
+  return (now.getFullYear()-then.getFullYear())*12 + (now.getMonth()-then.getMonth());
+}
+
+var INSTALLS = [
+  {tenant:'Serenity Wellness Clinic',location:'Mumbai',product:'Gratitude Journal Pro',type:'SHIP_PHYSICAL',since:'15 Mar 2024',status:'active',orders:8,revenue:'₹3,992'},
+  {tenant:'MindBloom Studio',location:'Bengaluru',product:'Gratitude Journal Pro',type:'SHIP_PHYSICAL',since:'1 Apr 2024',status:'active',orders:5,revenue:'₹2,495'},
+  {tenant:'ZenSpace Therapy',location:'Pune',product:'Guided Journal Suite',type:'SHIP_PHYSICAL',since:'22 Apr 2024',status:'active',orders:3,revenue:'₹1,047'},
+  {tenant:'Calm Corner',location:'Delhi',product:'Gratitude Journal Pro',type:'SHIP_PHYSICAL',since:'5 May 2024',status:'active',orders:6,revenue:'₹2,994'},
+  {tenant:'Inner Peace Centre',location:'Hyderabad',product:'Journal Templates (Digital)',type:'DELIVER_DIGITAL',since:'10 May 2024',status:'active',orders:1,revenue:'₹199'},
+  {tenant:'Bloom Wellness',location:'Chennai',product:'Guided Journal Suite',type:'SHIP_PHYSICAL',since:'12 May 2024',status:'active',orders:4,revenue:'₹1,396'},
+  {tenant:'Mindful Path',location:'Jaipur',product:'Gratitude Journal Pro',type:'SHIP_PHYSICAL',since:'20 May 2024',status:'provisioning',orders:0,revenue:'—'},
+  {tenant:'Tranquil Space',location:'Kolkata',product:'Gratitude Journal Pro',type:'SHIP_PHYSICAL',since:'1 Jun 2024',status:'active',orders:2,revenue:'₹998'},
+];
+
+var FT_TYPES = [
+  {key:'SHIP_PHYSICAL',icon:'📦',title:'Ship a physical product',desc:'Ecommerce — journal, book, kit, food — anything you physically pack and ship'},
+  {key:'DELIVER_DIGITAL',icon:'💾',title:'Deliver a digital file',desc:'PDF, template, ebook, font — download link sent after payment'},
+  {key:'LICENSE_SOFTWARE',icon:'💻',title:'Sell a software product',desc:'Desktop/mobile app or plugin — installer + license key delivered'},
+  {key:'PROVISION_SOFTWARE',icon:'🧩',title:'Create a software workspace',desc:'SaaS app, API access, cloud tool — account created for the buyer'},
+  {key:'PROVISION_CLOUD',icon:'☁️',title:'Provision a cloud service',desc:'Compute, storage, hosting — infrastructure resource created for the tenant'},
+  {key:'STREAM_LMS_COURSE',icon:'🎓',title:'Deliver a course (LMS)',desc:'Video lessons + study material — tenant\'s learners get course access'},
+  {key:'DELIVER_MULTIMEDIA',icon:'🎬',title:'Stream multimedia content',desc:'Video, audio, podcast — streamed or licensed to the buyer'},
+  {key:'DISPATCH_SERVICE',icon:'🔧',title:'Send someone to a location',desc:'Plumber, electrician, cleaner — human dispatched to the buyer\'s address'},
+  {key:'BOOK_APPOINTMENT',icon:'📅',title:'Book a session or appointment',desc:'Therapy, tutoring, consulting — calendar booking with a professional'},
+];
+
+var CAPS = [
+  {type:'SHIP_PHYSICAL',icon:'📦',label:'Physical shipping',note:'Order routed to your ERP + courier. Tracking link sent to tenant.'},
+  {type:'DELIVER_DIGITAL',icon:'💾',label:'Digital delivery',note:'Pre-signed download URL generated. License key attached if needed.'},
+  {type:'LICENSE_SOFTWARE',icon:'💻',label:'Software licensing',note:'Installer URL + unique license key issued to the buyer.'},
+  {type:'PROVISION_SOFTWARE',icon:'🧩',label:'Software provisioning',note:'Workspace or API access created in your system for the tenant.'},
+  {type:'PROVISION_CLOUD',icon:'☁️',label:'Cloud provisioning',note:'Compute/storage resource created in your cloud per your SLA.'},
+  {type:'STREAM_LMS_COURSE',icon:'🎓',label:'Course / LMS access',note:'Tenant\'s learners get enrolled with video + material access.'},
+  {type:'DELIVER_MULTIMEDIA',icon:'🎬',label:'Multimedia streaming',note:'Stream link or licensed download issued, DRM honoured if set.'},
+  {type:'DISPATCH_SERVICE',icon:'🔧',label:'Field service dispatch',note:'Job created in your field management system. Professional assigned.'},
+  {type:'BOOK_APPOINTMENT',icon:'📅',label:'Appointment booking',note:'Calendar slot booked. Meeting link + invite sent to the buyer.'},
+];
+
+var NOTIFS = [
+  {key:'new_install',label:'New install by a tenant',default:true},
+  {key:'order',label:'Order placed / provision triggered',default:true},
+  {key:'payout',label:'Payout processed',default:true},
+  {key:'review',label:'Plugin review status updates',default:true},
+  {key:'dispute',label:'Refund or dispute raised',default:true},
+  {key:'weekly',label:'Weekly performance digest',default:false},
+];
+
+// ─── NAV ────────────────────────────────────────────────────────────────────
+function nav(btn, page, colorClass) {
+  document.querySelectorAll('.nav-item').forEach(function(b){b.className='nav-item'});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  if(btn){
+    btn.className='nav-item active'+(colorClass?' '+colorClass:'');
+    document.querySelectorAll('.nav-item').forEach(function(b){
+      if(b.dataset.page===page) b.className='nav-item active'+(colorClass?' '+colorClass:'');
+    });
+  }
+  var pg=document.getElementById('page-'+page);
+  if(pg) pg.classList.add('on');
+  document.getElementById('mainScroll').scrollTop=0;
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(title, body, footBtns) {
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  var foot=document.getElementById('modal-foot');
+  foot.innerHTML='<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  if(footBtns) foot.innerHTML = footBtns + foot.innerHTML;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').classList.remove('open');
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg) {
+  var t=document.getElementById('toast');
+  t.textContent='✓ '+msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2800);
+}
+
+// ─── PRODUCTS PAGE ──────────────────────────────────────────────────────────
+var productFilter='all';
+
+function renderProductFilters(){
+  var cont=document.getElementById('product-filters');
+  if(!cont) return;
+  var counts={all:PRODUCTS.length,published:0,draft:0,archived:0};
+  PRODUCTS.forEach(function(p){counts[p.status]=(counts[p.status]||0)+1;});
+  var opts=[['all','All'],['published','Published'],['draft','Draft'],['archived','Archived']];
+  cont.innerHTML=opts.map(function(o){
+    var cls=productFilter===o[0]?'btn btn-primary btn-sm':'btn btn-ghost btn-sm';
+    return '<button class="'+cls+'" onclick="productFilter=\''+o[0]+'\';renderProducts()">'+o[1]+' ('+(counts[o[0]]||0)+')</button>';
+  }).join('');
+}
+
+function renderProducts(){
+  renderProductFilters();
+  var cont=document.getElementById('products-list');
+  cont.innerHTML='';
+  var list=productFilter==='all'?PRODUCTS:PRODUCTS.filter(function(p){return p.status===productFilter;});
+  if(list.length===0){
+    cont.innerHTML='<div class="card" style="text-align:center;color:var(--sl);padding:30px">No products in this view.</div>';
+    return;
+  }
+  list.forEach(function(p){
+    var statusBadge=p.status==='published'?'<span class="badge badge-g">&#10003; Published</span>'
+      :p.status==='archived'?'<span class="badge badge-sl">&#128230; Archived</span>'
+      :'<span class="badge badge-a">&#9711; Draft</span>';
+    var ftTag='<span class="tag">'+getFTIcon(p.type)+' '+p.type+'</span>';
+    var actions='<button class="btn btn-ghost btn-sm" onclick="showProductDetail(\''+p.id+'\')">&#9998; Edit</button>';
+    var purgeNote='';
+    if(p.status==='draft'){
+      actions+='<button class="btn btn-success btn-sm" onclick="publishProduct(\''+p.id+'\')">&#128640; Publish</button>';
+    } else if(p.status==='published'){
+      actions+='<button class="btn btn-ghost btn-sm" onclick="archiveProduct(\''+p.id+'\')">&#128230; Archive</button>';
+    } else if(p.status==='archived'){
+      var m=monthsSince(p.archivedAt), remain=PURGE_RETENTION_MONTHS-m;
+      actions+='<button class="btn btn-ghost btn-sm" onclick="restoreProduct(\''+p.id+'\')">&#8635; Restore</button>';
+      if(p.installs>0){
+        purgeNote='<div class="form-hint" style="margin-top:6px;color:var(--al)">&#9888;&#65039; '+p.installs+' active install(s) — not eligible for purge until all installs end.</div>';
+      } else if(remain<=0){
+        purgeNote='<div class="form-hint" style="margin-top:6px;color:var(--rl)">&#9888;&#65039; Eligible for purge — permanent deletion in '+PURGE_WARNING_DAYS+' days unless restored.</div>';
+        actions+='<button class="btn btn-ghost btn-sm" style="color:var(--rl)" onclick="purgeProduct(\''+p.id+'\')">&#128465;&#65039; Purge now</button>';
+      } else {
+        purgeNote='<div class="form-hint" style="margin-top:6px">Archived '+m+' mo ago — eligible for purge in '+remain+' mo (retention: '+PURGE_RETENTION_MONTHS+' mo).</div>';
+      }
+    }
+    cont.innerHTML+=`
+      <div class="card" style="margin-bottom:12px${p.status==='archived'?';opacity:.8':''}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+              <div style="font-size:15px;font-weight:800">${p.name}</div>
+              ${statusBadge}
+            </div>
+            <div style="font-size:12px;color:var(--sll);margin-bottom:8px">${p.desc}</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              ${ftTag}
+              <span class="tag">💰 ${p.plan}</span>
+              <span class="tag">👥 ${p.installs} installs</span>
+              <span class="tag">📂 ${p.category}</span>
+            </div>
+            ${purgeNote}
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:18px;font-weight:800;color:var(--w)">${p.price}</div>
+            <div style="font-size:10px;color:var(--sl);margin-bottom:10px">pricing</div>
+            <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
+              ${actions}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+function archiveProduct(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  openModal('Archive: '+p.name,`
+    <p style="font-size:13px;color:var(--sll);line-height:1.7">Archiving removes <strong class="col-w">${p.name}</strong> from marketplace search and blocks new installs. ${p.installs>0?'Its <strong class=\"col-w\">'+p.installs+' existing install(s) keep running unaffected.</strong>':'It has no active installs.'}</p>
+    <div class="alert alert-t" style="margin-top:8px"><span class="alert-ic">ℹ️</span><span>You can restore it to Draft or Published at any time. After ${PURGE_RETENTION_MONTHS} months archived with zero active installs, it becomes eligible for permanent deletion (with a ${PURGE_WARNING_DAYS}-day warning first).</span></div>
+  `,`<button class="btn btn-primary" onclick="p=PRODUCTS.find(function(x){return x.id==='${id}'});if(p){p.status='archived';p.archivedAt=new Date().toISOString().slice(0,10);}renderProducts();toast('${p.name} archived');closeModal()">📦 Archive product</button>`);
+}
+
+function restoreProduct(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  p.status='draft';
+  delete p.archivedAt;
+  renderProducts();
+  toast(p.name+' restored to Draft');
+}
+
+function purgeProduct(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  openModal('Permanently delete: '+p.name,`
+    <div class="alert alert-r"><span class="alert-ic">⚠️</span><span>This permanently deletes the listing, its images, and content. This cannot be undone.</span></div>
+    <p style="font-size:13px;color:var(--sll);line-height:1.7;margin-top:10px">Order history, payout records, and the audit trail for <strong class="col-w">${p.name}</strong> are kept separately for accounting purposes — only the catalog listing itself is removed.</p>
+  `,`<button class="btn btn-danger" onclick="PRODUCTS=PRODUCTS.filter(function(x){return x.id!=='${id}'});renderProducts();toast('${p.name} permanently deleted');closeModal()">🗑️ Delete permanently</button>`);
+}
+
+function getFTIcon(type){
+  return {'SHIP_PHYSICAL':'📦','DISPATCH_SERVICE':'🔧','DELIVER_DIGITAL':'💾','PROVISION_SOFTWARE':'🧩',
+    'PROVISION_CLOUD':'☁️','LICENSE_SOFTWARE':'💻','STREAM_LMS_COURSE':'🎓','DELIVER_MULTIMEDIA':'🎬',
+    'BOOK_APPOINTMENT':'📅'}[type]||'📦';
+}
+
+function showProductDetail(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  openModal('Edit: '+p.name,`
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${p.status==='published'?'<span class="badge badge-g">Published</span>':p.status==='archived'?'<span class="badge badge-sl">Archived</span>':'<span class="badge badge-a">Draft</span>'}</span></div>
+    <div class="detail-row"><span class="detail-label">Fulfilment type</span><span class="detail-val mono">${p.type}</span></div>
+    <div class="detail-row"><span class="detail-label">Active installs</span><span class="detail-val fw7">${p.installs}</span></div>
+    <div class="sep"></div>
+    <div class="form-group"><label class="form-label">Product name</label><input class="form-input" value="${p.name}" id="edit-name"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" rows="2" id="edit-desc">${p.desc}</textarea></div>
+    <div class="form-group"><label class="form-label">Price</label><input class="form-input" value="${p.price}" id="edit-price"></div>
+    <div class="alert alert-t" style="margin-top:8px"><span class="alert-ic">ℹ️</span><span>Billing model cannot be changed. Submit a new offering if you need to change how you charge.</span></div>
+  `,`<button class="btn btn-primary btn-sm" onclick="toast('Product saved');closeModal()">Save changes</button>`);
+}
+
+function publishProduct(id){
+  var p=PRODUCTS.find(function(x){return x.id===id});
+  if(!p) return;
+  openModal('Publish: '+p.name,`
+    <div class="alert alert-g"><span class="alert-ic">✓</span><span>Your plugin v1.2 is approved. This product can go live immediately.</span></div>
+    <p style="font-size:13px;color:var(--sll);line-height:1.7">Publishing will make <strong class="col-w">${p.name}</strong> visible in the marketplace catalog. Tenants can install it right away. Your plugin handles fulfilment automatically.</p>
+    <div class="sep"></div>
+    <div class="detail-row"><span class="detail-label">Fulfilment type</span><span class="detail-val mono">${p.type}</span></div>
+    <div class="detail-row"><span class="detail-label">Pricing</span><span class="detail-val">${p.price}</span></div>
+    <div class="detail-row"><span class="detail-label">Plugin version</span><span class="detail-val">v1.2 (live)</span></div>
+  `,`<button class="btn btn-success" onclick="p=PRODUCTS.find(function(x){return x.id==='${id}'});if(p){p.status='published';p.installs=0;}renderProducts();toast('${p.name} is now live!');closeModal()">✓ Publish now</button>`);
+}
+
+// ─── INSTALLS PAGE ──────────────────────────────────────────────────────────
+function renderInstalls(filter){
+  var cont=document.getElementById('installs-table-container');
+  if(!cont) return;
+  var rows=filter&&filter!=='all'?INSTALLS.filter(function(i){return i.product===filter}):INSTALLS;
+  cont.innerHTML='<div class="card"><table class="tbl"><thead><tr><th>Tenant</th><th>Product</th><th>Type</th><th>Since</th><th>Orders</th><th>Revenue</th><th>Status</th><th></th></tr></thead><tbody>'
+    +rows.map(function(i){
+      var st=i.status==='active'?'<span class="badge badge-g"><span class="dot"></span> Active</span>':'<span class="badge badge-a"><span class="dot"></span> Provisioning</span>';
+      return `<tr class="clickable-row" onclick="showInstallDetail('${i.tenant}','${i.product}','${i.status}','${i.since}')">
+        <td><strong>${i.tenant}</strong><br><span class="col-sl fs11">${i.location}</span></td>
+        <td class="fs11">${i.product}</td>
+        <td><span class="tag">${getFTIcon(i.type)}</span></td>
+        <td class="col-sl fs11">${i.since}</td>
+        <td class="fw7">${i.orders}</td>
+        <td class="fw7 col-g">${i.revenue}</td>
+        <td>${st}</td>
+        <td><button class="action-btn tbl">Details</button></td>
+      </tr>`;
+    }).join('')+'</tbody></table></div>';
+}
+
+function filterInstalls(val){ renderInstalls(val); }
+
+function showInstallDetail(tenant, product, status, since){
+  openModal(tenant,`
+    <div class="detail-row"><span class="detail-label">Product</span><span class="detail-val">${product}</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${status==='active'?'<span class="badge badge-g">Active</span>':'<span class="badge badge-a">Provisioning</span>'}</span></div>
+    <div class="detail-row"><span class="detail-label">Install date</span><span class="detail-val">${since}</span></div>
+    <div class="detail-row"><span class="detail-label">Entitlement</span><span class="detail-val mono fs11">ent-uuid-xxx</span></div>
+    <div class="detail-row"><span class="detail-label">Subscription</span><span class="detail-val"><span class="badge badge-g">Active</span></span></div>
+    <div class="sep"></div>
+    <div style="font-size:11px;color:var(--sl);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Plugin handles</div>
+    <div style="font-size:12px;color:var(--sll);line-height:1.7">Your plugin receives <code style="background:var(--card2);padding:1px 5px;border-radius:4px;font-size:11px">/provision</code> calls for this tenant automatically. You don't need to do anything manually.</div>
+  `);
+}
+
+// ─── VERSION DETAIL ──────────────────────────────────────────────────────────
+function showVersionDetail(ver, status){
+  openModal('Plugin '+ver,`
+    <div class="detail-row"><span class="detail-label">Version</span><span class="detail-val fw7">${ver}</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-val">${status==='Live'?'<span class="badge badge-g">Live</span>':status==='Under review'?'<span class="badge badge-a">Under review (3-5 days)</span>':'<span class="badge badge-sl">Superseded</span>'}</span></div>
+    <div class="detail-row"><span class="detail-label">Fulfilment types</span><span class="detail-val">5 capability types</span></div>
+    <div class="detail-row"><span class="detail-label">Meter codes</span><span class="detail-val mono fs11">6 meters registered</span></div>
+    <div class="sep"></div>
+    ${status==='Under review'?'<div class="alert alert-a"><span class="alert-ic">⏳</span><span>Your current v1.2 stays live while this is reviewed. No action needed from you.</span></div>':''}
+    ${status==='Live'?'<div class="alert alert-g"><span class="alert-ic">✓</span><span>This version is currently serving all 42 active installs. Adapter health: OK.</span></div>':''}
+  `);
+}
+
+// ─── PAYOUT DETAIL ───────────────────────────────────────────────────────────
+function showPayout(period, amount){
+  openModal('Invoice — '+period,`
+    <div class="detail-row"><span class="detail-label">Period</span><span class="detail-val">${period}</span></div>
+    <div class="detail-row"><span class="detail-label">Gross tenant revenue</span><span class="detail-val mono">₹2,93,612</span></div>
+    <div class="detail-row"><span class="detail-label">Platform fee (20%)</span><span class="detail-val mono col-sl">- ₹58,722</span></div>
+    <div class="detail-row"><span class="detail-label">Your payout</span><span class="detail-val mono fw7 col-g">${amount}</span></div>
+    <div class="sep"></div>
+    <div class="detail-row"><span class="detail-label">Payout status</span><span class="detail-val"><span class="badge badge-g">Paid to bank</span></span></div>
+    <div class="detail-row"><span class="detail-label">Paid on</span><span class="detail-val">5 Jul 2024</span></div>
+    <div style="font-size:11px;color:var(--sl);margin-top:10px">Revenue split: ~75% vendor · 20% platform · ~5% attribution pool (builder payouts)</div>
+  `);
+}
+
+// ─── WIZARD ─────────────────────────────────────────────────────────────────
+var selectedFT = '';
+var productMedia = {}; // collected per-field values from the Content & Media step
+function wStep(n){
+  [1,2,3,4].forEach(function(i){
+    document.getElementById('wf'+i).className='wform'+(i===n?' on':'');
+    var ws=document.getElementById('ws'+i);
+    ws.className='wstep'+(i<n?' done':i===n?' current':'');
+  });
+}
+
+function goToContentStep(){
+  if(!selectedFT){toast('Select a fulfilment type first');return;}
+  renderDynamicFields(selectedFT);
+  wStep(3);
+}
+
+// ─── CONTENT & MEDIA — fields differ by fulfilment type ─────────────────────
+var FT_LABELS = {
+  SHIP_PHYSICAL:'Ecommerce / physical product', DELIVER_DIGITAL:'Digital product',
+  LICENSE_SOFTWARE:'Software product', PROVISION_SOFTWARE:'Software / SaaS service',
+  PROVISION_CLOUD:'Cloud service', STREAM_LMS_COURSE:'LMS course',
+  DELIVER_MULTIMEDIA:'Multimedia / streaming', DISPATCH_SERVICE:'Field service',
+  BOOK_APPOINTMENT:'Appointment / session'
+};
+
+var FIELDS_CONFIG = {
+  SHIP_PHYSICAL: [
+    {id:'img-primary',type:'image',label:'Primary product image',hint:'Required. Square 1:1, min 1000×1000px, JPG/PNG/WebP, max 5MB, plain background.',required:true},
+    {id:'img-gallery',type:'images',label:'Gallery images',hint:'Up to 8 more, same size standard. Lifestyle + close-up detail shots recommended.'},
+    {id:'sku',type:'text',label:'SKU',hint:'Your internal stock-keeping code.'},
+    {id:'variants',type:'text',label:'Variants (optional)',hint:'e.g. Size: S, M, L · Colour: Teal, Black'},
+    {id:'dims',type:'text',label:'Package weight & dimensions',hint:'e.g. 0.4kg, 22×15×3cm — used for shipping cost calculation'},
+  ],
+  DELIVER_DIGITAL: [
+    {id:'img-primary',type:'image',label:'Preview image',hint:'Required. Square 1:1, min 1000×1000px.',required:true},
+    {id:'files',type:'files',label:'Deliverable file(s)',hint:'The actual file(s) the buyer receives after purchase.',required:true},
+    {id:'license',type:'select',label:'License type',options:['Personal use only','Commercial use allowed','Extended / resale license']},
+  ],
+  LICENSE_SOFTWARE: [
+    {id:'img-primary',type:'image',label:'App icon',hint:'Required. Square, min 512×512px.',required:true},
+    {id:'img-gallery',type:'images',label:'Screenshots',hint:'At least 2 recommended, 16:9 preferred.'},
+    {id:'platforms',type:'text',label:'Platform / OS compatibility',hint:'e.g. Windows 10+, macOS 12+, Linux (x64)'},
+    {id:'files',type:'files',label:'Installer / download package',required:true},
+    {id:'version',type:'text',label:'Version number',hint:'e.g. 2.4.1'},
+  ],
+  PROVISION_SOFTWARE: [
+    {id:'img-primary',type:'image',label:'Product logo',hint:'Required. Square, min 512×512px.',required:true},
+    {id:'plans',type:'textarea',label:'Plan tiers & what\'s included',hint:'What each plan level unlocks, seat/usage limits.'},
+    {id:'onboarding',type:'textarea',label:'Onboarding flow',hint:'What happens right after a tenant installs (account/workspace setup).'},
+  ],
+  PROVISION_CLOUD: [
+    {id:'img-primary',type:'image',label:'Service icon',hint:'Required. Square, min 512×512px.',required:true},
+    {id:'regions',type:'text',label:'Available regions',hint:'e.g. ap-south-1, us-east-1'},
+    {id:'specs',type:'textarea',label:'Technical specs',hint:'Compute/storage tiers, API endpoint documentation link.'},
+    {id:'sla',type:'text',label:'Uptime SLA',hint:'e.g. 99.9% monthly uptime'},
+  ],
+  STREAM_LMS_COURSE: [
+    {id:'img-primary',type:'image',label:'Course thumbnail',hint:'Required. 16:9, min 1280×720px, JPG/PNG/WebP, max 5MB.',required:true},
+    {id:'intro-video',type:'video_url',label:'Intro / promo video URL',hint:'YouTube, Vimeo, or your CDN link. 1–5 min recommended.'},
+    {id:'lessons',type:'lessons',label:'Curriculum — lessons',hint:'Add each lesson with its video and duration.',required:true},
+    {id:'materials',type:'files',label:'Study material',hint:'Downloadable PDFs, slides, worksheets.'},
+    {id:'instructor',type:'text',label:'Instructor name & bio'},
+    {id:'level',type:'select',label:'Skill level',options:['Beginner','Intermediate','Advanced','All levels']},
+    {id:'certificate',type:'select',label:'Certificate on completion?',options:['No','Yes — platform certificate']},
+  ],
+  DELIVER_MULTIMEDIA: [
+    {id:'img-primary',type:'image',label:'Cover art / thumbnail',hint:'Required. 1:1 or 16:9, min 1280px on the long edge.',required:true},
+    {id:'preview',type:'video_url',label:'Sample / preview URL',hint:'Short preview clip for buyers to evaluate before purchase.'},
+    {id:'media-type',type:'select',label:'Media type',options:['Video','Audio / music','Podcast series','Image collection']},
+    {id:'drm',type:'select',label:'DRM protected?',options:['No','Yes']},
+    {id:'files',type:'files',label:'Source / licensed files'},
+  ],
+  DISPATCH_SERVICE: [
+    {id:'img-primary',type:'image',label:'Provider photo',hint:'Required. Square, min 500×500px.',required:true},
+    {id:'area',type:'text',label:'Service area / radius',hint:'e.g. 15km around Andheri, Mumbai'},
+    {id:'response-sla',type:'text',label:'Response time SLA',hint:'e.g. within 4 hours'},
+  ],
+  BOOK_APPOINTMENT: [
+    {id:'img-primary',type:'image',label:'Profile photo',hint:'Required. Square, min 500×500px.',required:true},
+    {id:'duration',type:'text',label:'Session duration',hint:'e.g. 45 minutes'},
+    {id:'format',type:'select',label:'Session format',options:['Video call','In-person','Phone call']},
+  ],
+};
+
+function renderDynamicFields(ftKey){
+  var cont=document.getElementById('type-fields');
+  var hint=document.getElementById('content-step-hint');
+  if(!cont) return;
+  hint.textContent='Requirements for '+(FT_LABELS[ftKey]||ftKey)+' — your plugin validates these automatically before publish.';
+  var fields=FIELDS_CONFIG[ftKey]||[];
+  cont.innerHTML='';
+  fields.forEach(function(f){
+    var uid='df-'+f.id;
+    lessonCounters[uid]=0;
+    var wrap=document.createElement('div');
+    wrap.className='form-group';
+    var labelHtml='<label class="form-label">'+f.label+(f.required?' <span class="required">*</span>':'')+'</label>';
+    if(f.type==='image'){
+      wrap.innerHTML=labelHtml+
+        '<input class="form-input" type="file" accept="image/*" id="'+uid+'" onchange="previewImage(this,\''+uid+'-prev\')">'+
+        '<div id="'+uid+'-prev" style="margin-top:8px"></div>'+
+        (f.hint?'<div class="form-hint">'+f.hint+'</div>':'');
+    } else if(f.type==='images'){
+      wrap.innerHTML=labelHtml+
+        '<input class="form-input" type="file" accept="image/*" multiple id="'+uid+'">'+
+        (f.hint?'<div class="form-hint">'+f.hint+'</div>':'');
+    } else if(f.type==='files'){
+      wrap.innerHTML=labelHtml+
+        '<input class="form-input" type="file" multiple id="'+uid+'" onchange="listFiles(this,\''+uid+'-list\')">'+
+        '<div id="'+uid+'-list" class="form-hint"></div>'+
+        (f.hint?'<div class="form-hint">'+f.hint+'</div>':'');
+    } else if(f.type==='video_url'){
+      wrap.innerHTML=labelHtml+
+        '<input class="form-input" type="url" placeholder="https://..." id="'+uid+'">'+
+        (f.hint?'<div class="form-hint">'+f.hint+'</div>':'');
+    } else if(f.type==='select'){
+      var opts=(f.options||[]).map(function(o){return '<option>'+o+'</option>';}).join('');
+      wrap.innerHTML=labelHtml+'<select class="form-input" id="'+uid+'">'+opts+'</select>';
+    } else if(f.type==='textarea'){
+      wrap.innerHTML=labelHtml+
+        '<textarea class="form-input" rows="3" id="'+uid+'"></textarea>'+
+        (f.hint?'<div class="form-hint">'+f.hint+'</div>':'');
+    } else if(f.type==='lessons'){
+      wrap.innerHTML=labelHtml+(f.hint?'<div class="form-hint" style="margin-bottom:8px">'+f.hint+'</div>':'')+
+        '<div id="'+uid+'-rows"></div>'+
+        '<button type="button" class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="addLessonRow(\''+uid+'\')">&#43; Add lesson</button>';
+    } else {
+      wrap.innerHTML=labelHtml+
+        '<input class="form-input" type="text" id="'+uid+'">'+
+        (f.hint?'<div class="form-hint">'+f.hint+'</div>':'');
+    }
+    cont.appendChild(wrap);
+    if(f.type==='lessons'){ addLessonRow(uid); addLessonRow(uid); }
+  });
+}
+
+function previewImage(input,targetId){
+  var target=document.getElementById(targetId);
+  if(!target||!input.files||!input.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    target.innerHTML='<img src="'+e.target.result+'" style="max-width:140px;max-height:140px;border-radius:8px;border:1px solid var(--bdr)">';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function listFiles(input,targetId){
+  var target=document.getElementById(targetId);
+  if(!target) return;
+  var names=Array.prototype.map.call(input.files,function(f){return f.name;});
+  target.textContent=names.length?('Selected: '+names.join(', ')):'';
+}
+
+function validateContentStep(){
+  var fields=FIELDS_CONFIG[selectedFT]||[];
+  for(var i=0;i<fields.length;i++){
+    var f=fields[i];
+    if(!f.required) continue;
+    var uid='df-'+f.id;
+    if(f.type==='image'||f.type==='files'){
+      var inp=document.getElementById(uid);
+      if(!inp||!inp.files||inp.files.length===0){
+        toast('Add a '+f.label.toLowerCase()+' before continuing');
+        return;
+      }
+    } else if(f.type==='lessons'){
+      var rows=document.getElementById(uid+'-rows');
+      var hasTitle=rows && Array.prototype.some.call(rows.querySelectorAll('input'),function(inp,idx){
+        return idx%3===0 && inp.value.trim();
+      });
+      if(!hasTitle){ toast('Add at least one lesson with a title'); return; }
+    }
+  }
+  wStep(4);
+}
+
+var lessonCounters={};
+function addLessonRow(uid){
+  lessonCounters[uid]=(lessonCounters[uid]||0)+1;
+  var n=lessonCounters[uid];
+  var rows=document.getElementById(uid+'-rows');
+  var row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center';
+  row.innerHTML=
+    '<input class="form-input" placeholder="Lesson '+n+' title" style="font-size:12px">'+
+    '<input class="form-input" placeholder="Video URL" style="font-size:12px">'+
+    '<input class="form-input" placeholder="Minutes" type="number" style="font-size:12px">'+
+    '<button type="button" class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">&#10005;</button>';
+  rows.appendChild(row);
+}
+
+function renderFTOptions(){
+  var cont=document.getElementById('ft-options');
+  if(!cont) return;
+  cont.innerHTML='';
+  FT_TYPES.forEach(function(ft){
+    var div=document.createElement('div');
+    div.style.cssText='background:var(--card2);border:2px solid var(--bdr);border-radius:10px;padding:14px;cursor:pointer;transition:all .14s';
+    div.innerHTML='<div style="font-size:22px;margin-bottom:6px">'+ft.icon+'</div><div style="font-size:12px;font-weight:700;margin-bottom:4px">'+ft.title+'</div><div style="font-size:11px;color:var(--sl);line-height:1.5">'+ft.desc+'</div>';
+    div.onclick=function(){
+      cont.querySelectorAll('div').forEach(function(d){d.style.borderColor='var(--bdr)';});
+      div.style.borderColor='var(--tl)';
+      div.style.background='rgba(14,165,233,.06)';
+      selectedFT=ft.key;
+    };
+    div.onmouseenter=function(){if(selectedFT!==ft.key) div.style.borderColor='var(--bdr2)';};
+    div.onmouseleave=function(){if(selectedFT!==ft.key) div.style.borderColor='var(--bdr)';};
+    cont.appendChild(div);
+  });
+}
+
+function updatePriceFields(){
+  var model=document.getElementById('np-billing').value;
+  var lbl=document.getElementById('price-label');
+  var tf=document.getElementById('trial-field');
+  var labels={perunit:'Price per order (₹)',sub:'Monthly price (₹)',onetime:'Purchase price (₹)',hourly:'Hourly rate (₹)'};
+  lbl.innerHTML=(labels[model]||'Price (₹)')+' <span class="required">*</span>';
+  tf.style.display=model==='sub'?'block':'none';
+}
+
+function submitNewProduct(){
+  var name=document.getElementById('np-name').value.trim();
+  if(!name){toast('Enter a product name');return;}
+  if(!selectedFT){toast('Select a fulfilment type in Step 2');wStep(2);return;}
+  var price=document.getElementById('np-price').value.trim();
+  if(!price){toast('Enter a price');return;}
+  PRODUCTS.push({id:'p'+Date.now(),name:name,category:document.getElementById('np-cat').value||'Other',
+    type:selectedFT,status:'draft',installs:0,price:'₹'+price,plan:document.getElementById('np-billing').options[document.getElementById('np-billing').selectedIndex].text.split('(')[0].trim(),
+    desc:document.getElementById('np-desc').value||name});
+  document.getElementById('hdr-products').textContent=PRODUCTS.filter(function(p){return p.status==='published'}).length;
+  toast('Product created! Add images then publish.');
+  nav(document.querySelector('[data-page=products]'),'products');
+  wStep(1);
+  selectedFT='';
+  renderProducts();
+}
+
+function submitVersion(){
+  var sv=document.getElementById('pv-semver').value.trim();
+  var art=document.getElementById('pv-artifact').value.trim();
+  var sbom=document.getElementById('pv-sbom').value.trim();
+  if(!sv||!art||!sbom){toast('Fill in all required fields');return;}
+  toast('v'+sv+' submitted for review. You\'ll hear back in 3–5 days.');
+  nav(document.querySelector('[data-page=plugin]'),'plugin');
+}
+
+function submitSupport(){
+  var msg=document.getElementById('support-msg').value.trim();
+  if(!msg){toast('Enter your message');return;}
+  toast('Message sent — we\'ll reply within 1 business day');
+  document.getElementById('support-msg').value='';
+}
+
+// ─── REVENUE CHART ───────────────────────────────────────────────────────────
+function renderRevChart(){
+  var months=['Jan','Feb','Mar','Apr','May','Jun'];
+  var vals=[87400,102900,134500,186000,209500,234890];
+  var max=Math.max.apply(null,vals);
+  var bars=document.getElementById('rev-bars');
+  var lbls=document.getElementById('rev-labels');
+  if(!bars) return;
+  bars.innerHTML=''; lbls.innerHTML='';
+  vals.forEach(function(v,i){
+    var h=Math.round((v/max)*76);
+    bars.innerHTML+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="font-size:9px;color:var(--sl)">₹'+(v/1000).toFixed(0)+'k</div><div style="width:100%;height:'+h+'px;background:var(--tl);border-radius:4px 4px 0 0;opacity:'+(i===5?1:.6)+';cursor:pointer;transition:opacity .2s" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=\''+(i===5?1:.6)+'\'"></div></div>';
+  });
+  months.forEach(function(m,i){
+    lbls.innerHTML+='<div style="flex:1;text-align:center;font-size:10px;color:'+(i===5?'var(--w)':'var(--sl)')+'">'+m+'</div>';
+  });
+}
+
+// ─── REVENUE BY PRODUCT ──────────────────────────────────────────────────────
+function renderRevByProduct(){
+  var cont=document.getElementById('rev-by-product');
+  if(!cont) return;
+  var items=[
+    {name:'Gratitude Journal Pro',rev:'₹1,62,398',pct:69,color:'var(--tl)'},
+    {name:'Guided Journal Suite',rev:'₹54,532',pct:23,color:'var(--gl)'},
+    {name:'Journal Templates (Digital)',rev:'₹17,960',pct:8,color:'var(--al)'},
+  ];
+  cont.innerHTML=items.map(function(i){
+    return '<div class="usage-bar-row"><span class="ubl">'+i.name+'</span><div style="flex:1"><div class="progress-bar"><div class="progress-fill" style="width:'+i.pct+'%;background:'+i.color+'"></div></div></div><span class="ubr">'+i.rev+'</span></div>';
+  }).join('');
+}
+
+// ─── CAPABILITIES LIST ───────────────────────────────────────────────────────
+function renderCaps(){
+  var cont=document.getElementById('cap-list');
+  if(!cont) return;
+  cont.innerHTML=CAPS.map(function(c){
+    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr)"><div style="font-size:22px;flex-shrink:0;width:30px;text-align:center">'+c.icon+'</div><div><div style="font-size:12px;font-weight:700;margin-bottom:2px">'+c.label+'</div><div style="font-size:11px;color:var(--sl)">'+c.note+'</div></div><span class="badge badge-g" style="margin-left:auto;flex-shrink:0">Active</span></div>';
+  }).join('');
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+function renderNotifs(){
+  var cont=document.getElementById('notif-rows');
+  if(!cont) return;
+  cont.innerHTML=NOTIFS.map(function(n){
+    return '<div class="detail-row"><span class="detail-label">'+n.label+'</span><label style="cursor:pointer"><input type="checkbox" '+(n.default?'checked':'')+' style="accent-color:var(--tl);width:14px;height:14px;vertical-align:middle"> <span style="font-size:11px;color:var(--sll)">Email</span></label></div>';
+  }).join('');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.onload = function(){
+  renderProducts();
+  renderInstalls();
+  renderRevChart();
+  renderRevByProduct();
+  renderCaps();
+  renderNotifs();
+  renderFTOptions();
+  updatePriceFields();
+};
+</script>
+</body>
+</html>
