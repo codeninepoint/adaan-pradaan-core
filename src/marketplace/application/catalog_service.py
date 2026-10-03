@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 from uuid import UUID
 
@@ -24,6 +24,8 @@ from marketplace.infrastructure.models import (
     PluginVersionRow,
     ProductContentRow,
     ProductRow,
+    InventoryRow,
+    WarehouseRow,
 )
 from shared.domain.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
 from shared.infrastructure.models import OutboxEventRow
@@ -63,6 +65,7 @@ class OfferingListItem:
     product_name: str
     plan_name: str
     status: str
+    price_usd: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +75,29 @@ class ProductItem:
     fulfilment_type: str
     status: str
     category: str
+    content: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True, slots=True)
+class WarehouseView:
+    warehouse_id: UUID
+    name: str
+    location: str
+    capacity: int
+    units_stored: int
+    sku_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class InventoryView:
+    inventory_id: UUID
+    product_id: UUID
+    product_name: str
+    warehouse_id: UUID
+    warehouse_name: str
+    sku: str
+    available: int
+    reserved: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -217,6 +243,15 @@ class CatalogService:
                 .order_by(ProductRow.created_at.desc())
             )
         ).scalars().all()
+        ids = [row.id for row in rows]
+        payloads: dict[UUID, dict] = {}
+        if ids:
+            stored = (
+                await self._session.execute(
+                    select(ProductContentRow).where(ProductContentRow.product_id.in_(ids))
+                )
+            ).scalars().all()
+            payloads = {item.product_id: item.payload or {} for item in stored}
         return [
             ProductItem(
                 product_id=row.id,
@@ -224,9 +259,216 @@ class CatalogService:
                 fulfilment_type=row.fulfilment_type,
                 status=row.status,
                 category=row.category,
+                content=payloads.get(row.id, {}),
             )
             for row in rows
         ]
+
+    async def list_warehouses(self, *, vendor_id: UUID, caller_user_id: UUID) -> list[WarehouseView]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(WarehouseRow)
+                .where(WarehouseRow.vendor_id == vendor_id)
+                .order_by(WarehouseRow.created_at.desc())
+            )
+        ).scalars().all()
+        counts = dict(
+            (
+                await self._session.execute(
+                    select(InventoryRow.warehouse_id, func.count())
+                    .where(InventoryRow.vendor_id == vendor_id)
+                    .group_by(InventoryRow.warehouse_id)
+                )
+            ).all()
+        )
+        units = dict(
+            (
+                await self._session.execute(
+                    select(
+                        InventoryRow.warehouse_id,
+                        func.coalesce(func.sum(InventoryRow.available + InventoryRow.reserved), 0),
+                    )
+                    .where(InventoryRow.vendor_id == vendor_id)
+                    .group_by(InventoryRow.warehouse_id)
+                )
+            ).all()
+        )
+        return [
+            WarehouseView(
+                warehouse_id=row.id,
+                name=row.name,
+                location=row.location,
+                capacity=row.capacity,
+                units_stored=int(units.get(row.id, 0)),
+                sku_count=int(counts.get(row.id, 0)),
+            )
+            for row in rows
+        ]
+
+    async def create_warehouse(
+        self, *, vendor_id: UUID, caller_user_id: UUID, name: str, location: str, capacity: int
+    ) -> WarehouseView:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        cleaned_name = name.strip()
+        cleaned_location = location.strip()
+        if not cleaned_name or not cleaned_location:
+            raise ValidationError("name and location are required")
+        if capacity < 0:
+            raise ValidationError("capacity must be zero or more")
+        row = WarehouseRow(
+            id=uuid.uuid4(),
+            vendor_id=vendor_id,
+            name=cleaned_name,
+            location=cleaned_location,
+            capacity=capacity,
+        )
+        self._session.add(row)
+        await self._session.commit()
+        return WarehouseView(
+            warehouse_id=row.id,
+            name=row.name,
+            location=row.location,
+            capacity=capacity,
+            units_stored=0,
+            sku_count=0,
+        )
+
+    async def update_warehouse(
+        self,
+        *,
+        vendor_id: UUID,
+        warehouse_id: UUID,
+        caller_user_id: UUID,
+        name: str,
+        location: str,
+        capacity: int,
+    ) -> WarehouseView:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        cleaned_name = name.strip()
+        cleaned_location = location.strip()
+        if not cleaned_name or not cleaned_location:
+            raise ValidationError("name and location are required")
+        if capacity < 0:
+            raise ValidationError("capacity must be zero or more")
+        row = await self._session.get(WarehouseRow, warehouse_id)
+        if row is None or row.vendor_id != vendor_id:
+            raise NotFoundError("warehouse not found")
+        row.name = cleaned_name
+        row.location = cleaned_location
+        row.capacity = capacity
+        await self._session.commit()
+        listed = await self.list_warehouses(vendor_id=vendor_id, caller_user_id=caller_user_id)
+        updated = next((item for item in listed if item.warehouse_id == warehouse_id), None)
+        if updated is None:
+            raise NotFoundError("warehouse not found")
+        return updated
+
+    async def list_inventory(self, *, vendor_id: UUID, caller_user_id: UUID) -> list[InventoryView]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(InventoryRow, ProductRow, WarehouseRow)
+                .join(ProductRow, ProductRow.id == InventoryRow.product_id)
+                .join(WarehouseRow, WarehouseRow.id == InventoryRow.warehouse_id)
+                .where(InventoryRow.vendor_id == vendor_id)
+                .order_by(ProductRow.name, InventoryRow.sku)
+            )
+        ).all()
+        return [
+            InventoryView(
+                inventory_id=stock.id,
+                product_id=product.id,
+                product_name=product.name,
+                warehouse_id=warehouse.id,
+                warehouse_name=warehouse.name,
+                sku=stock.sku,
+                available=stock.available,
+                reserved=stock.reserved,
+            )
+            for stock, product, warehouse in rows
+        ]
+
+    async def add_inventory(
+        self,
+        *,
+        vendor_id: UUID,
+        caller_user_id: UUID,
+        product_id: UUID,
+        warehouse_id: UUID,
+        sku: str,
+        available: int,
+    ) -> InventoryView:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        product = await self._session.get(ProductRow, product_id)
+        if product is None or product.vendor_id != vendor_id:
+            raise NotFoundError("product not found")
+        warehouse = await self._session.get(WarehouseRow, warehouse_id)
+        if warehouse is None or warehouse.vendor_id != vendor_id:
+            raise NotFoundError("warehouse not found")
+        cleaned_sku = sku.strip()
+        if not cleaned_sku:
+            raise ValidationError("sku is required")
+        if available < 0:
+            raise ValidationError("available cannot be negative")
+        existing = (
+            await self._session.execute(
+                select(InventoryRow.id).where(
+                    InventoryRow.warehouse_id == warehouse_id,
+                    InventoryRow.product_id == product_id,
+                    InventoryRow.sku == cleaned_sku,
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            raise ConflictError("sku already recorded in this warehouse")
+        row = InventoryRow(
+            id=uuid.uuid4(),
+            vendor_id=vendor_id,
+            product_id=product_id,
+            warehouse_id=warehouse_id,
+            sku=cleaned_sku,
+            available=available,
+            reserved=0,
+        )
+        self._session.add(row)
+        await self._session.commit()
+        return InventoryView(
+            inventory_id=row.id,
+            product_id=product.id,
+            product_name=product.name,
+            warehouse_id=warehouse.id,
+            warehouse_name=warehouse.name,
+            sku=row.sku,
+            available=row.available,
+            reserved=0,
+        )
+
+    async def adjust_inventory(
+        self, *, vendor_id: UUID, caller_user_id: UUID, inventory_id: UUID, available: int
+    ) -> InventoryView:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        if available < 0:
+            raise ValidationError("available cannot be negative")
+        row = await self._session.get(InventoryRow, inventory_id)
+        if row is None or row.vendor_id != vendor_id:
+            raise NotFoundError("inventory not found")
+        row.available = available
+        await self._session.commit()
+        product = await self._session.get(ProductRow, row.product_id)
+        warehouse = await self._session.get(WarehouseRow, row.warehouse_id)
+        if product is None or warehouse is None:
+            raise NotFoundError("inventory not found")
+        return InventoryView(
+            inventory_id=row.id,
+            product_id=product.id,
+            product_name=product.name,
+            warehouse_id=warehouse.id,
+            warehouse_name=warehouse.name,
+            sku=row.sku,
+            available=row.available,
+            reserved=row.reserved,
+        )
 
     async def list_offerings(self, *, vendor_id: UUID, caller_user_id: UUID) -> list[OfferingListItem]:
         await require_vendor_owner(self._session, vendor_id, caller_user_id)
@@ -245,6 +487,7 @@ class CatalogService:
                 product_name=product.name,
                 plan_name=offering.plan_name,
                 status=offering.status,
+                price_usd=float(offering.price_usd),
             )
             for offering, product in rows
         ]
@@ -256,6 +499,8 @@ class CatalogService:
         caller_user_id: UUID,
         name: str | None,
         description: str | None,
+        category: str | None = None,
+        content: dict | None = None,
     ) -> ProductItem:
         product = await self._owned_product(product_id, caller_user_id)
         if product.status == "archived":
@@ -264,20 +509,64 @@ class CatalogService:
             product.name = name.strip()
         if description is not None:
             product.description = description.strip()
+        if category is not None:
+            product.category = category.strip()
+        stored = await self._session.get(ProductContentRow, product.id)
+        if content is not None:
+            if stored is None:
+                stored = ProductContentRow(product_id=product.id, payload=content)
+                self._session.add(stored)
+            else:
+                stored.payload = content
         await audit(
             self._session,
             action="product.updated",
             actor_user_id=caller_user_id,
             payload={"product_id": str(product.id)},
         )
-        await self._session.commit()
-        return ProductItem(
+        saved = ProductItem(
             product_id=product.id,
             name=product.name,
             fulfilment_type=product.fulfilment_type,
             status=product.status,
             category=product.category,
+            content=dict(stored.payload or {}) if stored is not None else {},
         )
+        await self._session.commit()
+        return saved
+
+    async def update_offering_price(
+        self,
+        *,
+        offering_id: UUID,
+        caller_user_id: UUID,
+        price_usd: Decimal,
+    ) -> OfferingListItem:
+        offering = await self._session.get(OfferingRow, offering_id)
+        if offering is None:
+            raise NotFoundError("offering not found")
+        product = await self._owned_product(offering.product_id, caller_user_id)
+        if product.status == "archived":
+            raise ConflictError("archived product cannot be edited")
+        if price_usd < 0:
+            raise ValidationError("price_usd must be zero or greater")
+        offering.price_usd = price_usd
+        await audit(
+            self._session,
+            action="offering.price_updated",
+            actor_user_id=caller_user_id,
+            payload={"offering_id": str(offering.id), "product_id": str(product.id)},
+        )
+        saved = OfferingListItem(
+            offering_id=offering.id,
+            product_id=product.id,
+            product_name=product.name,
+            plan_name=offering.plan_name,
+            status=offering.status,
+            price_usd=float(price_usd),
+        )
+        await self._session.commit()
+        return saved
 
     async def archive_product(self, *, product_id: UUID, caller_user_id: UUID) -> ProductItem:
         product = await self._owned_product(product_id, caller_user_id)

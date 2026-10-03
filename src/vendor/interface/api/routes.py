@@ -9,12 +9,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from identity.interface.api.dependencies import CurrentAuthDep, get_session
 from vendor.application.vendor_service import VendorService
 from vendor.interface.api.schemas import (
+    SupportRequestBody,
+    SupportRequestListResponse,
+    SupportRequestResponse,
     VendorDecisionRequest,
     VendorDecisionResponse,
     VendorEligibilityResponse,
     VendorProfileResponse,
     VendorRegisterRequest,
     VendorRegisterResponse,
+    VendorSettingsPatch,
+    VendorSettingsResponse,
     VendorVerificationQueueItem,
     VendorVerificationQueueResponse,
     VendorVerificationResponse,
@@ -119,6 +124,102 @@ async def vendor_verification(
         verification_id=str(result.verification_id) if result.verification_id else None,
         verification_status=result.verification_status,
         notes=result.notes,
+    )
+
+
+def _settings_response(result) -> VendorSettingsResponse:
+    return VendorSettingsResponse(
+        vendor_id=str(result.vendor_id),
+        status=result.status,
+        legal_name=result.legal_name,
+        tax_id=result.tax_id,
+        support_email=result.support_email,
+        bank_account_name=result.bank_account_name,
+        bank_account_number=result.bank_account_number,
+        bank_ifsc=result.bank_ifsc,
+        notify_install=result.notify_install,
+        notify_payout=result.notify_payout,
+    )
+
+
+@router.get("/vendors/{vendor_id}/settings", response_model=VendorSettingsResponse)
+async def get_vendor_settings(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorService, Depends(get_vendor_service)],
+) -> VendorSettingsResponse:
+    user, _session, _credential = auth
+    result = await service.get_settings(vendor_id=vendor_id, caller_user_id=user.id)
+    return _settings_response(result)
+
+
+@router.patch("/vendors/{vendor_id}/settings", response_model=VendorSettingsResponse)
+async def update_vendor_settings(
+    vendor_id: UUID,
+    body: VendorSettingsPatch,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorService, Depends(get_vendor_service)],
+) -> VendorSettingsResponse:
+    user, _session, _credential = auth
+    result = await service.update_settings(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        support_email=body.support_email,
+        bank_account_name=body.bank_account_name,
+        bank_account_number=body.bank_account_number,
+        bank_ifsc=body.bank_ifsc,
+        notify_install=body.notify_install,
+        notify_payout=body.notify_payout,
+    )
+    return _settings_response(result)
+
+
+@router.get("/vendors/{vendor_id}/support-requests", response_model=SupportRequestListResponse)
+async def list_support_requests(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorService, Depends(get_vendor_service)],
+) -> SupportRequestListResponse:
+    user, _session, _credential = auth
+    rows = await service.list_support_requests(vendor_id=vendor_id, caller_user_id=user.id)
+    return SupportRequestListResponse(
+        requests=[
+            SupportRequestResponse(
+                request_id=str(row.request_id),
+                subject=row.subject,
+                message=row.message,
+                status=row.status,
+                created_at=row.created_at,
+            )
+            for row in rows
+        ]
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/support-requests",
+    response_model=SupportRequestResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_support_request(
+    vendor_id: UUID,
+    body: SupportRequestBody,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorService, Depends(get_vendor_service)],
+) -> SupportRequestResponse:
+    user, _session, _credential = auth
+    row = await service.create_support_request(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        subject=body.subject,
+        message=body.message,
+    )
+    return SupportRequestResponse(
+        request_id=str(row.request_id),
+        subject=row.subject,
+        message=row.message,
+        status=row.status,
+        created_at=row.created_at,
     )
 
 

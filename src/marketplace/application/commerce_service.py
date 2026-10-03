@@ -6,14 +6,14 @@ from datetime import timedelta
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from authz.application.authorization_service import AuthorizationService
 from authz.domain.deny_messages import public_forbid_detail
 from authz.domain.models import ApiSurface, AuthorizeCommand
 from identity.domain.security import utcnow
-from marketplace.application.access import audit
+from marketplace.application.access import audit, require_vendor_owner
 from marketplace.domain.fulfilment import ADDRESS_REQUIRED, PROVISION_TYPES
 from marketplace.infrastructure.models import (
     CartLineRow,
@@ -22,8 +22,10 @@ from marketplace.infrastructure.models import (
     OfferingRow,
     OrderLineRow,
     OrderRow,
+    PayoutLedgerRow,
     ProductRow,
     ReturnRow,
+    VendorFulfilmentRow,
     WishlistRow,
 )
 from shared.domain.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
@@ -88,6 +90,67 @@ class OrderSummary:
     placed_at: str
     line_count: int
     total: float
+
+
+@dataclass(frozen=True, slots=True)
+class VendorOrderLine:
+    order_id: UUID
+    line_id: UUID
+    product_name: str
+    quantity: int
+    fulfilment_type: str
+    unit_price: float
+    total: float
+    status: str
+    placed_at: str
+    customer_name: str
+    line1: str
+    city: str
+    state: str
+    pincode: str
+    phone: str
+    courier: str
+    tracking_number: str
+
+
+FULFILMENT_TRANSITIONS: dict[str, frozenset[str]] = {
+    "placed": frozenset({"confirmed", "cancelled"}),
+    "confirmed": frozenset({"processing"}),
+    "processing": frozenset({"ready_to_ship"}),
+    "ready_to_ship": frozenset({"shipped"}),
+    "shipped": frozenset({"delivered"}),
+}
+
+
+@dataclass(frozen=True, slots=True)
+class VendorCustomer:
+    tenant_id: UUID
+    customer_name: str
+    order_count: int
+    total: float
+    last_order_at: str
+
+
+@dataclass(frozen=True, slots=True)
+class VendorReturn:
+    return_id: UUID
+    order_id: UUID
+    line_id: UUID
+    product_name: str
+    reason: str
+    notes: str
+    status: str
+    created_at: str
+    customer_name: str
+
+
+@dataclass(frozen=True, slots=True)
+class PayoutView:
+    period: str
+    gross: float
+    platform_fee: float
+    net: float
+    status: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -451,6 +514,229 @@ class CommerceService:
                 )
             )
         return summaries
+
+    async def list_vendor_orders(
+        self, *, vendor_id: UUID, caller_user_id: UUID, status: str | None = None
+    ) -> list[VendorOrderLine]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        statement = (
+            select(OrderLineRow, OrderRow, TenantRow, AddressRow, VendorFulfilmentRow)
+            .join(OrderRow, OrderRow.id == OrderLineRow.order_id)
+            .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+            .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+            .join(TenantRow, TenantRow.id == OrderRow.tenant_id)
+            .outerjoin(AddressRow, AddressRow.id == OrderRow.address_id)
+            .outerjoin(
+                VendorFulfilmentRow,
+                and_(
+                    VendorFulfilmentRow.order_id == OrderRow.id,
+                    VendorFulfilmentRow.vendor_id == vendor_id,
+                ),
+            )
+            .where(ProductRow.vendor_id == vendor_id)
+            .order_by(OrderRow.created_at.desc())
+        )
+        if status:
+            wanted = status.strip()
+            if wanted == "placed":
+                statement = statement.where(
+                    or_(VendorFulfilmentRow.status.is_(None), VendorFulfilmentRow.status == "placed")
+                )
+            else:
+                statement = statement.where(VendorFulfilmentRow.status == wanted)
+        rows = (await self._session.execute(statement)).all()
+        return [
+            VendorOrderLine(
+                order_id=order.id,
+                line_id=line.id,
+                product_name=line.product_name,
+                quantity=line.quantity,
+                fulfilment_type=line.fulfilment_type,
+                unit_price=float(line.unit_price),
+                total=float(line.unit_price) * line.quantity,
+                status=fulfilment.status if fulfilment is not None else "placed",
+                placed_at=order.created_at.isoformat() if order.created_at else "",
+                customer_name=address.contact_name if address is not None else tenant.name,
+                line1=address.line1 if address is not None else "",
+                city=address.city if address is not None else "",
+                state=address.state if address is not None else "",
+                pincode=address.pincode if address is not None else "",
+                phone=address.phone if address is not None else "",
+                courier=fulfilment.courier if fulfilment is not None else "",
+                tracking_number=fulfilment.tracking_number if fulfilment is not None else "",
+            )
+            for line, order, tenant, address, fulfilment in rows
+        ]
+
+    async def advance_vendor_order(
+        self,
+        *,
+        vendor_id: UUID,
+        order_id: UUID,
+        caller_user_id: UUID,
+        status: str,
+        courier: str,
+        tracking_number: str,
+    ) -> VendorFulfilmentRow:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        owned = (
+            await self._session.execute(
+                select(OrderLineRow.id)
+                .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .where(OrderLineRow.order_id == order_id, ProductRow.vendor_id == vendor_id)
+                .limit(1)
+            )
+        ).scalar_one_or_none()
+        if owned is None:
+            raise NotFoundError("order not found")
+        order = await self._session.get(OrderRow, order_id)
+        if order is None:
+            raise NotFoundError("order not found")
+        current = (
+            await self._session.execute(
+                select(VendorFulfilmentRow).where(
+                    VendorFulfilmentRow.order_id == order_id,
+                    VendorFulfilmentRow.vendor_id == vendor_id,
+                )
+            )
+        ).scalar_one_or_none()
+        current_status = current.status if current is not None else "placed"
+        if status not in FULFILMENT_TRANSITIONS.get(current_status, frozenset()):
+            raise ValidationError(f"cannot move an order from {current_status} to {status}")
+        cleaned_courier = courier.strip()
+        cleaned_tracking = tracking_number.strip()
+        if status == "shipped" and (not cleaned_courier or not cleaned_tracking):
+            raise ValidationError("courier and tracking number are required")
+        if current is None:
+            current = VendorFulfilmentRow(
+                id=uuid.uuid4(),
+                order_id=order_id,
+                vendor_id=vendor_id,
+                status=status,
+                courier=cleaned_courier if status == "shipped" else "",
+                tracking_number=cleaned_tracking if status == "shipped" else "",
+            )
+            self._session.add(current)
+        else:
+            current.status = status
+            if status == "shipped":
+                current.courier = cleaned_courier
+                current.tracking_number = cleaned_tracking
+            current.updated_at = utcnow()
+        await audit(
+            self._session,
+            action="order.fulfilment_updated",
+            actor_user_id=caller_user_id,
+            tenant_id=order.tenant_id,
+            payload={
+                "order_id": str(order_id),
+                "vendor_id": str(vendor_id),
+                "status": status,
+            },
+        )
+        await self._session.commit()
+        return current
+
+    async def list_vendor_customers(
+        self, *, vendor_id: UUID, caller_user_id: UUID
+    ) -> list[VendorCustomer]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(OrderLineRow, OrderRow, TenantRow, AddressRow)
+                .join(OrderRow, OrderRow.id == OrderLineRow.order_id)
+                .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .join(TenantRow, TenantRow.id == OrderRow.tenant_id)
+                .outerjoin(AddressRow, AddressRow.id == OrderRow.address_id)
+                .where(ProductRow.vendor_id == vendor_id)
+            )
+        ).all()
+        grouped: dict[UUID, dict] = {}
+        for line, order, tenant, address in rows:
+            bucket = grouped.get(tenant.id)
+            placed = order.created_at.isoformat() if order.created_at else ""
+            name = address.contact_name if address is not None else tenant.name
+            if bucket is None:
+                grouped[tenant.id] = {
+                    "name": name,
+                    "orders": {order.id},
+                    "total": float(line.unit_price) * line.quantity,
+                    "last": placed,
+                }
+                continue
+            bucket["orders"].add(order.id)
+            bucket["total"] += float(line.unit_price) * line.quantity
+            if placed >= bucket["last"]:
+                bucket["last"] = placed
+                bucket["name"] = name
+        customers = [
+            VendorCustomer(
+                tenant_id=tenant_id,
+                customer_name=bucket["name"],
+                order_count=len(bucket["orders"]),
+                total=bucket["total"],
+                last_order_at=bucket["last"],
+            )
+            for tenant_id, bucket in grouped.items()
+        ]
+        customers.sort(key=lambda item: item.last_order_at, reverse=True)
+        return customers
+
+    async def list_vendor_returns(
+        self, *, vendor_id: UUID, caller_user_id: UUID
+    ) -> list[VendorReturn]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(ReturnRow, OrderLineRow, OrderRow, TenantRow, AddressRow)
+                .join(OrderLineRow, OrderLineRow.id == ReturnRow.line_id)
+                .join(OrderRow, OrderRow.id == ReturnRow.order_id)
+                .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .join(TenantRow, TenantRow.id == OrderRow.tenant_id)
+                .outerjoin(AddressRow, AddressRow.id == OrderRow.address_id)
+                .where(ProductRow.vendor_id == vendor_id)
+                .order_by(ReturnRow.created_at.desc())
+            )
+        ).all()
+        return [
+            VendorReturn(
+                return_id=item.id,
+                order_id=item.order_id,
+                line_id=item.line_id,
+                product_name=line.product_name,
+                reason=item.reason,
+                notes=item.notes,
+                status=item.status,
+                created_at=item.created_at.isoformat() if item.created_at else "",
+                customer_name=address.contact_name if address is not None else tenant.name,
+            )
+            for item, line, _order, tenant, address in rows
+        ]
+
+    async def list_vendor_payouts(
+        self, *, vendor_id: UUID, caller_user_id: UUID
+    ) -> list[PayoutView]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(PayoutLedgerRow)
+                .where(PayoutLedgerRow.vendor_id == vendor_id)
+                .order_by(PayoutLedgerRow.period.desc())
+            )
+        ).scalars().all()
+        return [
+            PayoutView(
+                period=row.period,
+                gross=float(row.gross),
+                platform_fee=float(row.platform_fee),
+                net=float(row.net),
+                status=row.status,
+            )
+            for row in rows
+        ]
 
     async def order_detail(
         self, *, order_id: UUID, caller_user_id: UUID

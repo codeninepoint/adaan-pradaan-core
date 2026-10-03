@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, status
+from fastapi import APIRouter, Depends, Header, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -114,6 +114,85 @@ class OrderSummaryResponse(BaseModel):
 
 class OrderListResponse(BaseModel):
     orders: list[OrderSummaryResponse]
+
+
+class VendorOrderLineResponse(BaseModel):
+    order_id: str
+    line_id: str
+    product_name: str
+    quantity: int
+    fulfilment_type: str
+    unit_price: float
+    total: float
+    status: str
+    placed_at: str
+    customer_name: str
+    line1: str = ""
+    city: str = ""
+    state: str = ""
+    pincode: str = ""
+    phone: str = ""
+    courier: str = ""
+    tracking_number: str = ""
+
+
+class AdvanceVendorOrderRequest(BaseModel):
+    status: str
+    courier: str = ""
+    tracking_number: str = ""
+
+
+class AdvanceVendorOrderResponse(BaseModel):
+    order_id: str
+    status: str
+    courier: str
+    tracking_number: str
+
+
+class VendorOrderListResponse(BaseModel):
+    lines: list[VendorOrderLineResponse]
+
+
+class VendorCustomerResponse(BaseModel):
+    tenant_id: str
+    customer_name: str
+    order_count: int
+    total: float
+    last_order_at: str
+
+
+class VendorCustomerListResponse(BaseModel):
+    customers: list[VendorCustomerResponse]
+
+
+class VendorReturnResponse(BaseModel):
+    return_id: str
+    order_id: str
+    line_id: str
+    product_name: str
+    reason: str
+    notes: str
+    status: str
+    created_at: str
+    customer_name: str
+
+
+class VendorReturnListResponse(BaseModel):
+    returns: list[VendorReturnResponse]
+
+
+class PayoutResponse(BaseModel):
+    period: str
+    gross: float
+    platform_fee: float
+    net: float
+    status: str
+
+
+class PayoutListResponse(BaseModel):
+    currency: str
+    this_period: PayoutResponse | None
+    payouts: list[PayoutResponse]
 
 
 class OrderLineResponse(BaseModel):
@@ -418,6 +497,137 @@ async def place_order(
         status=result.status,
         line_count=result.line_count,
     )
+
+
+@router.get("/vendors/{vendor_id}/orders", response_model=VendorOrderListResponse)
+async def list_vendor_orders(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+    status_filter: Annotated[str | None, Query(alias="status")] = None,
+) -> VendorOrderListResponse:
+    user, _session, _credential = auth
+    lines = await service.list_vendor_orders(
+        vendor_id=vendor_id, caller_user_id=user.id, status=status_filter
+    )
+    return VendorOrderListResponse(
+        lines=[
+            VendorOrderLineResponse(
+                order_id=str(line.order_id),
+                line_id=str(line.line_id),
+                product_name=line.product_name,
+                quantity=line.quantity,
+                fulfilment_type=line.fulfilment_type,
+                unit_price=line.unit_price,
+                total=line.total,
+                status=line.status,
+                placed_at=line.placed_at,
+                customer_name=line.customer_name,
+                line1=line.line1,
+                city=line.city,
+                state=line.state,
+                pincode=line.pincode,
+                phone=line.phone,
+                courier=line.courier,
+                tracking_number=line.tracking_number,
+            )
+            for line in lines
+        ]
+    )
+
+
+@router.patch("/vendors/{vendor_id}/orders/{order_id}", response_model=AdvanceVendorOrderResponse)
+async def advance_vendor_order(
+    vendor_id: UUID,
+    order_id: UUID,
+    body: AdvanceVendorOrderRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> AdvanceVendorOrderResponse:
+    user, _session, _credential = auth
+    updated = await service.advance_vendor_order(
+        vendor_id=vendor_id,
+        order_id=order_id,
+        caller_user_id=user.id,
+        status=body.status.strip(),
+        courier=body.courier,
+        tracking_number=body.tracking_number,
+    )
+    return AdvanceVendorOrderResponse(
+        order_id=str(order_id),
+        status=updated.status,
+        courier=updated.courier,
+        tracking_number=updated.tracking_number,
+    )
+
+
+@router.get("/vendors/{vendor_id}/customers", response_model=VendorCustomerListResponse)
+async def list_vendor_customers(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> VendorCustomerListResponse:
+    user, _session, _credential = auth
+    customers = await service.list_vendor_customers(vendor_id=vendor_id, caller_user_id=user.id)
+    return VendorCustomerListResponse(
+        customers=[
+            VendorCustomerResponse(
+                tenant_id=str(item.tenant_id),
+                customer_name=item.customer_name,
+                order_count=item.order_count,
+                total=item.total,
+                last_order_at=item.last_order_at,
+            )
+            for item in customers
+        ]
+    )
+
+
+@router.get("/vendors/{vendor_id}/returns", response_model=VendorReturnListResponse)
+async def list_vendor_returns(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> VendorReturnListResponse:
+    user, _session, _credential = auth
+    items = await service.list_vendor_returns(vendor_id=vendor_id, caller_user_id=user.id)
+    return VendorReturnListResponse(
+        returns=[
+            VendorReturnResponse(
+                return_id=str(item.return_id),
+                order_id=str(item.order_id),
+                line_id=str(item.line_id),
+                product_name=item.product_name,
+                reason=item.reason,
+                notes=item.notes,
+                status=item.status,
+                created_at=item.created_at,
+                customer_name=item.customer_name,
+            )
+            for item in items
+        ]
+    )
+
+
+@router.get("/vendors/{vendor_id}/payouts", response_model=PayoutListResponse)
+async def list_vendor_payouts(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> PayoutListResponse:
+    user, _session, _credential = auth
+    payouts = await service.list_vendor_payouts(vendor_id=vendor_id, caller_user_id=user.id)
+    rows = [
+        PayoutResponse(
+            period=item.period,
+            gross=item.gross,
+            platform_fee=item.platform_fee,
+            net=item.net,
+            status=item.status,
+        )
+        for item in payouts
+    ]
+    return PayoutListResponse(currency="USD", this_period=rows[0] if rows else None, payouts=rows)
 
 
 @router.get("/tenants/{tenant_id}/orders", response_model=OrderListResponse)

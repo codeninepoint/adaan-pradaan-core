@@ -175,15 +175,63 @@ class ProductResponse(BaseModel):
     status: str
     fulfilment_type: str
     category: str = ""
+    content: dict = Field(default_factory=dict)
 
 
 class ProductListResponse(BaseModel):
     products: list[ProductResponse]
 
 
+class WarehouseRequest(BaseModel):
+    name: str
+    location: str
+    capacity: int = Field(ge=0)
+
+
+class WarehouseResponse(BaseModel):
+    warehouse_id: str
+    name: str
+    location: str
+    capacity: int
+    units_stored: int
+    sku_count: int
+
+
+class WarehouseListResponse(BaseModel):
+    warehouses: list[WarehouseResponse]
+
+
+class InventoryRequest(BaseModel):
+    product_id: str
+    warehouse_id: str
+    sku: str
+    available: int = 0
+
+
+class InventoryAdjustRequest(BaseModel):
+    available: int
+
+
+class InventoryResponse(BaseModel):
+    inventory_id: str
+    product_id: str
+    product_name: str
+    warehouse_id: str
+    warehouse_name: str
+    sku: str
+    available: int
+    reserved: int
+
+
+class InventoryListResponse(BaseModel):
+    rows: list[InventoryResponse]
+
+
 class UpdateProductRequest(BaseModel):
     name: str | None = None
     description: str | None = None
+    category: str | None = None
+    content: dict | None = None
 
 
 class CreateOfferingRequest(BaseModel):
@@ -200,6 +248,11 @@ class OfferingListItemResponse(BaseModel):
     product_name: str
     plan_name: str
     status: str
+    price_usd: float
+
+
+class UpdateOfferingPriceRequest(BaseModel):
+    price_usd: Decimal
 
 
 class OfferingListResponse(BaseModel):

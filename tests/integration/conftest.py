@@ -101,7 +101,13 @@ async def clean_db(session_factory: async_sessionmaker[AsyncSession]) -> AsyncGe
             text(
                 """
                 TRUNCATE TABLE
+                  marketplace.payouts,
+                  vendor.support_requests,
+                  vendor.settings,
+                  marketplace.inventory,
+                  marketplace.warehouses,
                   marketplace.returns,
+                  marketplace.vendor_fulfilments,
                   marketplace.order_lines,
                   marketplace.orders,
                   marketplace.cart_lines,

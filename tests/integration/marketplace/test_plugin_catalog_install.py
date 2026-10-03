@@ -7,7 +7,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from marketplace.infrastructure.models import InstallationRow, ServiceInstanceRow
+from marketplace.infrastructure.models import InstallationRow, PayoutLedgerRow, ServiceInstanceRow
 from shared.infrastructure.models import OutboxEventRow
 from shared.infrastructure.outbox_processor import OutboxProcessor
 from tenant.infrastructure.models import OrganizationRow, ProjectRow
@@ -278,6 +278,7 @@ async def test_plugin_core_then_catalog_install(
             "name": "Journal",
             "plugin_id": plugin_id,
             "fulfilment_type": "SHIP_PHYSICAL",
+            "content": {"variants": [{"name": "Hardcover", "sku": "JRN-1"}]},
         },
     )
     assert physical.status_code == 201
@@ -363,6 +364,214 @@ async def test_plugin_core_then_catalog_install(
     detail = await client.get(f"/api/v1/orders/{placed.json()['order_id']}", headers=headers)
     assert detail.status_code == 200, detail.text
     assert detail.json()["lines"][0]["fulfilment_type"] == "SHIP_PHYSICAL"
+    vendor_orders = await client.get(f"/api/v1/vendors/{vendor_id}/orders", headers=headers)
+    assert vendor_orders.status_code == 200, vendor_orders.text
+    vendor_lines = vendor_orders.json()["lines"]
+    assert len(vendor_lines) == 1
+    assert vendor_lines[0]["product_name"] == "Journal"
+    assert vendor_lines[0]["customer_name"] == "Acme"
+    assert vendor_lines[0]["status"] == "placed"
+    assert vendor_lines[0]["quantity"] == 1
+    assert vendor_lines[0]["total"] == 12
+    assert vendor_lines[0]["line1"] == "12 Linking Road"
+    assert vendor_lines[0]["city"] == "Mumbai"
+    assert vendor_lines[0]["phone"] == "+919800000000"
+    other_status = await client.get(
+        f"/api/v1/vendors/{vendor_id}/orders", headers=headers, params={"status": "fulfilled"}
+    )
+    assert other_status.status_code == 200
+    assert other_status.json()["lines"] == []
+    order_id = placed.json()["order_id"]
+
+    async def advance(target: str, **extra: str):
+        moved = await client.patch(
+            f"/api/v1/vendors/{vendor_id}/orders/{order_id}",
+            headers=headers,
+            json={"status": target, **extra},
+        )
+        assert moved.status_code == 200, moved.text
+        assert moved.json()["status"] == target
+        buyer = await client.get(f"/api/v1/orders/{order_id}", headers=headers)
+        assert buyer.json()["status"] == "placed"
+        return moved
+
+    skipped = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/orders/{order_id}",
+        headers=headers,
+        json={"status": "shipped", "courier": "City Courier", "tracking_number": "TRK-JRN-1"},
+    )
+    assert skipped.status_code == 422, skipped.text
+    await advance("confirmed")
+    await advance("processing")
+    await advance("ready_to_ship")
+    missing_tracking = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/orders/{order_id}",
+        headers=headers,
+        json={"status": "shipped"},
+    )
+    assert missing_tracking.status_code == 422, missing_tracking.text
+    shipped = await advance("shipped", courier="City Courier", tracking_number="TRK-JRN-1")
+    assert shipped.json()["tracking_number"] == "TRK-JRN-1"
+    assert shipped.json()["courier"] == "City Courier"
+    await advance("delivered")
+    delivered = await client.get(f"/api/v1/vendors/{vendor_id}/orders", headers=headers)
+    delivered_line = next(item for item in delivered.json()["lines"] if item["order_id"] == order_id)
+    assert delivered_line["status"] == "delivered"
+    assert delivered_line["tracking_number"] == "TRK-JRN-1"
+    again = await client.post(
+        f"/api/v1/tenants/{tenant_id}/cart/lines",
+        headers=headers,
+        json={"offering_id": physical_offering_id, "quantity": 1},
+    )
+    assert again.status_code == 200, again.text
+    placed_again = await client.post(
+        f"/api/v1/tenants/{tenant_id}/orders",
+        headers=headers,
+        json={"address_id": address.json()["address_id"], "payment_method": "upi"},
+    )
+    assert placed_again.status_code == 201, placed_again.text
+    rejected = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/orders/{placed_again.json()['order_id']}",
+        headers=headers,
+        json={"status": "cancelled"},
+    )
+    assert rejected.status_code == 200, rejected.text
+    assert rejected.json()["status"] == "cancelled"
+    warehouse = await client.post(
+        f"/api/v1/vendors/{vendor_id}/warehouses",
+        headers=headers,
+        json={"name": "Mumbai Central", "location": "Mumbai, MH", "capacity": 100},
+    )
+    assert warehouse.status_code == 201, warehouse.text
+    stock = await client.post(
+        f"/api/v1/vendors/{vendor_id}/inventory",
+        headers=headers,
+        json={
+            "product_id": physical.json()["product_id"],
+            "warehouse_id": warehouse.json()["warehouse_id"],
+            "sku": "JRN-1",
+            "available": 4,
+        },
+    )
+    assert stock.status_code == 201, stock.text
+    adjusted = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/inventory/{stock.json()['inventory_id']}",
+        headers=headers,
+        json={"available": 3},
+    )
+    assert adjusted.status_code == 200, adjusted.text
+    assert adjusted.json()["available"] == 3
+    houses = await client.get(f"/api/v1/vendors/{vendor_id}/warehouses", headers=headers)
+    assert houses.status_code == 200
+    assert houses.json()["warehouses"][0]["sku_count"] == 1
+    assert houses.json()["warehouses"][0]["capacity"] == 100
+    assert houses.json()["warehouses"][0]["units_stored"] == 3
+    renamed = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/warehouses/{warehouse.json()['warehouse_id']}",
+        headers=headers,
+        json={"name": "Mumbai Central", "location": "Mumbai, Maharashtra", "capacity": 80},
+    )
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()["capacity"] == 80
+    assert renamed.json()["units_stored"] == 3
+    catalog_products = await client.get(f"/api/v1/vendors/{vendor_id}/products", headers=headers)
+    journal = next(item for item in catalog_products.json()["products"] if item["name"] == "Journal")
+    assert journal["content"]["variants"][0]["sku"] == "JRN-1"
+    offering_list = await client.get(f"/api/v1/vendors/{vendor_id}/offerings", headers=headers)
+    journal_offering = next(
+        item for item in offering_list.json()["offerings"] if item["product_id"] == physical.json()["product_id"]
+    )
+    assert journal_offering["price_usd"] == 12
+    edited = await client.patch(
+        f"/api/v1/products/{physical.json()['product_id']}",
+        headers=headers,
+        json={
+            "category": "Stationery",
+            "content": {"variants": [{"name": "Softcover", "sku": "JRN-1"}]},
+        },
+    )
+    assert edited.status_code == 200, edited.text
+    assert edited.json()["category"] == "Stationery"
+    assert edited.json()["content"]["variants"][0]["name"] == "Softcover"
+    priced = await client.patch(
+        f"/api/v1/offerings/{physical_offering.json()['offering_id']}",
+        headers=headers,
+        json={"price_usd": 14},
+    )
+    assert priced.status_code == 200, priced.text
+    assert priced.json()["price_usd"] == 14
+    stock_rows = await client.get(f"/api/v1/vendors/{vendor_id}/inventory", headers=headers)
+    assert stock_rows.json()["rows"][0]["sku"] == "JRN-1"
+    assert stock_rows.json()["rows"][0]["available"] == 3
+    opened = await client.post(
+        f"/api/v1/orders/{placed.json()['order_id']}/returns",
+        headers=headers,
+        json={"line_id": detail.json()["lines"][0]["line_id"], "reason": "Damaged on arrival"},
+    )
+    assert opened.status_code == 201, opened.text
+    vendor_returns = await client.get(f"/api/v1/vendors/{vendor_id}/returns", headers=headers)
+    assert vendor_returns.status_code == 200, vendor_returns.text
+    assert vendor_returns.json()["returns"][0]["status"] == "requested"
+    assert vendor_returns.json()["returns"][0]["customer_name"] == "Acme"
+    customers = await client.get(f"/api/v1/vendors/{vendor_id}/customers", headers=headers)
+    assert customers.status_code == 200, customers.text
+    assert customers.json()["customers"][0]["customer_name"] == "Acme"
+    assert customers.json()["customers"][0]["order_count"] == 2
+    assert customers.json()["customers"][0]["total"] == 24
+    async with session_factory() as session:
+        session.add(
+            PayoutLedgerRow(
+                vendor_id=uuid.UUID(vendor_id),
+                period="2026-09",
+                gross=100,
+                platform_fee=20,
+                net=80,
+                status="paid",
+            )
+        )
+        await session.commit()
+    payouts = await client.get(f"/api/v1/vendors/{vendor_id}/payouts", headers=headers)
+    assert payouts.status_code == 200, payouts.text
+    assert payouts.json()["currency"] == "USD"
+    assert payouts.json()["this_period"]["gross"] == 100
+    assert payouts.json()["this_period"]["platform_fee"] == 20
+    assert payouts.json()["payouts"][0]["net"] == 80
+    settings = await client.get(f"/api/v1/vendors/{vendor_id}/settings", headers=headers)
+    assert settings.status_code == 200, settings.text
+    assert settings.json()["legal_name"] == "Acme Metrics"
+    assert settings.json()["tax_id"] == "27AAAAA0000A1Z5"
+    invalid_ifsc = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/settings",
+        headers=headers,
+        json={"bank_ifsc": "nope"},
+    )
+    assert invalid_ifsc.status_code == 422
+    saved_settings = await client.patch(
+        f"/api/v1/vendors/{vendor_id}/settings",
+        headers=headers,
+        json={
+            "support_email": "support@example.com",
+            "bank_account_name": "Acme Metrics",
+            "bank_account_number": "1234567890",
+            "bank_ifsc": "HDFC0001234",
+            "notify_install": False,
+        },
+    )
+    assert saved_settings.status_code == 200, saved_settings.text
+    assert saved_settings.json()["bank_account_number"] == "XXXXXX7890"
+    assert saved_settings.json()["notify_install"] is False
+    support = await client.post(
+        f"/api/v1/vendors/{vendor_id}/support-requests",
+        headers=headers,
+        json={"subject": "Payout delayed", "message": "June payout still pending."},
+    )
+    assert support.status_code == 201, support.text
+    assert support.json()["status"] == "open"
+    listed_support = await client.get(
+        f"/api/v1/vendors/{vendor_id}/support-requests", headers=headers
+    )
+    assert listed_support.status_code == 200
+    assert listed_support.json()["requests"][0]["subject"] == "Payout delayed"
     saved = await client.post(
         f"/api/v1/tenants/{tenant_id}/wishlist",
         headers=headers,

@@ -66,6 +66,45 @@ class VendorDecisionRequest(BaseModel):
     notes: str | None = None
 
 
+class VendorSettingsResponse(BaseModel):
+    vendor_id: str
+    status: str
+    legal_name: str
+    tax_id: str | None
+    support_email: str
+    bank_account_name: str
+    bank_account_number: str
+    bank_ifsc: str
+    notify_install: bool
+    notify_payout: bool
+
+
+class VendorSettingsPatch(BaseModel):
+    support_email: str | None = None
+    bank_account_name: str | None = None
+    bank_account_number: str | None = None
+    bank_ifsc: str | None = None
+    notify_install: bool | None = None
+    notify_payout: bool | None = None
+
+
+class SupportRequestBody(BaseModel):
+    subject: str = Field(min_length=1, max_length=255)
+    message: str = Field(min_length=1, max_length=4000)
+
+
+class SupportRequestResponse(BaseModel):
+    request_id: str
+    subject: str
+    message: str
+    status: str
+    created_at: str
+
+
+class SupportRequestListResponse(BaseModel):
+    requests: list[SupportRequestResponse]
+
+
 class VendorDecisionResponse(BaseModel):
     verification_id: str
     vendor_id: str

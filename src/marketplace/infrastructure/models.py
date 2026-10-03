@@ -254,6 +254,28 @@ class OrderRow(Base):
     )
 
 
+class VendorFulfilmentRow(Base):
+    __tablename__ = "vendor_fulfilments"
+    __table_args__ = (
+        UniqueConstraint("order_id", "vendor_id", name="uq_vendor_fulfilment_order_vendor"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.orders.id"), index=True
+    )
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    status: Mapped[str] = mapped_column(String(32), default="placed")
+    courier: Mapped[str] = mapped_column(String(128), default="")
+    tracking_number: Mapped[str] = mapped_column(String(128), default="")
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class OrderLineRow(Base):
     __tablename__ = "order_lines"
     __table_args__ = {"schema": "marketplace"}
@@ -288,6 +310,65 @@ class ReturnRow(Base):
     reason: Mapped[str] = mapped_column(String(255))
     notes: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(32), default="requested")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class WarehouseRow(Base):
+    __tablename__ = "warehouses"
+    __table_args__ = {"schema": "marketplace"}
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    location: Mapped[str] = mapped_column(String(255))
+    capacity: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class InventoryRow(Base):
+    __tablename__ = "inventory"
+    __table_args__ = (
+        UniqueConstraint("warehouse_id", "product_id", "sku", name="uq_inventory_warehouse_product_sku"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.products.id"), index=True
+    )
+    warehouse_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.warehouses.id"), index=True
+    )
+    sku: Mapped[str] = mapped_column(String(128))
+    available: Mapped[int] = mapped_column(Integer, default=0)
+    reserved: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class PayoutLedgerRow(Base):
+    __tablename__ = "payouts"
+    __table_args__ = (
+        UniqueConstraint("vendor_id", "period", name="uq_payouts_vendor_period"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    period: Mapped[str] = mapped_column(String(16))
+    gross: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    platform_fee: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    net: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    status: Mapped[str] = mapped_column(String(32))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

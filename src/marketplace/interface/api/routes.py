@@ -35,6 +35,13 @@ from marketplace.interface.api.schemas import (
     ProductDetailResponse,
     ProductListResponse,
     ProductResponse,
+    InventoryAdjustRequest,
+    InventoryListResponse,
+    InventoryRequest,
+    InventoryResponse,
+    WarehouseListResponse,
+    WarehouseRequest,
+    WarehouseResponse,
     ClaimResponse,
     RegisterPluginRequest,
     RequestChangesRequest,
@@ -44,6 +51,7 @@ from marketplace.interface.api.schemas import (
     SubmitVersionResponse,
     SuspendVendorRequest,
     SuspendVendorResponse,
+    UpdateOfferingPriceRequest,
     UpdateProductRequest,
     VendorDirectoryItemResponse,
     VendorDirectoryResponse,
@@ -394,6 +402,7 @@ async def list_offerings(
                 product_name=item.product_name,
                 plan_name=item.plan_name,
                 status=item.status,
+                price_usd=item.price_usd,
             )
             for item in items
         ]
@@ -416,10 +425,140 @@ async def list_products(
                 status=item.status,
                 fulfilment_type=item.fulfilment_type,
                 category=item.category,
+                content=item.content,
             )
             for item in items
         ]
     )
+
+
+def _warehouse(item) -> WarehouseResponse:
+    return WarehouseResponse(
+        warehouse_id=str(item.warehouse_id),
+        name=item.name,
+        location=item.location,
+        capacity=item.capacity,
+        units_stored=item.units_stored,
+        sku_count=item.sku_count,
+    )
+
+
+def _inventory(item) -> InventoryResponse:
+    return InventoryResponse(
+        inventory_id=str(item.inventory_id),
+        product_id=str(item.product_id),
+        product_name=item.product_name,
+        warehouse_id=str(item.warehouse_id),
+        warehouse_name=item.warehouse_name,
+        sku=item.sku,
+        available=item.available,
+        reserved=item.reserved,
+    )
+
+
+@router.get("/vendors/{vendor_id}/warehouses", response_model=WarehouseListResponse)
+async def list_warehouses(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> WarehouseListResponse:
+    user, _session, _credential = auth
+    rows = await service.list_warehouses(vendor_id=vendor_id, caller_user_id=user.id)
+    return WarehouseListResponse(warehouses=[_warehouse(row) for row in rows])
+
+
+@router.post(
+    "/vendors/{vendor_id}/warehouses",
+    response_model=WarehouseResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_warehouse(
+    vendor_id: UUID,
+    body: WarehouseRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> WarehouseResponse:
+    user, _session, _credential = auth
+    created = await service.create_warehouse(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        name=body.name,
+        location=body.location,
+        capacity=body.capacity,
+    )
+    return _warehouse(created)
+
+
+@router.patch("/vendors/{vendor_id}/warehouses/{warehouse_id}", response_model=WarehouseResponse)
+async def update_warehouse(
+    vendor_id: UUID,
+    warehouse_id: UUID,
+    body: WarehouseRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> WarehouseResponse:
+    user, _session, _credential = auth
+    updated = await service.update_warehouse(
+        vendor_id=vendor_id,
+        warehouse_id=warehouse_id,
+        caller_user_id=user.id,
+        name=body.name,
+        location=body.location,
+        capacity=body.capacity,
+    )
+    return _warehouse(updated)
+
+
+@router.get("/vendors/{vendor_id}/inventory", response_model=InventoryListResponse)
+async def list_inventory(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> InventoryListResponse:
+    user, _session, _credential = auth
+    rows = await service.list_inventory(vendor_id=vendor_id, caller_user_id=user.id)
+    return InventoryListResponse(rows=[_inventory(row) for row in rows])
+
+
+@router.post(
+    "/vendors/{vendor_id}/inventory",
+    response_model=InventoryResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_inventory(
+    vendor_id: UUID,
+    body: InventoryRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> InventoryResponse:
+    user, _session, _credential = auth
+    created = await service.add_inventory(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        product_id=UUID(body.product_id),
+        warehouse_id=UUID(body.warehouse_id),
+        sku=body.sku,
+        available=body.available,
+    )
+    return _inventory(created)
+
+
+@router.patch("/vendors/{vendor_id}/inventory/{inventory_id}", response_model=InventoryResponse)
+async def adjust_inventory(
+    vendor_id: UUID,
+    inventory_id: UUID,
+    body: InventoryAdjustRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> InventoryResponse:
+    user, _session, _credential = auth
+    updated = await service.adjust_inventory(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        inventory_id=inventory_id,
+        available=body.available,
+    )
+    return _inventory(updated)
 
 
 @router.post(
@@ -465,6 +604,8 @@ async def update_product(
         caller_user_id=user.id,
         name=body.name,
         description=body.description,
+        category=body.category,
+        content=body.content,
     )
     return ProductResponse(
         product_id=str(item.product_id),
@@ -472,6 +613,7 @@ async def update_product(
         status=item.status,
         fulfilment_type=item.fulfilment_type,
         category=item.category,
+        content=item.content,
     )
 
 
@@ -518,6 +660,29 @@ async def create_offering(
         product_id=str(result.product_id),
         plan_name=result.plan_name,
         status=result.status,
+    )
+
+
+@router.patch("/offerings/{offering_id}", response_model=OfferingListItemResponse)
+async def update_offering_price(
+    offering_id: UUID,
+    body: UpdateOfferingPriceRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> OfferingListItemResponse:
+    user, _session, _credential = auth
+    item = await service.update_offering_price(
+        offering_id=offering_id,
+        caller_user_id=user.id,
+        price_usd=body.price_usd,
+    )
+    return OfferingListItemResponse(
+        offering_id=str(item.offering_id),
+        product_id=str(item.product_id),
+        product_name=item.product_name,
+        plan_name=item.plan_name,
+        status=item.status,
+        price_usd=item.price_usd,
     )
 
 

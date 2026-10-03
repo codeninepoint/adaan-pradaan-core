@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import uuid
 from dataclasses import dataclass
 from uuid import UUID
@@ -9,11 +10,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from identity.domain.security import utcnow
 from identity.infrastructure.models import AuditLogRow
+from marketplace.application.access import require_vendor_owner
 from shared.domain.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
 from tenant.infrastructure.models import OrgMembershipRow, OrganizationRow
-from vendor.infrastructure.models import VendorProfileRow, VendorVerificationRow
+from vendor.infrastructure.models import (
+    SupportRequestRow,
+    VendorProfileRow,
+    VendorSettingsRow,
+    VendorVerificationRow,
+)
+
+_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+_IFSC = re.compile(r"^[A-Z]{4}0[A-Z0-9]{6}$")
 
 REQUIREMENTS = ("business_registration_doc", "bank_account", "tax_id")
+
+
+def _mask_account(value: str) -> str:
+    if len(value) <= 4:
+        return value
+    return "X" * (len(value) - 4) + value[-4:]
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +81,29 @@ class QueuedVerification:
     status: str
     submitted_at: str
     business_doc_url: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class VendorSettingsView:
+    vendor_id: UUID
+    status: str
+    legal_name: str
+    tax_id: str | None
+    support_email: str
+    bank_account_name: str
+    bank_account_number: str
+    bank_ifsc: str
+    notify_install: bool
+    notify_payout: bool
+
+
+@dataclass(frozen=True, slots=True)
+class SupportRequestView:
+    request_id: UUID
+    subject: str
+    message: str
+    status: str
+    created_at: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -308,6 +347,145 @@ class VendorService:
             status=decision,
             decided_by=caller_user_id,
             decided_at=now.isoformat(),
+        )
+
+    async def get_settings(self, *, vendor_id: UUID, caller_user_id: UUID) -> VendorSettingsView:
+        vendor = await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        row = await self._session.get(VendorSettingsRow, vendor_id)
+        return self._settings_view(vendor, row)
+
+    async def update_settings(
+        self,
+        *,
+        vendor_id: UUID,
+        caller_user_id: UUID,
+        support_email: str | None = None,
+        bank_account_name: str | None = None,
+        bank_account_number: str | None = None,
+        bank_ifsc: str | None = None,
+        notify_install: bool | None = None,
+        notify_payout: bool | None = None,
+    ) -> VendorSettingsView:
+        vendor = await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        row = await self._session.get(VendorSettingsRow, vendor_id)
+        if row is None:
+            row = VendorSettingsRow(
+                vendor_id=vendor.id,
+                support_email="",
+                bank_account_name="",
+                bank_account_number="",
+                bank_ifsc="",
+                notify_install=True,
+                notify_payout=True,
+            )
+            self._session.add(row)
+        if support_email is not None:
+            email = support_email.strip()
+            if not _EMAIL.match(email):
+                raise ValidationError("invalid email")
+            row.support_email = email
+        if bank_account_name is not None:
+            name = bank_account_name.strip()
+            if not name:
+                raise ValidationError("bank account name is required")
+            row.bank_account_name = name
+        if bank_account_number is not None:
+            number = bank_account_number.strip()
+            if number != _mask_account(row.bank_account_number):
+                if len(number) < 4:
+                    raise ValidationError("bank account number is invalid")
+                row.bank_account_number = number
+        if bank_ifsc is not None:
+            ifsc = bank_ifsc.strip().upper()
+            if not _IFSC.match(ifsc):
+                raise ValidationError("invalid IFSC")
+            row.bank_ifsc = ifsc
+        if notify_install is not None:
+            row.notify_install = notify_install
+        if notify_payout is not None:
+            row.notify_payout = notify_payout
+        row.updated_at = utcnow()
+        self._session.add(
+            AuditLogRow(
+                id=uuid.uuid4(),
+                event_action="vendor.settings_updated",
+                actor_user_id=caller_user_id,
+                payload_json={"vendor_id": str(vendor.id)},
+            )
+        )
+        view = self._settings_view(vendor, row)
+        await self._session.commit()
+        return view
+
+    async def create_support_request(
+        self, *, vendor_id: UUID, caller_user_id: UUID, subject: str, message: str
+    ) -> SupportRequestView:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        subject = subject.strip()
+        message = message.strip()
+        if not subject or not message:
+            raise ValidationError("subject and message are required")
+        created_at = utcnow()
+        row = SupportRequestRow(
+            id=uuid.uuid4(),
+            vendor_id=vendor_id,
+            subject=subject,
+            message=message,
+            status="open",
+            created_at=created_at,
+        )
+        self._session.add(row)
+        self._session.add(
+            AuditLogRow(
+                id=uuid.uuid4(),
+                event_action="vendor.support_requested",
+                actor_user_id=caller_user_id,
+                payload_json={"vendor_id": str(vendor_id), "request_id": str(row.id)},
+            )
+        )
+        await self._session.commit()
+        return SupportRequestView(
+            request_id=row.id,
+            subject=subject,
+            message=message,
+            status="open",
+            created_at=created_at.isoformat(),
+        )
+
+    async def list_support_requests(
+        self, *, vendor_id: UUID, caller_user_id: UUID
+    ) -> list[SupportRequestView]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(SupportRequestRow)
+                .where(SupportRequestRow.vendor_id == vendor_id)
+                .order_by(SupportRequestRow.created_at.desc())
+            )
+        ).scalars().all()
+        return [
+            SupportRequestView(
+                request_id=row.id,
+                subject=row.subject,
+                message=row.message,
+                status=row.status,
+                created_at=row.created_at.isoformat() if row.created_at else "",
+            )
+            for row in rows
+        ]
+
+    def _settings_view(self, vendor: VendorProfileRow, row: VendorSettingsRow | None) -> VendorSettingsView:
+        return VendorSettingsView(
+            vendor_id=vendor.id,
+            status=vendor.status,
+            legal_name=vendor.legal_name,
+            tax_id=vendor.tax_id,
+            support_email=row.support_email if row else "",
+            bank_account_name=row.bank_account_name if row else "",
+            bank_account_number=_mask_account(row.bank_account_number) if row else "",
+            bank_ifsc=row.bank_ifsc if row else "",
+            notify_install=row.notify_install if row else True,
+            notify_payout=row.notify_payout if row else True,
         )
 
     async def _require_org_owner(self, org_id: UUID, user_id: UUID) -> OrganizationRow:
