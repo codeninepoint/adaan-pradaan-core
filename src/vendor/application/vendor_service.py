@@ -21,6 +21,12 @@ class EligibilityResult:
     eligible: bool
     reasons: list[str]
     requirements: list[str]
+    vendor_id: UUID | None = None
+    vendor_status: str | None = None
+    submitted_at: str | None = None
+    verification_id: UUID | None = None
+    verification_status: str | None = None
+    notes: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,18 +85,33 @@ class VendorService:
     async def eligibility(self, *, org_id: UUID, caller_user_id: UUID) -> EligibilityResult:
         await self._require_org_owner(org_id, caller_user_id)
         reasons: list[str] = []
-        existing = (
+        vendor = (
             await self._session.execute(
-                select(VendorProfileRow.id).where(VendorProfileRow.organization_id == org_id)
+                select(VendorProfileRow).where(VendorProfileRow.organization_id == org_id)
             )
         ).scalar_one_or_none()
-        if existing is not None:
+        verification = None
+        if vendor is not None:
             reasons.append("Organization already has a vendor profile")
+            verification = (
+                await self._session.execute(
+                    select(VendorVerificationRow)
+                    .where(VendorVerificationRow.vendor_id == vendor.id)
+                    .order_by(VendorVerificationRow.created_at.desc())
+                    .limit(1)
+                )
+            ).scalar_one_or_none()
         eligible = len(reasons) == 0
         return EligibilityResult(
             eligible=eligible,
             reasons=reasons,
             requirements=list(REQUIREMENTS) if eligible else [],
+            vendor_id=vendor.id if vendor else None,
+            vendor_status=vendor.status if vendor else None,
+            submitted_at=vendor.created_at.isoformat() if vendor and vendor.created_at else None,
+            verification_id=verification.id if verification else None,
+            verification_status=verification.status if verification else None,
+            notes=verification.notes if verification else None,
         )
 
     async def profile_for_org(self, *, org_id: UUID, caller_user_id: UUID) -> VendorProfileView:

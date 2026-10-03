@@ -44,6 +44,12 @@ async def vendor_eligibility(
         eligible=result.eligible,
         reasons=result.reasons,
         requirements=result.requirements,
+        vendor_id=str(result.vendor_id) if result.vendor_id else None,
+        vendor_status=result.vendor_status,
+        submitted_at=result.submitted_at,
+        verification_id=str(result.verification_id) if result.verification_id else None,
+        verification_status=result.verification_status,
+        notes=result.notes,
     )
 
 

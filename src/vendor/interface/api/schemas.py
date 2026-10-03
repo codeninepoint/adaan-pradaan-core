@@ -7,6 +7,12 @@ class VendorEligibilityResponse(BaseModel):
     eligible: bool
     reasons: list[str]
     requirements: list[str]
+    vendor_id: str | None = None
+    vendor_status: str | None = None
+    submitted_at: str | None = None
+    verification_id: str | None = None
+    verification_status: str | None = None
+    notes: str | None = None
 
 
 class VendorRegisterRequest(BaseModel):

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vendor Portal — Adan Pradan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--p:#ec4899;--pl:#f472b6;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:232px 1fr;grid-template-rows:52px 1fr;height:100vh}
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-right:8px}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.verified{background:rgba(16,185,129,.12);color:var(--gl);border:1px solid rgba(16,185,129,.25)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--v));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;cursor:pointer}
+
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);
+  text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;
+  border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;
+  font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;
+  border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(14,165,233,.08);border-left-color:var(--tl)}
+.nav-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.help-btn{width:100%;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);
+  color:var(--tl);padding:9px;border-radius:8px;cursor:pointer;font-family:inherit;
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px}
+
+.main{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.page{display:none;padding:24px 28px 48px;max-width:1040px;animation:fadein .18s ease}
+.page.wide{max-width:1240px}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.clickable{cursor:pointer;transition:border-color .14s,transform .1s}
+.card.clickable:hover{border-color:var(--bdr2);transform:translateY(-1px)}
+.card.bordered-t{border-left:3px solid var(--tl)}
+.card.bordered-g{border-left:3px solid var(--gl)}
+.card.bordered-a{border-left:3px solid var(--al)}
+.card.bordered-r{border-left:3px solid var(--rl)}
+.card.bordered-v{border-left:3px solid var(--vl)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.clickable-row{cursor:pointer}
+.tbl tr.clickable-row:hover td{background:rgba(255,255,255,.02)}
+.action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;font-weight:600}
+.action-btn:hover{border-color:var(--tl);color:var(--tl)}
+
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--sll);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--bdr);color:var(--w);padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13px}
+.form-input:focus{outline:none;border-color:var(--tl)}
+.form-hint{font-size:11px;color:var(--sl);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--tl);color:var(--ink)}.btn-primary:hover{background:var(--t)}
+.btn-success{background:var(--gl);color:var(--ink)}.btn-success:hover{background:var(--g)}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-t{background:rgba(14,165,233,.07);color:#7dd3fc;border-color:rgba(14,165,233,.2)}
+.alert-g{background:rgba(16,185,129,.07);color:#6ee7b7;border-color:rgba(16,185,129,.2)}
+.alert-a{background:rgba(245,158,11,.07);color:#fcd34d;border-color:rgba(245,158,11,.2)}
+.alert-r{background:rgba(239,68,68,.06);color:#fca5a5;border-color:rgba(239,68,68,.2)}
+
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--sl)}.detail-val{color:var(--w);font-weight:600;text-align:right}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;max-width:480px;width:100%}
+.modal-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;color:var(--sl);font-size:20px;cursor:pointer}
+.modal-body{padding:18px 20px}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--bdr);display:flex;gap:10px;justify-content:flex-end}
+
+.toast{position:fixed;bottom:22px;right:22px;padding:12px 18px;border-radius:10px;font-weight:700;font-size:12px;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;background:var(--gl);color:var(--ink);border:1px solid rgba(16,185,129,.4)}
+.toast.show{transform:translateY(0);opacity:1}
+.empty-state{text-align:center;padding:40px 20px;color:var(--sl)}
+.empty-state .ei{font-size:32px;margin-bottom:10px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sep{height:1px;background:var(--bdr);margin:16px 0}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--card2);border:1px solid var(--bdr);color:var(--sll);margin:2px}
+.mono{font-family:monospace}.fw7{font-weight:700}
+.col-g{color:var(--gl)}.col-a{color:var(--al)}.col-r{color:var(--rl)}.col-t{color:var(--tl)}.col-sl{color:var(--sl)}.col-v{color:var(--vl)}.col-w{color:var(--w)}
+.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bdr);background:var(--card2);color:var(--sll);transition:all .14s;white-space:nowrap}
+.chip:hover{border-color:var(--bdr2);color:var(--w)}
+.chip.on{background:rgba(14,165,233,.12);border-color:var(--tl);color:var(--tl)}
+.progress-bar{height:6px;border-radius:4px;background:var(--bdr);overflow:hidden}
+.progress-fill{height:100%;border-radius:4px}
+.stars{color:var(--al);letter-spacing:1px}
+.var-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
+.tracking{display:flex;margin:14px 0 4px}
+.tstep{flex:1;text-align:center;position:relative}
+.tstep .tdot{width:24px;height:24px;border-radius:50%;background:var(--card2);border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto 5px;color:var(--sl)}
+.tstep.done .tdot{background:var(--gl);border-color:var(--gl);color:var(--ink)}
+.tstep.active .tdot{background:var(--tl);border-color:var(--tl);color:var(--ink)}
+.tstep:not(:last-child)::after{content:'';position:absolute;top:12px;left:60%;width:80%;height:2px;background:var(--bdr);z-index:0}
+.tstep.done:not(:last-child)::after{background:var(--gl)}
+.tstep .tl{font-size:9px;color:var(--sl);font-weight:600}
+.tstep.done .tl,.tstep.active .tl{color:var(--w)}
+@media(max-width:1000px){.g3,.g4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="topbar">
+  <div class="brand">Adan<span>Pradan</span></div>
+  <div class="tb-sep"></div>
+  <span style="font-size:12px;color:var(--sl)">Vendor Portal</span>
+  <div class="tb-sep"></div>
+  <span class="tb-badge verified">&#10003; Verified Vendor</span>
+  <div class="tb-right">
+    <div class="tb-stat">&#128230;<strong id="hdr-neworders">—</strong> new orders</div>
+    <div class="tb-stat">&#128202;<strong class="col-g" id="hdr-today-sales">—</strong> today</div>
+    <div class="tb-sep"></div>
+    <div class="avatar" title="ABC Electronics">AE</div>
+  </div>
+</div>
+
+<div class="sidebar">
+  <div style="padding:8px 8px 0">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" data-page="overview" onclick="nav(this,'overview')">
+      <span class="nav-ic">&#127968;</span><span class="nav-label">Overview</span>
+    </button>
+    <button class="nav-item" data-page="analytics" onclick="nav(this,'analytics')">
+      <span class="nav-ic">&#128200;</span><span class="nav-label">Analytics</span>
+    </button>
+
+    <div class="nav-section">Catalog</div>
+    <button class="nav-item" data-page="products" onclick="nav(this,'products')">
+      <span class="nav-ic">&#128717;</span><span class="nav-label">Products</span>
+    </button>
+    <button class="nav-item" data-page="inventory" onclick="nav(this,'inventory')">
+      <span class="nav-ic">&#128230;</span><span class="nav-label">Inventory</span>
+      <span id="lowstock-pill" class="nav-pill" style="display:none"></span>
+    </button>
+    <button class="nav-item" data-page="warehouses" onclick="nav(this,'warehouses')">
+      <span class="nav-ic">&#127970;</span><span class="nav-label">Warehouses</span>
+    </button>
+
+    <div class="nav-section">Orders &amp; Fulfilment</div>
+    <button class="nav-item" data-page="orders" onclick="nav(this,'orders')">
+      <span class="nav-ic">&#128203;</span><span class="nav-label">Orders</span>
+      <span id="orders-pill" class="nav-pill" style="display:none"></span>
+    </button>
+    <button class="nav-item" data-page="fulfilment" onclick="nav(this,'fulfilment')">
+      <span class="nav-ic">&#128666;</span><span class="nav-label">Fulfilment</span>
+    </button>
+    <button class="nav-item" data-page="returns" onclick="nav(this,'returns')">
+      <span class="nav-ic">&#8617;&#65039;</span><span class="nav-label">Returns &amp; Refunds</span>
+      <span id="returns-pill" class="nav-pill" style="display:none"></span>
+    </button>
+
+    <div class="nav-section">Customers</div>
+    <button class="nav-item" data-page="customers" onclick="nav(this,'customers')">
+      <span class="nav-ic">&#128100;</span><span class="nav-label">Customers</span>
+    </button>
+    <button class="nav-item" data-page="reviews" onclick="nav(this,'reviews')">
+      <span class="nav-ic">&#11088;</span><span class="nav-label">Reviews</span>
+    </button>
+    <button class="nav-item" data-page="promotions" onclick="nav(this,'promotions')">
+      <span class="nav-ic">&#127991;&#65039;</span><span class="nav-label">Promotions</span>
+    </button>
+
+    <div class="nav-section">Payments</div>
+    <button class="nav-item" data-page="payments" onclick="nav(this,'payments')">
+      <span class="nav-ic">&#128179;</span><span class="nav-label">Payments &amp; Settlements</span>
+    </button>
+
+    <div class="nav-section">Account</div>
+    <button class="nav-item" data-page="notifications" onclick="nav(this,'notifications')">
+      <span class="nav-ic">&#128276;</span><span class="nav-label">Notifications</span>
+    </button>
+    <button class="nav-item" data-page="support" onclick="nav(this,'support')">
+      <span class="nav-ic">&#128172;</span><span class="nav-label">Support</span>
+    </button>
+    <button class="nav-item" data-page="settings" onclick="nav(this,'settings')">
+      <span class="nav-ic">&#9881;</span><span class="nav-label">Vendor Settings</span>
+    </button>
+  </div>
+  <div class="sidebar-foot">
+    <button class="help-btn" onclick="nav(document.querySelector('[data-page=support]'),'support')">&#10067; Need help?</button>
+  </div>
+</div>
+
+<div class="main" id="mainScroll">
+
+<!-- OVERVIEW -->
+<div class="page on" id="page-overview">
+  <div class="page-hdr">
+    <div class="page-title">Good morning, ABC Electronics</div>
+    <div class="page-sub">Here's what needs your attention today.</div>
+  </div>
+  <div class="g3" id="overview-stats" style="margin-bottom:16px"></div>
+  <div class="card bordered-a">
+    <div class="card-t">&#9888;&#65039; Orders requiring action</div>
+    <table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody id="overview-action-orders"></tbody></table>
+  </div>
+  <div class="card bordered-r">
+    <div class="card-t">&#128230; Low stock</div>
+    <div id="overview-lowstock"></div>
+  </div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="page" id="page-analytics">
+  <div class="page-hdr"><div class="page-title">Analytics</div><div class="page-sub">Sales, orders, and product performance over the last 6 months.</div></div>
+  <div class="card">
+    <div class="card-t">&#128200; Monthly sales</div>
+    <div style="display:flex;align-items:flex-end;gap:10px;height:100px" id="an-bars"></div>
+    <div style="display:flex;gap:10px;margin-top:6px" id="an-labels"></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="card-t">&#127942; Top products</div><div id="an-top-products"></div></div>
+    <div class="card"><div class="card-t">&#128203; Orders by status</div><div id="an-orders-status"></div></div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="page" id="page-products">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">Products</div><div class="page-sub">Your catalogue, approval status, and variants.</div></div>
+    <button class="btn btn-primary" onclick="openAddProductModal()">&#43; Add Product</button>
+  </div>
+  <div id="products-list"></div>
+</div>
+
+<!-- INVENTORY -->
+<div class="page" id="page-inventory">
+  <div class="page-hdr"><div class="page-title">Inventory</div><div class="page-sub">Stock by SKU/variant. Inventory is reserved at checkout and released if payment fails.</div></div>
+  <div class="card">
+    <table class="tbl"><thead><tr><th>Product</th><th>Variant / SKU</th><th>Warehouse</th><th>Available</th><th>Reserved</th><th></th></tr></thead><tbody id="inventory-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- WAREHOUSES -->
+<div class="page" id="page-warehouses">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">Warehouses</div><div class="page-sub">Where your inventory physically lives.</div></div>
+    <button class="btn btn-primary" onclick="toast('Add warehouse form would open here')">&#43; Add Warehouse</button>
+  </div>
+  <div id="warehouses-list"></div>
+</div>
+
+<!-- ORDERS -->
+<div class="page wide" id="page-orders">
+  <div class="page-hdr"><div class="page-title">Orders</div><div class="page-sub">Accept new orders, track them through fulfilment, to delivered.</div></div>
+  <div class="chip-row" id="order-status-chips" style="margin-bottom:14px"></div>
+  <div id="orders-table-container"></div>
+</div>
+
+<!-- FULFILMENT -->
+<div class="page wide" id="page-fulfilment">
+  <div class="page-hdr"><div class="page-title">Fulfilment</div><div class="page-sub">Pack → ship → track → deliver. Orders move left to right.</div></div>
+  <div class="g4" id="fulfilment-board"></div>
+</div>
+
+<!-- RETURNS -->
+<div class="page" id="page-returns">
+  <div class="page-hdr"><div class="page-title">Returns &amp; Refunds</div><div class="page-sub">Approve to refund or replace, or reject with a reason.</div></div>
+  <div id="returns-list"></div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div class="page-hdr"><div class="page-title">Customers</div><div class="page-sub">Everyone who has bought from you. You see only your own buyers, never other vendors'.</div></div>
+  <div class="card"><table class="tbl"><thead><tr><th>Customer</th><th>Orders</th><th>Total spent</th><th>Last order</th><th></th></tr></thead><tbody id="customers-tbody"></tbody></table></div>
+</div>
+
+<!-- REVIEWS -->
+<div class="page" id="page-reviews">
+  <div class="page-hdr"><div class="page-title">Reviews</div><div class="page-sub">What customers are saying about your products.</div></div>
+  <div id="reviews-list"></div>
+</div>
+
+<!-- PROMOTIONS -->
+<div class="page" id="page-promotions">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">Promotions</div><div class="page-sub">Coupons and discounts for your products.</div></div>
+    <button class="btn btn-primary" onclick="openAddCouponModal()">&#43; New Coupon</button>
+  </div>
+  <div class="card"><table class="tbl"><thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Used</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody id="coupons-tbody"></tbody></table></div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="page" id="page-payments">
+  <div class="page-hdr"><div class="page-title">Payments &amp; Settlements</div><div class="page-sub">Sales, platform commission, and what's been paid out to you.</div></div>
+  <div class="g3" id="payments-stats" style="margin-bottom:16px"></div>
+  <div class="alert alert-t"><span class="alert-ic">&#8505;&#65039;</span><span>Settlement happens after delivery and the return window closes — not immediately on payment. The platform holds funds until then.</span></div>
+  <div class="card"><div class="card-t">&#128196; Settlement history</div>
+    <table class="tbl"><thead><tr><th>Period</th><th>Sales</th><th>Commission</th><th>Net settlement</th><th>Status</th></tr></thead><tbody id="settlements-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="page" id="page-notifications">
+  <div class="page-hdr"><div class="page-title">Notifications</div><div class="page-sub">What you get alerted about, and how.</div></div>
+  <div class="card"><div id="notif-rows"></div></div>
+</div>
+
+<!-- SUPPORT -->
+<div class="page" id="page-support">
+  <div class="page-hdr"><div class="page-title">Support</div><div class="page-sub">Get help from the Adan Pradan vendor success team.</div></div>
+  <div class="card">
+    <div class="form-group"><label class="form-label">Topic</label>
+      <select class="form-input"><option>Order issue</option><option>Payment / settlement</option><option>Product listing</option><option>Account / KYC</option><option>Other</option></select></div>
+    <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" rows="4" placeholder="Describe the issue..."></textarea></div>
+    <button class="btn btn-primary" onclick="toast('Support request sent')">Send message</button>
+  </div>
+  <div class="card"><div class="card-t">&#128222; Other ways to reach us</div>
+    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-val">vendor-support@adanpradan.io</span></div>
+    <div class="detail-row"><span class="detail-label">Response time</span><span class="detail-val">Within 24 hours</span></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-hdr"><div class="page-title">Vendor Settings</div><div class="page-sub">Business profile, payout details, tax info, and shipping configuration.</div></div>
+  <div class="card bordered-t">
+    <div class="card-t">&#127970; Business Profile</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Business name</label><input class="form-input" value="ABC Electronics Pvt Ltd"></div>
+    <div class="form-group"><label class="form-label">Contact email</label><input class="form-input" value="ops@abcelectronics.in"></div></div>
+    <div class="form-group"><label class="form-label">Business description</label><textarea class="form-input" rows="2">Consumer electronics and accessories, serving India since 2019.</textarea></div>
+    <button class="btn btn-ghost btn-sm" onclick="toast('Profile saved')">Save profile</button>
+  </div>
+  <div class="card bordered-g">
+    <div class="card-t">&#127974; Bank Account</div>
+    <div class="detail-row"><span class="detail-label">Account holder</span><span class="detail-val">ABC Electronics Pvt Ltd</span></div>
+    <div class="detail-row"><span class="detail-label">Account number</span><span class="detail-val mono">XXXXXXXX4821</span></div>
+    <div class="detail-row"><span class="detail-label">IFSC</span><span class="detail-val mono">HDFC0001234</span></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="toast('Bank update form would open here')">Update bank details</button>
+  </div>
+  <div class="card bordered-a">
+    <div class="card-t">&#128220; Tax Information</div>
+    <div class="detail-row"><span class="detail-label">GSTIN</span><span class="detail-val mono">27AAAAA0000A1Z5</span></div>
+    <div class="detail-row"><span class="detail-label">PAN</span><span class="detail-val mono">AAAAA0000A</span></div>
+    <div class="detail-row"><span class="detail-label">Verification</span><span class="detail-val"><span class="badge badge-g">&#10003; Verified</span></span></div>
+  </div>
+  <div class="card bordered-v">
+    <div class="card-t">&#128666; Shipping Configuration</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Default courier</label>
+      <select class="form-input"><option>Delhivery</option><option>BlueDart Express</option><option>Ekart Logistics</option><option>Xpressbees</option></select></div>
+    <div class="form-group"><label class="form-label">Handling time</label><input class="form-input" value="1-2 business days"></div></div>
+    <button class="btn btn-ghost btn-sm" onclick="toast('Shipping config saved')">Save shipping config</button>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">&#215;</button></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+var WAREHOUSES=[
+  {id:'wh1',name:'Mumbai Central Warehouse',city:'Mumbai, Maharashtra',capacity:'68% used'},
+  {id:'wh2',name:'Bengaluru Fulfilment Center',city:'Bengaluru, Karnataka',capacity:'41% used'},
+];
+
+var PRODUCTS=[
+  {id:'p1',name:'AirBeat Wireless Earbuds',category:'Electronics',approval:'approved',
+   variants:[{sku:'AB-EB-BLK',name:'Black',stock:42,reserved:5,price:'₹2,499'},{sku:'AB-EB-WHT',name:'White',stock:8,reserved:2,price:'₹2,499'}]},
+  {id:'p2',name:'FlexCharge 65W GaN Charger',category:'Electronics',approval:'approved',
+   variants:[{sku:'FC-65-STD',name:'Standard',stock:3,reserved:1,price:'₹1,799'}]},
+  {id:'p3',name:'NoteBook Pro Sleeve 14"',category:'Accessories',approval:'under_review',
+   variants:[{sku:'NB-SL-14-GRY',name:'Grey',stock:0,reserved:0,price:'₹899'}]},
+  {id:'p4',name:'ClickType Mechanical Keyboard',category:'Electronics',approval:'draft',
+   variants:[{sku:'CT-KB-BLU',name:'Blue switches',stock:15,reserved:0,price:'₹3,299'}]},
+];
+var LOW_STOCK_THRESHOLD=5;
+
+var COURIERS=['Delhivery','BlueDart Express','Ekart Logistics','Xpressbees'];
+var ORDER_STATUSES=['New','Confirmed','Processing','Ready to Ship','Shipped','Delivered','Cancelled','Returned'];
+var ORDERS=[
+  {id:'ORD-10231',customer:'Rhea Kapoor',items:'AirBeat Wireless Earbuds (Black) ×1',amount:'₹2,499',date:'10 min ago',status:'New',
+   address:{line1:'14 Linking Road, Bandra West',city:'Mumbai',pincode:'400050',phone:'+91 98200 11223'},trackingId:null,courier:null},
+  {id:'ORD-10229',customer:'Arjun Mehta',items:'FlexCharge 65W Charger ×2',amount:'₹3,598',date:'1 hour ago',status:'New',
+   address:{line1:'B-12 Connaught Place',city:'New Delhi',pincode:'110001',phone:'+91 98100 22334'},trackingId:null,courier:null},
+  {id:'ORD-10211',customer:'Kavya Shah',items:'AirBeat Wireless Earbuds (White) ×1',amount:'₹2,499',date:'3 hours ago',status:'Confirmed',
+   address:{line1:'22 Anna Salai',city:'Chennai',pincode:'600002',phone:'+91 94440 55667'},trackingId:null,courier:null},
+  {id:'ORD-10198',customer:'Devika Rao',items:'ClickType Mechanical Keyboard ×1',amount:'₹3,299',date:'yesterday',status:'Processing',
+   address:{line1:'7 Park Street',city:'Kolkata',pincode:'700016',phone:'+91 98300 99887'},trackingId:null,courier:null},
+  {id:'ORD-10180',customer:'Sam Thomas',items:'AirBeat Wireless Earbuds (Black) ×1',amount:'₹2,499',date:'2 days ago',status:'Ready to Ship',
+   address:{line1:'5 MG Road',city:'Pune',pincode:'411001',phone:'+91 98220 33445'},trackingId:null,courier:null},
+  {id:'ORD-10150',customer:'Nisha Patel',items:'FlexCharge 65W Charger ×1',amount:'₹1,799',date:'4 days ago',status:'Shipped',
+   address:{line1:'9 Residency Road',city:'Bengaluru',pincode:'560025',phone:'+91 99000 11223'},trackingId:'TRK884210557',courier:'Delhivery'},
+  {id:'ORD-10090',customer:'Meera Joshi',items:'AirBeat Wireless Earbuds (Black) ×2',amount:'₹4,998',date:'1 week ago',status:'Delivered',
+   address:{line1:'18 Civil Lines',city:'Jaipur',pincode:'302006',phone:'+91 98290 44556'},trackingId:'TRK119944302',courier:'BlueDart Express'},
+  {id:'ORD-10044',customer:'Rohan Verma',items:'ClickType Mechanical Keyboard ×1',amount:'₹3,299',date:'2 weeks ago',status:'Cancelled',
+   address:{line1:'3 Salt Lake',city:'Kolkata',pincode:'700091',phone:'+91 98310 77889'},trackingId:null,courier:null},
+  {id:'ORD-9980',customer:'Ishaan Gupta',items:'AirBeat Wireless Earbuds (White) ×1',amount:'₹2,499',date:'3 weeks ago',status:'Returned',
+   address:{line1:'11 Koregaon Park',city:'Pune',pincode:'411001',phone:'+91 98500 66778'},trackingId:'TRK773310982',courier:'Ekart Logistics'},
+];
+var FULFIL_STAGES=['Processing','Ready to Ship','Shipped','Delivered'];
+var FULFIL_NEXT={'Processing':'Ready to Ship','Ready to Ship':'Shipped','Shipped':'Delivered'};
+
+var RETURNS=[
+  {id:'RET-5501',orderId:'ORD-9980',customer:'Ishaan Gupta',product:'AirBeat Wireless Earbuds (White)',amount:'₹2,499',reason:'Item damaged or defective',status:'Requested',requested:'3 days ago'},
+  {id:'RET-5488',orderId:'ORD-9820',customer:'Tanya Singh',product:'FlexCharge 65W Charger',amount:'₹1,799',reason:'No longer needed',status:'Approved',requested:'1 week ago'},
+];
+
+var REVIEWS=[
+  {customer:'Rhea Kapoor',product:'AirBeat Wireless Earbuds',rating:5,date:'2 days ago',comment:'Battery life is excellent, pairs instantly every time.',reply:null},
+  {customer:'Sam Thomas',product:'ClickType Mechanical Keyboard',rating:4,date:'1 week ago',comment:'Great feel, a bit loud for open offices.',reply:'Thanks Sam! We have a silent-switch variant coming soon.'},
+  {customer:'Meera Joshi',product:'FlexCharge 65W Charger',rating:3,date:'2 weeks ago',comment:'Works fine but the cable is shorter than expected.',reply:null},
+];
+
+var COUPONS=[
+  {code:'WELCOME10',type:'Percentage',value:'10% off',used:'142 / 500',expiry:'31 Dec 2026',status:'active'},
+  {code:'FLASH200',type:'Flat amount',value:'₹200 off',used:'89 / 200',expiry:'15 Oct 2026',status:'active'},
+  {code:'SUMMER25',type:'Percentage',value:'25% off',used:'500 / 500',expiry:'31 Jul 2026',status:'expired'},
+];
+
+var SETTLEMENTS=[
+  {period:'Sep 2026',sales:'₹2,34,890',commission:'₹23,489',net:'₹2,11,401',status:'Paid'},
+  {period:'Aug 2026',sales:'₹1,98,220',commission:'₹19,822',net:'₹1,78,398',status:'Paid'},
+  {period:'Oct 2026 (pending)',sales:'₹61,450',commission:'₹6,145',net:'₹55,305',status:'Held — return window open'},
+];
+
+var NOTIFS=[
+  {key:'new_order',label:'New order placed',default:true},
+  {key:'low_stock',label:'Product running low on stock',default:true},
+  {key:'return',label:'Return or refund requested',default:true},
+  {key:'review',label:'New customer review',default:true},
+  {key:'settlement',label:'Settlement processed',default:true},
+  {key:'digest',label:'Weekly performance digest',default:false},
+];
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function toast(msg){var t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2800);}
+function openModal(title,body,footBtns){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  var foot=document.getElementById('modal-foot');
+  foot.innerHTML='<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  if(footBtns) foot.innerHTML=footBtns+foot.innerHTML;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(e){ if(!e||e.target===document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('open'); }
+function nav(btn,page){
+  document.querySelectorAll('.nav-item').forEach(function(b){b.className='nav-item'+(b===btn?' active':'')});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  var pg=document.getElementById('page-'+page); if(pg) pg.classList.add('on');
+  document.getElementById('mainScroll').scrollTop=0;
+}
+function approvalBadge(s){
+  return s==='approved'?'<span class="badge badge-g">&#10003; Approved</span>':s==='under_review'?'<span class="badge badge-a">Under review</span>':'<span class="badge badge-sl">Draft</span>';
+}
+function orderStatusBadge(s){
+  var cls=s==='Delivered'?'badge-g':s==='Cancelled'?'badge-sl':s==='Returned'?'badge-r':s==='New'?'badge-a':'badge-t';
+  return '<span class="badge '+cls+'">'+(s==='Delivered'?'&#10003; ':'')+s+'</span>';
+}
+function allVariants(){
+  var out=[];
+  PRODUCTS.forEach(function(p){p.variants.forEach(function(v){out.push({product:p,v:v});});});
+  return out;
+}
+function lowStockVariants(){ return allVariants().filter(function(x){return x.v.stock<=LOW_STOCK_THRESHOLD;}); }
+
+// ─── OVERVIEW ───────────────────────────────────────────────────────────────
+function renderOverview(){
+  var newOrders=ORDERS.filter(function(o){return o.status==='New';});
+  var actionable=ORDERS.filter(function(o){return ['New','Confirmed','Processing','Ready to Ship'].indexOf(o.status)>-1;});
+  var todaySales=ORDERS.filter(function(o){return o.date.indexOf('min ago')>-1||o.date.indexOf('hour')>-1;}).length;
+  document.getElementById('hdr-neworders').textContent=newOrders.length;
+  document.getElementById('hdr-today-sales').textContent='₹'+(todaySales*2499).toLocaleString('en-IN');
+  document.getElementById('orders-pill').style.display=newOrders.length?'inline-flex':'none';
+  document.getElementById('orders-pill').textContent=newOrders.length+' new';
+
+  document.getElementById('overview-stats').innerHTML=`
+    <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800">${actionable.length}</div><div class="fs11 col-sl" style="margin-top:4px">Orders needing action</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--gl)">₹2,34,890</div><div class="fs11 col-sl" style="margin-top:4px">This month's sales</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--al)">${lowStockVariants().length}</div><div class="fs11 col-sl" style="margin-top:4px">Low-stock SKUs</div></div>`;
+
+  document.getElementById('overview-action-orders').innerHTML=actionable.slice(0,6).map(function(o){
+    return `<tr class="clickable-row" onclick="nav(document.querySelector('[data-page=orders]'),'orders');setTimeout(function(){openOrderModal('${o.id}')},50)">
+      <td class="mono fs11">${o.id}</td><td class="fs12">${o.customer}</td><td class="fw7 col-g fs12">${o.amount}</td><td>${orderStatusBadge(o.status)}</td>
+      <td><button class="action-btn">Act</button></td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="col-sl fs12" style="text-align:center;padding:20px">Nothing needs action right now.</td></tr>';
+
+  var low=lowStockVariants();
+  document.getElementById('overview-lowstock').innerHTML=low.length?low.map(function(x){
+    return `<div class="detail-row"><span class="detail-label">${x.product.name} — ${x.v.name} <span class="mono fs11 col-sl">(${x.v.sku})</span></span><span class="detail-val col-r">${x.v.stock} left</span></div>`;
+  }).join(''):'<div class="fs12 col-sl">All stock levels are healthy.</div>';
+}
+
+// ─── ANALYTICS ──────────────────────────────────────────────────────────────
+function renderAnalytics(){
+  var months=['Apr','May','Jun','Jul','Aug','Sep'];
+  var vals=[142000,156000,171000,189000,198220,234890];
+  var max=Math.max.apply(null,vals);
+  document.getElementById('an-bars').innerHTML=vals.map(function(v,i){
+    var h=Math.round((v/max)*90);
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="font-size:9px;color:var(--sl)">₹'+(v/1000).toFixed(0)+'k</div><div style="width:100%;height:'+h+'px;background:var(--tl);border-radius:4px 4px 0 0;opacity:'+(i===5?1:.55)+'"></div></div>';
+  }).join('');
+  document.getElementById('an-labels').innerHTML=months.map(function(m,i){
+    return '<div style="flex:1;text-align:center;font-size:10px;color:'+(i===5?'var(--w)':'var(--sl)')+'">'+m+'</div>';
+  }).join('');
+
+  var top=[{name:'AirBeat Wireless Earbuds',pct:58,color:'var(--tl)'},{name:'FlexCharge 65W Charger',pct:27,color:'var(--gl)'},{name:'ClickType Keyboard',pct:15,color:'var(--al)'}];
+  document.getElementById('an-top-products').innerHTML=top.map(function(t){
+    return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span>'+t.name+'</span><span class="col-sl">'+t.pct+'%</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+t.pct+'%;background:'+t.color+'"></div></div></div>';
+  }).join('');
+
+  var counts={}; ORDER_STATUSES.forEach(function(s){counts[s]=ORDERS.filter(function(o){return o.status===s;}).length;});
+  document.getElementById('an-orders-status').innerHTML=ORDER_STATUSES.map(function(s){
+    return '<div class="detail-row"><span class="detail-label">'+s+'</span><span class="detail-val">'+counts[s]+'</span></div>';
+  }).join('');
+}
+
+// ─── PRODUCTS ───────────────────────────────────────────────────────────────
+function renderProducts(){
+  document.getElementById('products-list').innerHTML=PRODUCTS.map(function(p){
+    var totalStock=p.variants.reduce(function(s,v){return s+v.stock;},0);
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div><strong class="fs13">${p.name}</strong><div class="fs11 col-sl">${p.category} &middot; ${p.variants.length} variant${p.variants.length>1?'s':''}</div></div>
+        ${approvalBadge(p.approval)}
+      </div>
+      <table class="tbl"><thead><tr><th>Variant</th><th>SKU</th><th>Price</th><th>Stock</th></tr></thead><tbody>
+      ${p.variants.map(function(v){
+        return '<tr><td class="fs12">'+v.name+'</td><td class="mono fs11">'+v.sku+'</td><td class="fs12">'+v.price+'</td><td class="fs12 '+(v.stock<=LOW_STOCK_THRESHOLD?'col-r fw7':'')+'">'+v.stock+(v.stock<=LOW_STOCK_THRESHOLD?' ⚠':'')+'</td></tr>';
+      }).join('')}
+      </tbody></table>
+      <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="toast('Edit form would open here')">&#9998; Edit</button>
+      <button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[data-page=inventory]'),'inventory')">&#128230; Manage stock</button></div>
+    </div>`;
+  }).join('');
+}
+function openAddProductModal(){
+  var body=`<div class="form-group"><label class="form-label">Product name</label><input class="form-input" id="np-name" placeholder="e.g. AirBeat Wireless Earbuds"></div>
+    <div class="form-group"><label class="form-label">Category</label><input class="form-input" id="np-cat" placeholder="e.g. Electronics"></div>
+    <div class="form-group"><label class="form-label">Variants</label><div id="np-variants"></div>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="addVariantRow()">&#43; Add variant</button></div>
+    <div class="alert alert-t"><span class="alert-ic">&#8505;&#65039;</span><span>New products start as <strong>Draft</strong> and go to <strong>Under review</strong> once submitted — they won't appear in the marketplace until approved.</span></div>`;
+  openModal('Add Product',body,'<button class="btn btn-primary" onclick="submitNewProduct()">Submit for review</button>');
+  document.getElementById('np-variants').innerHTML=''; addVariantRow();
+}
+function addVariantRow(){
+  var cont=document.getElementById('np-variants');
+  var row=document.createElement('div'); row.className='var-row';
+  row.innerHTML='<input class="form-input" placeholder="Variant name" style="font-size:12px"><input class="form-input" placeholder="SKU" style="font-size:12px"><input class="form-input" placeholder="Stock" type="number" style="font-size:12px"><button type="button" class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">&#10005;</button>';
+  cont.appendChild(row);
+}
+function submitNewProduct(){
+  var name=document.getElementById('np-name').value.trim();
+  if(!name){ toast('Enter a product name'); return; }
+  PRODUCTS.unshift({id:'p'+Date.now(),name:name,category:document.getElementById('np-cat').value.trim()||'Uncategorised',approval:'under_review',
+    variants:[{sku:'NEW-SKU-'+Math.floor(Math.random()*999),name:'Default',stock:0,reserved:0,price:'₹0'}]});
+  closeModal(); toast(name+' submitted for review'); renderProducts(); renderInventory();
+}
+
+// ─── INVENTORY ──────────────────────────────────────────────────────────────
+function renderInventory(){
+  var low=lowStockVariants();
+  document.getElementById('lowstock-pill').style.display=low.length?'inline-flex':'none';
+  document.getElementById('lowstock-pill').textContent=low.length;
+  document.getElementById('inventory-tbody').innerHTML=allVariants().map(function(x,i){
+    return `<tr><td class="fs12">${x.product.name}</td><td class="fs12">${x.v.name} <span class="mono fs11 col-sl">${x.v.sku}</span></td><td class="fs11 col-sl">${WAREHOUSES[i%WAREHOUSES.length].name}</td>
+      <td class="fw7 ${x.v.stock<=LOW_STOCK_THRESHOLD?'col-r':''}">${x.v.stock}${x.v.stock<=LOW_STOCK_THRESHOLD?' ⚠':''}</td><td class="col-sl">${x.v.reserved}</td>
+      <td><button class="action-btn" onclick="openAdjustStockModal('${x.product.id}','${x.v.sku}')">Adjust</button></td></tr>`;
+  }).join('');
+}
+function openAdjustStockModal(pid,sku){
+  var p=PRODUCTS.find(function(x){return x.id===pid}); var v=p.variants.find(function(x){return x.sku===sku});
+  var body=`<div class="detail-row"><span class="detail-label">Product</span><span class="detail-val">${p.name} — ${v.name}</span></div>
+    <div class="detail-row"><span class="detail-label">Current available</span><span class="detail-val">${v.stock}</span></div>
+    <div class="form-group" style="margin-top:14px"><label class="form-label">Adjust by</label><input class="form-input" id="adj-amt" type="number" placeholder="e.g. +50 or -10"></div>
+    <div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="adj-reason" placeholder="e.g. Restock, damaged units, recount"></div>`;
+  openModal('Adjust stock',body,`<button class="btn btn-primary" onclick="confirmAdjustStock('${pid}','${sku}')">Apply adjustment</button>`);
+}
+function confirmAdjustStock(pid,sku){
+  var amt=parseInt(document.getElementById('adj-amt').value,10);
+  if(isNaN(amt)){ toast('Enter a valid adjustment'); return; }
+  var p=PRODUCTS.find(function(x){return x.id===pid}); var v=p.variants.find(function(x){return x.sku===sku});
+  v.stock=Math.max(0,v.stock+amt);
+  closeModal(); toast('Stock updated for '+v.name); renderInventory(); renderProducts(); renderOverview();
+}
+
+// ─── WAREHOUSES ─────────────────────────────────────────────────────────────
+function renderWarehouses(){
+  document.getElementById('warehouses-list').innerHTML=WAREHOUSES.map(function(w){
+    var skuCount=allVariants().length;
+    return `<div class="card"><div class="card-t">&#127970; ${w.name}</div>
+      <div class="detail-row"><span class="detail-label">Location</span><span class="detail-val">${w.city}</span></div>
+      <div class="detail-row"><span class="detail-label">Capacity</span><span class="detail-val">${w.capacity}</span></div>
+      <div class="detail-row"><span class="detail-label">SKUs stored</span><span class="detail-val">${skuCount}</span></div></div>`;
+  }).join('');
+}
+
+// ─── ORDERS ─────────────────────────────────────────────────────────────────
+var orderFilter='all';
+function renderOrderChips(){
+  var opts=[['all','All']].concat(ORDER_STATUSES.map(function(s){return [s,s];}));
+  document.getElementById('order-status-chips').innerHTML=opts.map(function(o){
+    var n=o[0]==='all'?ORDERS.length:ORDERS.filter(function(x){return x.status===o[0];}).length;
+    if(o[0]!=='all'&&n===0) return '';
+    return '<span class="chip'+(orderFilter===o[0]?' on':'')+'" onclick="orderFilter=\''+o[0]+'\';renderOrders()">'+o[1]+' ('+n+')</span>';
+  }).join('');
+}
+function renderOrders(){
+  renderOrderChips();
+  var list=orderFilter==='all'?ORDERS:ORDERS.filter(function(o){return o.status===orderFilter;});
+  var cont=document.getElementById('orders-table-container');
+  if(!list.length){ cont.innerHTML='<div class="card empty-state"><div class="ei">&#128203;</div><p>No orders here.</p></div>'; return; }
+  cont.innerHTML='<div class="card"><table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>'+
+    list.map(function(o){
+      return `<tr class="clickable-row" onclick="openOrderModal('${o.id}')">
+        <td class="mono fs11">${o.id}</td><td class="fs12">${o.customer}</td><td class="fs11 col-sl">${o.items}</td><td class="fw7 col-g fs12">${o.amount}</td>
+        <td class="fs11 col-sl">${o.date}</td><td>${orderStatusBadge(o.status)}</td><td><button class="action-btn" onclick="event.stopPropagation();openOrderModal('${o.id}')">Open</button></td></tr>`;
+    }).join('')+'</tbody></table></div>';
+}
+function orderTimeline(o){
+  var steps=['New','Confirmed','Processing','Ready to Ship','Shipped','Delivered'];
+  if(['Cancelled','Returned'].indexOf(o.status)>-1) return '';
+  var idx=steps.indexOf(o.status);
+  return '<div class="tracking">'+steps.map(function(l,i){
+    var cls=i<idx?'done':i===idx?'active':'';
+    return '<div class="tstep '+cls+'"><div class="tdot">'+(i<idx?'&#10003;':(i+1))+'</div><div class="tl">'+l+'</div></div>';
+  }).join('')+'</div>';
+}
+function openOrderModal(id){
+  var o=ORDERS.find(function(x){return x.id===id}); if(!o) return;
+  var body=`<div class="detail-row"><span class="detail-label">Customer</span><span class="detail-val">${o.customer}</span></div>
+    <div class="detail-row"><span class="detail-label">Items</span><span class="detail-val">${o.items}</span></div>
+    <div class="detail-row"><span class="detail-label">Amount</span><span class="detail-val">${o.amount}</span></div>
+    ${orderTimeline(o)}
+    <div class="sep"></div><div class="card-t" style="margin-bottom:6px">&#128205; Shipping to</div>
+    <p class="fs12" style="color:var(--sll);line-height:1.7">${o.address.line1}, ${o.address.city} ${o.address.pincode}<br>&#128222; ${o.address.phone}</p>
+    ${o.trackingId?'<div class="alert alert-t" style="margin-top:10px"><span class="alert-ic">&#128666;</span><span>Tracking <strong>'+o.trackingId+'</strong> via '+o.courier+'</span></div>':''}`;
+  openModal(id,body,'');
+  document.getElementById('modal-foot').insertAdjacentHTML('afterbegin', orderActionButtons(o));
+}
+function orderActionButtons(o){
+  if(o.status==='New') return `<button class="btn btn-danger" onclick="rejectOrder('${o.id}')">&#10005; Reject</button><button class="btn btn-success" onclick="advanceOrder('${o.id}','Confirmed')">&#10003; Accept order</button>`;
+  if(o.status==='Confirmed') return '<button class="btn btn-primary" onclick="advanceOrder(\''+o.id+'\',\'Processing\')">Start processing</button>';
+  if(o.status==='Processing') return '<button class="btn btn-primary" onclick="advanceOrder(\''+o.id+'\',\'Ready to Ship\')">&#128230; Mark Packed / Ready to Ship</button>';
+  if(o.status==='Ready to Ship') return '<button class="btn btn-primary" onclick="openShipModal(\''+o.id+'\')">&#128666; Ship now</button>';
+  if(o.status==='Shipped') return '<button class="btn btn-success" onclick="advanceOrder(\''+o.id+'\',\'Delivered\')">&#10003; Mark Delivered</button>';
+  if(o.status==='Delivered') return '<span class="fs11 col-sl">Return window open — settlement pending.</span>';
+  return '';
+}
+function advanceOrder(id,status){
+  var o=ORDERS.find(function(x){return x.id===id}); o.status=status;
+  toast(id+' — now '+status); renderOrders(); renderOverview(); renderFulfilment(); openOrderModal(id);
+}
+function rejectOrder(id){
+  var o=ORDERS.find(function(x){return x.id===id}); o.status='Cancelled';
+  closeModal(); toast(id+' rejected — refund & inventory release triggered'); renderOrders(); renderOverview();
+}
+function openShipModal(id){
+  var body=`<div class="form-group"><label class="form-label">Courier</label><select class="form-input" id="ship-courier">${COURIERS.map(function(c){return '<option>'+c+'</option>';}).join('')}</select></div>
+    <div class="form-group"><label class="form-label">Tracking number</label><input class="form-input" id="ship-tracking" value="TRK${Math.floor(100000000+Math.random()*899999999)}"></div>`;
+  openModal('Ship '+id,body,`<button class="btn btn-ghost" onclick="openOrderModal('${id}')">Back</button><button class="btn btn-primary" onclick="confirmShip('${id}')">Confirm shipment</button>`);
+}
+function confirmShip(id){
+  var o=ORDERS.find(function(x){return x.id===id});
+  o.courier=document.getElementById('ship-courier').value; o.trackingId=document.getElementById('ship-tracking').value.trim();
+  o.status='Shipped';
+  toast(id+' shipped'); renderOrders(); renderFulfilment(); openOrderModal(id);
+}
+
+// ─── FULFILMENT BOARD ───────────────────────────────────────────────────────
+function renderFulfilment(){
+  document.getElementById('fulfilment-board').innerHTML=FULFIL_STAGES.map(function(stage){
+    var list=ORDERS.filter(function(o){return o.status===stage;});
+    return `<div class="card">
+      <div class="card-t" style="justify-content:space-between">${stage} <span class="badge badge-sl">${list.length}</span></div>
+      ${list.length?list.map(function(o){
+        var nextLabel=FULFIL_NEXT[stage];
+        return `<div style="padding:9px 0;border-bottom:1px solid var(--bdr)">
+          <div class="fs12 fw7">${o.id}</div><div class="fs11 col-sl">${o.customer}</div>
+          ${nextLabel?'<button class="action-btn" style="margin-top:6px" onclick="'+(stage==='Ready to Ship'?'openShipModal(\''+o.id+'\')':'advanceOrder(\''+o.id+'\',\''+nextLabel+'\')')+'">'+(stage==='Ready to Ship'?'Ship':'Move to '+nextLabel)+'</button>':''}
+        </div>`;
+      }).join(''):'<div class="fs11 col-sl" style="padding:10px 0">Nothing here.</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ─── RETURNS ────────────────────────────────────────────────────────────────
+function returnBadge(s){ return s==='Refunded'?'<span class="badge badge-g">Refunded</span>':s==='Approved'?'<span class="badge badge-t">Approved</span>':s==='Rejected'?'<span class="badge badge-r">Rejected</span>':'<span class="badge badge-a">Requested</span>'; }
+function renderReturns(){
+  document.getElementById('returns-pill').style.display=RETURNS.filter(function(r){return r.status==='Requested';}).length?'inline-flex':'none';
+  document.getElementById('returns-pill').textContent=RETURNS.filter(function(r){return r.status==='Requested';}).length;
+  document.getElementById('returns-list').innerHTML=RETURNS.map(function(r,i){
+    var actions=r.status==='Requested'?'<button class="btn btn-success btn-sm" onclick="decideReturn('+i+',\'approve\')">&#10003; Approve &amp; refund</button><button class="btn btn-danger btn-sm" onclick="decideReturn('+i+',\'reject\')">&#10005; Reject</button>':
+      r.status==='Approved'?'<button class="btn btn-primary btn-sm" onclick="decideReturn('+i+',\'refund\')">&#128176; Mark refund processed</button>':'';
+    return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div><strong class="fs13">${r.product}</strong><div class="fs11 col-sl">${r.id} &middot; for ${r.orderId} &middot; ${r.customer} &middot; ${r.amount}</div></div>${returnBadge(r.status)}</div>
+      <div class="fs12 col-sl" style="margin-bottom:10px">Reason: ${r.reason} &middot; requested ${r.requested}</div>
+      <div class="btn-row" style="margin-top:0">${actions}</div></div>`;
+  }).join('');
+}
+function decideReturn(i,action){
+  if(action==='approve') RETURNS[i].status='Approved';
+  if(action==='reject') RETURNS[i].status='Rejected';
+  if(action==='refund') RETURNS[i].status='Refunded';
+  toast(RETURNS[i].id+' — '+RETURNS[i].status); renderReturns();
+}
+
+// ─── CUSTOMERS ──────────────────────────────────────────────────────────────
+function renderCustomers(){
+  var byCustomer={};
+  ORDERS.forEach(function(o){
+    if(!byCustomer[o.customer]) byCustomer[o.customer]={orders:0,spent:0,last:o.date};
+    byCustomer[o.customer].orders++;
+    byCustomer[o.customer].spent+=parseInt(o.amount.replace(/[₹,]/g,''),10)||0;
+  });
+  document.getElementById('customers-tbody').innerHTML=Object.keys(byCustomer).map(function(name){
+    var c=byCustomer[name];
+    return `<tr><td class="fs12">${name}</td><td>${c.orders}</td><td class="fw7 col-g">₹${c.spent.toLocaleString('en-IN')}</td><td class="fs11 col-sl">${c.last}</td>
+      <td><button class="action-btn" onclick="toast('Customer order history would open here')">View</button></td></tr>`;
+  }).join('');
+}
+
+// ─── REVIEWS ────────────────────────────────────────────────────────────────
+function renderReviews(){
+  document.getElementById('reviews-list').innerHTML=REVIEWS.map(function(r,i){
+    return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <div><strong class="fs13">${r.customer}</strong><div class="fs11 col-sl">${r.product} &middot; ${r.date}</div></div>
+      <span class="stars">${'★'.repeat(r.rating)}<span style="color:var(--bdr)">${'★'.repeat(5-r.rating)}</span></span></div>
+      <p class="fs12" style="color:var(--sll);margin-bottom:8px">${r.comment}</p>
+      ${r.reply?'<div class="alert alert-t"><span class="alert-ic">&#128172;</span><span><strong>Your reply:</strong> '+r.reply+'</span></div>':
+        '<button class="btn btn-ghost btn-sm" onclick="openReplyModal('+i+')">&#128172; Reply</button>'}
+    </div>`;
+  }).join('');
+}
+function openReplyModal(i){
+  openModal('Reply to '+REVIEWS[i].customer,'<textarea class="form-input" rows="3" id="reply-text" placeholder="Thank them, or address their concern..."></textarea>',
+    '<button class="btn btn-primary" onclick="submitReply('+i+')">Post reply</button>');
+}
+function submitReply(i){
+  var txt=document.getElementById('reply-text').value.trim(); if(!txt){ toast('Write a reply first'); return; }
+  REVIEWS[i].reply=txt; closeModal(); toast('Reply posted'); renderReviews();
+}
+
+// ─── PROMOTIONS ─────────────────────────────────────────────────────────────
+function renderCoupons(){
+  document.getElementById('coupons-tbody').innerHTML=COUPONS.map(function(c){
+    return `<tr><td class="mono fw7">${c.code}</td><td class="fs12">${c.type}</td><td class="fs12">${c.value}</td><td class="fs11 col-sl">${c.used}</td><td class="fs11 col-sl">${c.expiry}</td>
+      <td>${c.status==='active'?'<span class="badge badge-g">Active</span>':'<span class="badge badge-sl">Expired</span>'}</td>
+      <td><button class="action-btn" onclick="toast('${c.code} deactivated')">${c.status==='active'?'Deactivate':'—'}</button></td></tr>`;
+  }).join('');
+}
+function openAddCouponModal(){
+  var body=`<div class="form-group"><label class="form-label">Coupon code</label><input class="form-input" id="nc-code" placeholder="e.g. SAVE15"></div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Type</label><select class="form-input" id="nc-type"><option>Percentage</option><option>Flat amount</option></select></div>
+    <div class="form-group"><label class="form-label">Value</label><input class="form-input" id="nc-value" placeholder="e.g. 15 or 200"></div></div>
+    <div class="form-group"><label class="form-label">Expiry date</label><input class="form-input" type="date" id="nc-expiry"></div>`;
+  openModal('New Coupon',body,'<button class="btn btn-primary" onclick="submitCoupon()">Create coupon</button>');
+}
+function submitCoupon(){
+  var code=document.getElementById('nc-code').value.trim().toUpperCase();
+  if(!code){ toast('Enter a coupon code'); return; }
+  var type=document.getElementById('nc-type').value, val=document.getElementById('nc-value').value.trim();
+  COUPONS.unshift({code:code,type:type,value:(type==='Percentage'?val+'% off':'₹'+val+' off'),used:'0 / —',expiry:document.getElementById('nc-expiry').value||'No expiry',status:'active'});
+  closeModal(); toast(code+' created'); renderCoupons();
+}
+
+// ─── PAYMENTS ───────────────────────────────────────────────────────────────
+function renderPayments(){
+  document.getElementById('payments-stats').innerHTML=`
+    <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--gl)">₹2,34,890</div><div class="fs11 col-sl" style="margin-top:4px">This month's sales</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--al)">₹23,489</div><div class="fs11 col-sl" style="margin-top:4px">Platform commission (10%)</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--tl)">₹55,305</div><div class="fs11 col-sl" style="margin-top:4px">Pending settlement</div></div>`;
+  document.getElementById('settlements-tbody').innerHTML=SETTLEMENTS.map(function(s){
+    return `<tr><td class="fs12">${s.period}</td><td class="fs12">${s.sales}</td><td class="fs12 col-r">-${s.commission}</td><td class="fw7 col-g">${s.net}</td>
+      <td>${s.status==='Paid'?'<span class="badge badge-g">Paid</span>':'<span class="badge badge-a">'+s.status+'</span>'}</td></tr>`;
+  }).join('');
+}
+
+// ─── NOTIFICATIONS ──────────────────────────────────────────────────────────
+function renderNotifs(){
+  document.getElementById('notif-rows').innerHTML=NOTIFS.map(function(n){
+    return '<div class="detail-row"><span class="detail-label">'+n.label+'</span><label style="cursor:pointer"><input type="checkbox" '+(n.default?'checked':'')+' style="accent-color:var(--tl);width:14px;height:14px;vertical-align:middle"> <span class="fs11 col-sl">Email</span></label></div>';
+  }).join('');
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+window.onload=function(){
+  renderOverview(); renderAnalytics(); renderProducts(); renderInventory(); renderWarehouses();
+  renderOrders(); renderFulfilment(); renderReturns(); renderCustomers(); renderReviews();
+  renderCoupons(); renderPayments(); renderNotifs();
+};
+</script>
+</body>
+</html>
