@@ -1,0 +1,1288 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vendor Portal — AdanPradan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--p:#ec4899;--pl:#f472b6;
+  --or:#f97316;--orl:#fb923c;--sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:240px 1fr;grid-template-rows:52px 1fr;height:100vh}
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-right:4px}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.badge-vendor{background:rgba(251,191,36,.12);color:var(--al);border:1px solid rgba(251,191,36,.3)}
+.badge-user{background:rgba(14,165,233,.12);color:var(--tl);border:1px solid rgba(14,165,233,.3)}
+.badge-svc{background:rgba(139,92,246,.12);color:var(--vl);border:1px solid rgba(139,92,246,.3)}
+.badge-kyc{background:rgba(16,185,129,.12);color:var(--gl);border:1px solid rgba(16,185,129,.3)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--v));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.notif-btn{background:transparent;border:none;cursor:pointer;color:var(--sll);font-size:16px;position:relative;padding:4px}
+.notif-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;background:var(--rl);border-radius:50%}
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(14,165,233,.08);border-left-color:var(--tl)}
+.nav-item.active.v{background:rgba(139,92,246,.08);border-left-color:var(--vl)}
+.nav-item.active.g{background:rgba(16,185,129,.08);border-left-color:var(--gl)}
+.nav-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.nav-pill-g{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(16,185,129,.15);color:var(--gl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.help-btn{width:100%;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);color:var(--tl);padding:9px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px}
+.main{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.page{display:none;padding:24px 28px 48px;max-width:1080px;animation:fadein .18s ease}
+.page.wide{max-width:1280px}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.page-hdr-left{}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.bordered-t{border-left:3px solid var(--tl)}
+.card.bordered-g{border-left:3px solid var(--gl)}
+.card.bordered-a{border-left:3px solid var(--al)}
+.card.bordered-r{border-left:3px solid var(--rl)}
+.card.bordered-v{border-left:3px solid var(--vl)}
+.card.bordered-or{border-left:3px solid var(--orl)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.stat-val{font-size:26px;font-weight:800;letter-spacing:-.04em}
+.stat-lbl{font-size:11px;color:var(--sll)}
+.stat-chg{font-size:11px;font-weight:700}
+.chg-up{color:var(--gl)}
+.chg-dn{color:var(--rl)}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-or{background:rgba(249,115,22,.1);color:var(--orl);border-color:rgba(249,115,22,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.cr{cursor:pointer}.tbl tr.cr:hover td{background:rgba(255,255,255,.02)}
+.action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;font-weight:600}
+.action-btn:hover{border-color:var(--tl);color:var(--tl)}
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--tl);color:var(--ink)}.btn-primary:hover{background:var(--t)}
+.btn-success{background:var(--gl);color:var(--ink)}.btn-success:hover{opacity:.9}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-purple{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:var(--vl)}.btn-purple:hover{background:rgba(139,92,246,.25)}
+.btn-amber{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--al)}.btn-amber:hover{background:rgba(245,158,11,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-g{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2);color:#a7f3d0}
+.alert-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:#fde68a}
+.alert-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:#fecaca}
+.alert-t{background:rgba(14,165,233,.07);border-color:rgba(14,165,233,.2);color:#bae6fd}
+.alert-v{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.2);color:#ddd6fe}
+.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-row label{font-size:11px;font-weight:700;color:var(--sll);text-transform:uppercase;letter-spacing:.05em}
+.form-row input,.form-row select,.form-row textarea{background:var(--card2);border:1px solid var(--bdr2);color:var(--w);padding:9px 12px;border-radius:8px;font-family:inherit;font-size:12px;width:100%;outline:none;transition:border .14s}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--tl)}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tabs{display:flex;gap:2px;background:var(--card2);border:1px solid var(--bdr);border-radius:10px;padding:3px;margin-bottom:18px;width:fit-content}
+.tab{padding:6px 16px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:700;color:var(--sll);border:none;background:transparent;font-family:inherit;transition:all .14s}
+.tab.active{background:var(--card);color:var(--w);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{background:var(--card2);border:1px solid var(--bdr);color:var(--w);padding:7px 11px;border-radius:8px;font-family:inherit;font-size:12px;outline:none}
+.filter-bar input{flex:1;min-width:160px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid var(--bdr);background:var(--card2);color:var(--sll);cursor:pointer}
+.chip.active{border-color:var(--tl);background:rgba(14,165,233,.1);color:var(--tl)}
+.chip.g.active{border-color:var(--gl);background:rgba(16,185,129,.1);color:var(--gl)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:26px;width:100%;max-width:580px;position:relative}
+.modal.wide{max-width:780px}
+.modal-t{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.modal-close{position:absolute;top:16px;right:16px;background:transparent;border:none;color:var(--sll);font-size:18px;cursor:pointer;line-height:1;padding:4px}
+.modal-close:hover{color:var(--w)}
+.sep{height:1px;background:var(--bdr);margin:14px 0}
+.kv{display:flex;align-items:flex-start;gap:0;margin-bottom:8px;font-size:12px}
+.kv-k{width:140px;flex-shrink:0;color:var(--sll);font-weight:600}
+.kv-v{flex:1;color:var(--w);word-break:break-all}
+.pincode-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pincode-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:var(--card2);border:1px solid var(--bdr);border-radius:20px;font-size:11px;font-weight:600;color:var(--tl)}
+.pincode-tag .rm{cursor:pointer;color:var(--rl);font-size:10px;margin-left:2px;font-weight:800}
+.pincode-tag.city{color:var(--sll);background:rgba(100,116,139,.08)}
+.std-plugin-card{background:var(--card2);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;margin-bottom:10px}
+.std-plugin-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.std-plugin-info{flex:1}
+.std-plugin-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.std-plugin-meta{font-size:11px;color:var(--sll);display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.std-plugin-caps{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.plugin-cap{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(14,165,233,.1);color:var(--tl);border:1px solid rgba(14,165,233,.2)}
+.acct-card{background:var(--card2);border:1px solid var(--bdr);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.acct-card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.acct-type-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+.upgrade-banner{background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(251,191,36,.03));border:1px solid rgba(251,191,36,.25);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.upgrade-banner h3{font-size:14px;font-weight:800;color:var(--al);margin-bottom:6px}
+.upgrade-banner p{font-size:12px;color:var(--sll);line-height:1.6;margin-bottom:12px}
+.upgrade-steps{display:flex;gap:0;margin-bottom:14px}
+.upgrade-step{flex:1;text-align:center;position:relative}
+.upgrade-step:not(:last-child)::after{content:'';position:absolute;top:14px;left:60%;width:80%;height:2px;background:var(--bdr)}
+.upgrade-step-dot{width:28px;height:28px;border-radius:50%;background:var(--card2);border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto 6px;position:relative;z-index:1}
+.upgrade-step-dot.done{background:rgba(16,185,129,.15);border-color:var(--gl);color:var(--gl)}
+.upgrade-step-dot.active{background:rgba(245,158,11,.15);border-color:var(--al);color:var(--al)}
+.upgrade-step-lbl{font-size:10px;color:var(--sll)}
+.loc-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border:1px solid var(--bdr);border-radius:8px;margin-bottom:8px}
+.loc-city{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.loc-pin-count{font-size:11px;color:var(--sll)}
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:32px;margin-top:4px}
+.sparkline span{flex:1;background:var(--tl);border-radius:2px 2px 0 0;opacity:.6;min-width:4px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--sll)}
+.empty-state .es-icon{font-size:32px;margin-bottom:10px}
+.empty-state h3{font-size:14px;font-weight:700;color:var(--w);margin-bottom:6px}
+.progress-bar{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:3px;background:var(--gl);transition:width .3s}
+.img-slot{cursor:pointer;border-radius:8px;aspect-ratio:1;overflow:hidden}
+.img-slot-inner{width:100%;height:100%;min-height:80px;border:1.5px dashed var(--bdr2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .14s;background:var(--card)}
+.img-slot:hover .img-slot-inner{border-color:var(--tl);background:rgba(14,165,233,.05)}
+.img-slot-filled .img-slot-inner{border-style:solid}
+</style>
+</head>
+<body>
+<div class="shell">
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">Adan<span>Pradan</span></div>
+  <div class="tb-sep"></div>
+  <span class="tb-badge badge-vendor">⚡ Vendor</span>
+  <span class="tb-badge badge-kyc" style="margin-left:4px">✓ KYC Verified</span>
+  <div class="tb-sep"></div>
+  <span class="tb-stat"><strong id="tb-name">FreshCart Foods</strong></span>
+  <div class="tb-sep"></div>
+  <span class="tb-stat">Account: <strong class="tb-badge badge-user" style="padding:1px 7px">User Account</strong></span>
+  <div class="tb-right">
+    <div class="tb-stat">🏙️ <strong>4 cities</strong></div>
+    <div class="tb-stat">📦 <strong id="tb-products">12</strong> products</div>
+    <div class="tb-stat">💰 <strong>₹2.4L</strong> this month</div>
+    <button class="notif-btn" onclick="alert('3 new notifications')">🔔<span class="notif-dot"></span></button>
+    <div class="avatar">FK</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="nav-section">Dashboard</div>
+  <button class="nav-item active" onclick="nav(this,'overview')"><span class="nav-ic">🏠</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="nav(this,'analytics')"><span class="nav-ic">📈</span><span class="nav-label">Analytics</span></button>
+
+  <div class="nav-section">Catalogue</div>
+  <button class="nav-item" onclick="nav(this,'products')"><span class="nav-ic">🛍️</span><span class="nav-label">Products</span></button>
+  <button class="nav-item" onclick="nav(this,'inventory')"><span class="nav-ic">📦</span><span class="nav-label">Inventory</span><span id="low-pill" class="nav-pill" style="display:none">2</span></button>
+  <button class="nav-item g" onclick="nav(this,'locations')"><span class="nav-ic">📍</span><span class="nav-label">Locations & Pincodes</span><span class="nav-pill-g">NEW</span></button>
+
+  <div class="nav-section">Plugins</div>
+  <button class="nav-item" onclick="nav(this,'std-plugins')"><span class="nav-ic">🔧</span><span class="nav-label">Platform Plugins</span></button>
+  <button class="nav-item" onclick="nav(this,'my-plugins')"><span class="nav-ic">🔌</span><span class="nav-label">My Plugins</span><span id="pp-pill" class="nav-pill" style="display:none">1</span></button>
+
+  <div class="nav-section">Operations</div>
+  <button class="nav-item" onclick="nav(this,'orders')"><span class="nav-ic">📋</span><span class="nav-label">Orders</span><span id="ord-pill" class="nav-pill">3</span></button>
+  <button class="nav-item" onclick="nav(this,'fulfilment')"><span class="nav-ic">🚚</span><span class="nav-label">Fulfilment</span></button>
+  <button class="nav-item" onclick="nav(this,'returns')"><span class="nav-ic">↩️</span><span class="nav-label">Returns & Refunds</span><span id="ret-pill" class="nav-pill" style="display:none">1</span></button>
+
+  <div class="nav-section">Customers</div>
+  <button class="nav-item" onclick="nav(this,'customers')"><span class="nav-ic">👤</span><span class="nav-label">Customers</span></button>
+  <button class="nav-item" onclick="nav(this,'reviews')"><span class="nav-ic">⭐</span><span class="nav-label">Reviews</span></button>
+
+  <div class="nav-section">Finance</div>
+  <button class="nav-item" onclick="nav(this,'payments')"><span class="nav-ic">💳</span><span class="nav-label">Payments & Settlements</span></button>
+
+  <div class="nav-section">Account</div>
+  <button class="nav-item" onclick="nav(this,'account')"><span class="nav-ic">👤</span><span class="nav-label">Account & Identity</span></button>
+  <button class="nav-item" onclick="nav(this,'settings')"><span class="nav-ic">⚙️</span><span class="nav-label">Vendor Settings</span></button>
+
+  <div class="sidebar-foot">
+    <button class="help-btn" onclick="alert('Support: help@adanpradan.com')">❓ Help & Support</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="page on" id="page-overview">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <div class="page-title">Good morning, Kiran 👋</div>
+      <div class="page-sub">FreshCart Foods · Vendor since March 2024 · KYC Verified ✓</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="nav(document.querySelector('[onclick*=products]'),'products');setTimeout(()=>openNewProduct(),300)">+ Add Product</button>
+  </div>
+
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">₹2.4L</div><div class="stat-lbl">Revenue this month</div><div class="stat-chg chg-up">↑ 18% vs last month</div></div>
+    <div class="stat-card"><div class="stat-val">247</div><div class="stat-lbl">Orders this month</div><div class="stat-chg chg-up">↑ 12%</div></div>
+    <div class="stat-card"><div class="stat-val">4.7 ⭐</div><div class="stat-lbl">Avg rating (412 reviews)</div><div class="stat-chg chg-up">↑ 0.1 pts</div></div>
+    <div class="stat-card"><div class="stat-val">12</div><div class="stat-lbl">Active products</div><div class="stat-chg" style="color:var(--sll)">4 cities · 22 pincodes</div></div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="card bordered-a">
+        <div class="card-t">⚡ Action Required</div>
+        <div style="font-size:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(245,158,11,.06);border-radius:8px;border:1px solid rgba(245,158,11,.15)">
+            <span>🔌</span>
+            <div style="flex:1">Plugin <strong>"MyTax v1.1"</strong> awaiting Platform Admin review</div>
+            <button class="action-btn" onclick="nav(document.querySelector('[onclick*=my-plugins]'),'my-plugins')">View</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(239,68,68,.06);border-radius:8px;border:1px solid rgba(239,68,68,.15)">
+            <span>📦</span>
+            <div style="flex:1">2 products low on stock in Mumbai</div>
+            <button class="action-btn" onclick="nav(document.querySelector('[onclick*=inventory]'),'inventory')">Fix</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(14,165,233,.06);border-radius:8px;border:1px solid rgba(14,165,233,.15)">
+            <span>💳</span>
+            <div style="flex:1">Settlement of ₹48,200 due in 2 days</div>
+            <button class="action-btn" onclick="nav(document.querySelector('[onclick*=payments]'),'payments')">Details</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t">📊 Revenue trend (7 days)</div>
+        <div class="sparkline" id="ov-spark"></div>
+        <div style="font-size:11px;color:var(--sll);margin-top:6px">Mon · Tue · Wed · Thu · Fri · Sat · Sun</div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-t">📋 Recent orders</div>
+        <table class="tbl">
+          <thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#ORD-8821</td><td>Priya M.</td><td>₹840</td><td><span class="badge badge-a">Pending</span></td></tr>
+            <tr><td>#ORD-8820</td><td>Ravi K.</td><td>₹1,200</td><td><span class="badge badge-t">Processing</span></td></tr>
+            <tr><td>#ORD-8819</td><td>Sneha P.</td><td>₹560</td><td><span class="badge badge-g">Delivered</span></td></tr>
+            <tr><td>#ORD-8818</td><td>Arjun S.</td><td>₹2,100</td><td><span class="badge badge-g">Delivered</span></td></tr>
+          </tbody>
+        </table>
+        <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[onclick*=orders]'),'orders')">View all orders →</button></div>
+      </div>
+      <div class="card">
+        <div class="card-t">📍 Coverage at a glance</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="loc-row" style="margin:0"><span class="loc-city">🏙️ Mumbai</span><span class="loc-pin-count badge badge-g">8 pincodes</span></div>
+          <div class="loc-row" style="margin:0"><span class="loc-city">🏙️ Pune</span><span class="loc-pin-count badge badge-g">6 pincodes</span></div>
+          <div class="loc-row" style="margin:0"><span class="loc-city">🏙️ Bangalore</span><span class="loc-pin-count badge badge-a">4 pincodes</span></div>
+          <div class="loc-row" style="margin:0"><span class="loc-city">🏙️ Hyderabad</span><span class="loc-pin-count badge badge-t">4 pincodes</span></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[onclick*=locations]'),'locations')">Manage locations →</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOCATIONS & PINCODES -->
+<div class="page" id="page-locations">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <div class="page-title">📍 Locations & Pincodes</div>
+      <div class="page-sub">Manage serviceable zones. Customers only see your products if their pincode is covered.</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openAddCity()">+ Add City</button>
+  </div>
+
+  <div class="alert alert-t"><span class="alert-ic">💡</span><div>Products without any pincode assigned are <strong>not visible to any customer</strong>. Assign at least one city to each product after setting up coverage here.</div></div>
+
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">Cities covered</div></div>
+    <div class="stat-card"><div class="stat-val">22</div><div class="stat-lbl">Total pincodes active</div></div>
+  </div>
+
+  <div id="city-cards"></div>
+
+  <div class="card">
+    <div class="card-t">🛍️ Product → Location assignment</div>
+    <div class="alert alert-a" style="margin-bottom:12px"><span class="alert-ic">⚠️</span><div>2 products have no location assigned and are invisible to customers.</div></div>
+    <table class="tbl">
+      <thead><tr><th>Product</th><th>Category</th><th>Cities assigned</th><th>Status</th><th></th></tr></thead>
+      <tbody id="prod-loc-tbl"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PLATFORM PLUGINS (STANDARD) -->
+<div class="page" id="page-std-plugins">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <div class="page-title">🔧 Platform Plugins</div>
+      <div class="page-sub">Standard plugins published by the Platform Admin. Available immediately — no approval needed.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-g"><span class="alert-ic">✅</span><div>Platform plugins are <strong>created and maintained by AdanPradan Platform Admin</strong>. They are pre-approved for all vendors. Activate them instantly to unlock capabilities like payments, tax, shipping, and analytics.</div></div>
+
+  <div class="filter-bar">
+    <input type="text" id="sp-search" placeholder="Search platform plugins…" oninput="renderStdPlugins()"/>
+    <select id="sp-cat" onchange="renderStdPlugins()">
+      <option value="">All categories</option>
+      <option>Payments</option><option>Tax</option><option>Shipping</option>
+      <option>Analytics</option><option>Notifications</option><option>Compliance</option>
+    </select>
+  </div>
+
+  <div id="std-plugins-list"></div>
+</div>
+
+<!-- MY PLUGINS -->
+<div class="page" id="page-my-plugins">
+  <div class="page-hdr">
+    <div class="page-hdr-left">
+      <div class="page-title">🔌 My Plugins</div>
+      <div class="page-sub">Custom plugins you've built. Must be reviewed and approved by Platform Admin before going live.</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openNewPlugin()">+ Submit Plugin</button>
+  </div>
+
+  <div class="alert alert-a"><span class="alert-ic">💡</span><div>Unlike Platform Plugins, your custom plugins require <strong>Platform Admin approval</strong>. Submit a versioned ZIP with a manifest. Approval typically takes 2–5 business days.</div></div>
+
+  <div id="my-plugins-list"></div>
+</div>
+<!-- PRODUCTS PAGE -->
+<div class="page" id="page-products">
+  <div class="page-hdr">
+    <div class="page-hdr-left"><div class="page-title">🛍️ Products</div><div class="page-sub">Manage your product catalogue. All new listings are reviewed by Platform Admin before going live.</div></div>
+    <button class="btn btn-primary btn-sm" onclick="openNewProduct()">+ New Product</button>
+  </div>
+  <div class="alert alert-t" style="margin-bottom:12px">
+    <span class="alert-ic">🛡️</span>
+    <div><strong>Content is reviewed before it goes live.</strong> Platform Admin checks all new product listings and images for authenticity, accuracy, and policy compliance. Listings with misleading descriptions, wrong images, or unverified claims will be rejected with a reason. Typical review time: <strong>4–24 hours</strong>.</div>
+  </div>
+  <div id="prod-rejected-banner" style="display:none" class="alert alert-r">
+    <span class="alert-ic">❌</span>
+    <div id="prod-rejected-text"></div>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="prod-search" placeholder="Search products…" oninput="renderProducts()"/>
+    <select id="prod-cat" onchange="renderProducts()"><option value="">All categories</option><option>Fresh Produce</option><option>Dairy</option><option>Beverages</option><option>Snacks</option></select>
+    <select id="prod-loc-filter" onchange="renderProducts()"><option value="">All cities</option><option>Mumbai</option><option>Pune</option><option>Bangalore</option><option>Hyderabad</option></select>
+    <select id="prod-status-filter" onchange="renderProducts()"><option value="">All statuses</option><option>Live</option><option>Pending Review</option><option>Rejected</option></select>
+  </div>
+  <div id="prod-list"></div>
+</div>
+
+<!-- INVENTORY -->
+<div class="page" id="page-inventory">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">📦 Inventory</div><div class="page-sub">Stock levels per product per city.</div></div><button class="btn btn-ghost btn-sm" onclick="alert('Export CSV')">⬇ Export</button></div>
+  <div class="alert alert-r"><span class="alert-ic">⚠️</span><div>2 products are <strong>below reorder threshold</strong> in Mumbai. Restock soon to avoid order failures.</div></div>
+  <table class="tbl"><thead><tr><th>Product</th><th>City</th><th>In Stock</th><th>Reserved</th><th>Reorder At</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>Amul Milk 1L</td><td>Mumbai</td><td>12</td><td>4</td><td>20</td><td><span class="badge badge-r">Low stock</span></td></tr>
+    <tr><td>Amul Milk 1L</td><td>Pune</td><td>68</td><td>12</td><td>20</td><td><span class="badge badge-g">OK</span></td></tr>
+    <tr><td>Fresh Spinach</td><td>Mumbai</td><td>8</td><td>3</td><td>15</td><td><span class="badge badge-r">Low stock</span></td></tr>
+    <tr><td>Fresh Spinach</td><td>Bangalore</td><td>42</td><td>7</td><td>15</td><td><span class="badge badge-g">OK</span></td></tr>
+    <tr><td>Orange Juice 1L</td><td>Hyderabad</td><td>95</td><td>8</td><td>25</td><td><span class="badge badge-g">OK</span></td></tr>
+    <tr><td>Wheat Bread</td><td>Mumbai</td><td>34</td><td>6</td><td>15</td><td><span class="badge badge-g">OK</span></td></tr>
+    <tr><td>Greek Yogurt</td><td>Pune</td><td>55</td><td>10</td><td>20</td><td><span class="badge badge-g">OK</span></td></tr>
+  </tbody></table>
+</div>
+
+<!-- ANALYTICS -->
+<div class="page" id="page-analytics">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">📈 Analytics</div><div class="page-sub">Revenue, orders, and performance metrics.</div></div>
+    <select class="filter-bar" style="margin:0" onchange=""><option>Last 30 days</option><option>Last 7 days</option><option>This year</option></select>
+  </div>
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">₹6.8L</div><div class="stat-lbl">Total revenue (30d)</div><div class="stat-chg chg-up">↑ 22%</div></div>
+    <div class="stat-card"><div class="stat-val">712</div><div class="stat-lbl">Orders (30d)</div><div class="stat-chg chg-up">↑ 15%</div></div>
+    <div class="stat-card"><div class="stat-val">₹955</div><div class="stat-lbl">Avg order value</div><div class="stat-chg chg-dn">↓ 2%</div></div>
+    <div class="stat-card"><div class="stat-val">94.2%</div><div class="stat-lbl">Fulfilment rate</div><div class="stat-chg chg-up">↑ 1.1%</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-t">🏆 Top products by revenue</div>
+      <table class="tbl"><thead><tr><th>Product</th><th>Revenue</th><th>Orders</th><th>Share</th></tr></thead>
+      <tbody>
+        <tr><td>Amul Milk 1L</td><td>₹1,24,000</td><td>248</td><td><div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div></td></tr>
+        <tr><td>Greek Yogurt 200g</td><td>₹89,600</td><td>179</td><td><div class="progress-bar"><div class="progress-fill" style="width:58%"></div></div></td></tr>
+        <tr><td>Orange Juice 1L</td><td>₹76,500</td><td>153</td><td><div class="progress-bar"><div class="progress-fill" style="width:49%"></div></div></td></tr>
+        <tr><td>Wheat Bread</td><td>₹58,200</td><td>194</td><td><div class="progress-bar"><div class="progress-fill" style="width:37%"></div></div></td></tr>
+      </tbody></table>
+    </div>
+    <div class="card"><div class="card-t">📍 Revenue by city</div>
+      <table class="tbl"><thead><tr><th>City</th><th>Revenue</th><th>Orders</th></tr></thead>
+      <tbody>
+        <tr><td>Mumbai</td><td>₹3.1L</td><td>312</td></tr>
+        <tr><td>Pune</td><td>₹1.9L</td><td>188</td></tr>
+        <tr><td>Bangalore</td><td>₹1.2L</td><td>124</td></tr>
+        <tr><td>Hyderabad</td><td>₹0.6L</td><td>88</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div class="page" id="page-orders">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">📋 Orders</div><div class="page-sub">Incoming and recent customer orders.</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="alert('Export CSV')">⬇ Export</button>
+  </div>
+  <div class="filter-bar">
+    <input type="text" placeholder="Search order ID or customer…"/>
+    <select><option>All statuses</option><option>Pending</option><option>Processing</option><option>Delivered</option><option>Cancelled</option></select>
+    <select><option>All cities</option><option>Mumbai</option><option>Pune</option><option>Bangalore</option><option>Hyderabad</option></select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+  <table class="tbl"><thead><tr><th>Order ID</th><th>Customer</th><th>City</th><th>Items</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+    <tr class="cr"><td>#ORD-8821</td><td>Priya Mehta</td><td>Mumbai</td><td>3 items</td><td>₹840</td><td>Today 11:42</td><td><span class="badge badge-a">Pending</span></td><td><button class="action-btn">Process</button></td></tr>
+    <tr class="cr"><td>#ORD-8820</td><td>Ravi Kumar</td><td>Pune</td><td>5 items</td><td>₹1,200</td><td>Today 10:18</td><td><span class="badge badge-t">Processing</span></td><td><button class="action-btn">Mark shipped</button></td></tr>
+    <tr class="cr"><td>#ORD-8819</td><td>Sneha Patel</td><td>Mumbai</td><td>2 items</td><td>₹560</td><td>Yesterday</td><td><span class="badge badge-g">Delivered</span></td><td><button class="action-btn">View</button></td></tr>
+    <tr class="cr"><td>#ORD-8818</td><td>Arjun Singh</td><td>Bangalore</td><td>8 items</td><td>₹2,100</td><td>Yesterday</td><td><span class="badge badge-g">Delivered</span></td><td><button class="action-btn">View</button></td></tr>
+    <tr class="cr"><td>#ORD-8812</td><td>Meera Nair</td><td>Hyderabad</td><td>1 item</td><td>₹320</td><td>2 days ago</td><td><span class="badge badge-sl">Cancelled</span></td><td><button class="action-btn">View</button></td></tr>
+  </tbody></table>
+  </div>
+</div>
+
+<!-- FULFILMENT -->
+<div class="page" id="page-fulfilment">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">🚚 Fulfilment Pipeline</div><div class="page-sub">Move orders through the full dispatch lifecycle — pack, dispatch, confirm delivery.</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="alert('Print packing slips for all ready orders')">🖨 Print slips</button>
+  </div>
+  <!-- Pipeline stats -->
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)">4</div><div class="stat-lbl">Awaiting packing</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--vl)">3</div><div class="stat-lbl">Packed · awaiting pickup</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--tl)">7</div><div class="stat-lbl">In transit</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--orl)">1</div><div class="stat-lbl">Out for delivery</div></div>
+  </div>
+
+  <!-- Kanban-style pipeline -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+    <!-- Column: To Pack -->
+    <div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--al);margin-bottom:8px;padding:6px 10px;background:rgba(245,158,11,.08);border-radius:6px;border:1px solid rgba(245,158,11,.2)">📦 To Pack (4)</div>
+      <div id="col-topack"></div>
+    </div>
+    <!-- Column: Packed / Awaiting courier -->
+    <div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--vl);margin-bottom:8px;padding:6px 10px;background:rgba(139,92,246,.08);border-radius:6px;border:1px solid rgba(139,92,246,.2)">🔒 Packed · Awaiting pickup (3)</div>
+      <div id="col-packed"></div>
+    </div>
+    <!-- Column: In Transit -->
+    <div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--tl);margin-bottom:8px;padding:6px 10px;background:rgba(14,165,233,.08);border-radius:6px;border:1px solid rgba(14,165,233,.2)">🚚 Dispatched · In transit (7)</div>
+      <div id="col-transit"></div>
+    </div>
+    <!-- Column: Out for delivery -->
+    <div>
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--orl);margin-bottom:8px;padding:6px 10px;background:rgba(249,115,22,.08);border-radius:6px;border:1px solid rgba(249,115,22,.2)">🛵 Out for delivery (1)</div>
+      <div id="col-ofd"></div>
+    </div>
+  </div>
+
+  <!-- Active shipments table with full status transitions -->
+  <div class="card"><div class="card-t" style="justify-content:space-between">🚚 Active shipments <span style="font-size:10px;color:var(--sll);font-weight:500">Click an action to advance the order status</span></div>
+  <table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>City</th><th>Amount</th><th>Courier</th><th>AWB / Tracking</th><th>ETA</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody id="fulfil-tbl-body"></tbody></table>
+  </div>
+</div>
+
+<!-- RETURNS -->
+<div class="page" id="page-returns">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">↩️ Returns & Refunds</div><div class="page-sub">Review return requests, approve or reject, and confirm refund issuance.</div></div></div>
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)">3</div><div class="stat-lbl">Pending review</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--tl)">1</div><div class="stat-lbl">Approved · refund pending</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)">18</div><div class="stat-lbl">Refunded (this month)</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--rl)">2</div><div class="stat-lbl">Rejected</div></div>
+  </div>
+  <div class="alert alert-a"><span class="alert-ic">⚠️</span><div>You have <strong>3 return requests awaiting review</strong>. Unreviewed requests auto-escalate to Platform Admin after 72 hours.</div></div>
+  <div class="card" style="padding:0;overflow:hidden"><div class="card-t" style="padding:14px 20px 0">↩️ Return requests</div>
+  <table class="tbl"><thead><tr><th>Return ID</th><th>Order</th><th>Customer</th><th>Product(s)</th><th>Reason</th><th>Requested</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+  <tbody id="returns-tbl-body"></tbody></table>
+  </div>
+
+  <!-- Refund history -->
+  <div class="card" style="margin-top:14px"><div class="card-t">✅ Refund history (this month)</div>
+  <table class="tbl"><thead><tr><th>Refund ID</th><th>Return ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Issued on</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>#REF-091</td><td>#RET-220</td><td>Priya Mehta</td><td>₹840</td><td>Original payment · UPI</td><td>Oct 12, 2026</td><td><span class="badge badge-g">✓ Refunded</span></td></tr>
+    <tr><td>#REF-090</td><td>#RET-218</td><td>Arjun Singh</td><td>₹1,200</td><td>Original payment · Card</td><td>Oct 9, 2026</td><td><span class="badge badge-g">✓ Refunded</span></td></tr>
+    <tr><td>#REF-089</td><td>#RET-215</td><td>Sneha Patel</td><td>₹480</td><td>Wallet credit</td><td>Oct 5, 2026</td><td><span class="badge badge-g">✓ Refunded</span></td></tr>
+  </tbody></table>
+  </div>
+</div>
+
+<!-- Return action modal -->
+<div class="modal-overlay" id="modal-return-action" onclick="if(event.target===this)closeModal('modal-return-action')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hdr"><div class="modal-title" id="ret-modal-title">Review Return Request</div><button class="modal-close" onclick="closeModal('modal-return-action')">✕</button></div>
+    <div style="font-size:12px;color:var(--sll);margin-bottom:14px" id="ret-modal-sub"></div>
+    <div style="background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px" id="ret-modal-details"></div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:6px">REFUND AMOUNT</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px;color:var(--sll)">₹</span>
+        <input type="number" id="ret-refund-amt" style="width:120px;padding:8px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:14px;font-weight:700"/>
+        <span style="font-size:11px;color:var(--sll)" id="ret-max-hint"></span>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:6px">REFUND METHOD</label>
+      <select id="ret-refund-method" style="width:100%;padding:8px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:12px">
+        <option value="original">Original payment method</option>
+        <option value="wallet">Wallet credit (instant)</option>
+        <option value="upi">UPI</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:6px">YOUR NOTES (optional)</label>
+      <textarea id="ret-notes" rows="3" placeholder="E.g. confirmed wrong item sent, approved full refund..." style="width:100%;padding:8px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:12px;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-success" style="flex:1" onclick="submitReturnAction('approve')">✓ Approve & issue refund</button>
+      <button class="btn btn-danger" style="flex:1" onclick="submitReturnAction('reject')">✕ Reject return</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dispatch modal -->
+<div class="modal-overlay" id="modal-dispatch" onclick="if(event.target===this)closeModal('modal-dispatch')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hdr"><div class="modal-title">📤 Mark as Dispatched</div><button class="modal-close" onclick="closeModal('modal-dispatch')">✕</button></div>
+    <div style="font-size:12px;color:var(--sll);margin-bottom:16px" id="dispatch-order-info"></div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:6px">COURIER PARTNER</label>
+      <select id="dispatch-courier" style="width:100%;padding:8px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:12px">
+        <option>Delhivery</option><option>Blue Dart</option><option>DTDC</option><option>Ekart</option><option>Xpressbees</option><option>India Post</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:6px">AWB / TRACKING NUMBER</label>
+      <input type="text" id="dispatch-awb" placeholder="e.g. DV98234501" style="width:100%;padding:8px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:13px"/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-dispatch')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="confirmDispatch()">🚚 Confirm dispatch</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">👤 Customers</div><div class="page-sub">Customers who've ordered from you.</div></div></div>
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">184</div><div class="stat-lbl">Total customers</div></div>
+    <div class="stat-card"><div class="stat-val">68</div><div class="stat-lbl">Repeat customers</div></div>
+    <div class="stat-card"><div class="stat-val">37%</div><div class="stat-lbl">Retention rate</div></div>
+  </div>
+  <table class="tbl"><thead><tr><th>Customer</th><th>City</th><th>Orders</th><th>Total spent</th><th>Last order</th><th>Segment</th></tr></thead>
+  <tbody>
+    <tr><td>Priya Mehta</td><td>Mumbai</td><td>12</td><td>₹9,840</td><td>Today</td><td><span class="badge badge-v">VIP</span></td></tr>
+    <tr><td>Ravi Kumar</td><td>Pune</td><td>8</td><td>₹6,200</td><td>Today</td><td><span class="badge badge-t">Regular</span></td></tr>
+    <tr><td>Sneha Patel</td><td>Mumbai</td><td>5</td><td>₹3,100</td><td>Yesterday</td><td><span class="badge badge-t">Regular</span></td></tr>
+    <tr><td>Arjun Singh</td><td>Bangalore</td><td>3</td><td>₹4,800</td><td>Yesterday</td><td><span class="badge badge-sl">New</span></td></tr>
+  </tbody></table>
+</div>
+
+<!-- REVIEWS -->
+<div class="page" id="page-reviews">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">⭐ Reviews</div><div class="page-sub">Customer feedback on your products.</div></div></div>
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">4.7</div><div class="stat-lbl">Average rating</div></div>
+    <div class="stat-card"><div class="stat-val">412</div><div class="stat-lbl">Total reviews</div></div>
+    <div class="stat-card"><div class="stat-val">94%</div><div class="stat-lbl">4★+ reviews</div></div>
+  </div>
+  <div class="card"><div class="card-t">Latest reviews</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="background:var(--card2);padding:12px;border-radius:8px;border:1px solid var(--bdr)"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><strong style="font-size:12px">Priya M. · Amul Milk 1L</strong><span class="badge badge-g">★ 5.0</span></div><p style="font-size:12px;color:var(--sll)">Fresh and well-packed. Delivered on time to my door in Mumbai. Will reorder!</p></div>
+      <div style="background:var(--card2);padding:12px;border-radius:8px;border:1px solid var(--bdr)"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><strong style="font-size:12px">Ravi K. · Greek Yogurt</strong><span class="badge badge-g">★ 4.0</span></div><p style="font-size:12px;color:var(--sll)">Good product. Packaging could be better for transit.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="page" id="page-payments">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">💳 Payments & Settlements</div><div class="page-sub">Track revenue, settlements, and platform commission.</div></div></div>
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">₹2.4L</div><div class="stat-lbl">Earned this month</div></div>
+    <div class="stat-card"><div class="stat-val">₹48,200</div><div class="stat-lbl">Next settlement</div><div class="stat-chg" style="color:var(--al)">Due in 2 days</div></div>
+    <div class="stat-card"><div class="stat-val">₹12,000</div><div class="stat-lbl">Platform commission (5%)</div></div>
+    <div class="stat-card"><div class="stat-val">₹1.8L</div><div class="stat-lbl">Total settled (all time)</div></div>
+  </div>
+  <div class="card"><div class="card-t">Settlement history</div>
+  <table class="tbl"><thead><tr><th>Settlement ID</th><th>Period</th><th>Gross</th><th>Commission</th><th>Net payout</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>#SET-441</td><td>Oct 1–7</td><td>₹62,400</td><td>₹3,120</td><td>₹59,280</td><td><span class="badge badge-g">Paid</span></td></tr>
+    <tr><td>#SET-440</td><td>Sep 24–30</td><td>₹58,800</td><td>₹2,940</td><td>₹55,860</td><td><span class="badge badge-g">Paid</span></td></tr>
+    <tr><td>#SET-439</td><td>Sep 17–23</td><td>₹71,200</td><td>₹3,560</td><td>₹67,640</td><td><span class="badge badge-g">Paid</span></td></tr>
+  </tbody></table>
+  </div>
+</div>
+<!-- ACCOUNT & IDENTITY PAGE -->
+<div class="page" id="page-account">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">👤 Account & Identity</div><div class="page-sub">Your account type, credentials, service accounts, and tenant upgrade path.</div></div></div>
+
+  <!-- User Account card -->
+  <div class="card bordered-t" style="margin-bottom:14px">
+    <div class="card-t">🧑 Your Account</div>
+    <div class="acct-card">
+      <div class="acct-card-hdr">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="avatar" style="width:44px;height:44px;font-size:14px">FK</div>
+          <div>
+            <div style="font-size:14px;font-weight:800">Kiran Fadnavis</div>
+            <div style="font-size:11px;color:var(--sll)">kiran@freshcartfoods.in</div>
+          </div>
+        </div>
+        <span class="badge badge-user">👤 User Account</span>
+      </div>
+      <div class="sep"></div>
+      <div class="kv"><span class="kv-k">Account type</span><span class="kv-v"><span class="badge badge-user">User Account</span> <span style="font-size:11px;color:var(--sll);margin-left:4px">Human login · email + password · MFA available</span></span></div>
+      <div class="kv"><span class="kv-k">Vendor role</span><span class="kv-v"><span class="badge badge-a">Vendor Admin</span></span></div>
+      <div class="kv"><span class="kv-k">Tenant</span><span class="kv-v">FreshCart Foods · <span class="badge badge-or" style="font-size:10px">Vendor</span></span></div>
+      <div class="kv"><span class="kv-k">KYC status</span><span class="kv-v"><span class="badge badge-g">✓ Verified</span> <span style="font-size:11px;color:var(--sll)">Verified 15 Mar 2024</span></span></div>
+      <div class="kv"><span class="kv-k">MFA</span><span class="kv-v"><span class="badge badge-g">Enabled</span></span></div>
+      <div class="kv"><span class="kv-k">Last login</span><span class="kv-v" style="color:var(--sll)">Today, 09:12 AM · Mumbai · Chrome</span></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-sm" onclick="alert('Change password flow')">🔒 Change password</button>
+        <button class="btn btn-ghost btn-sm" onclick="alert('MFA settings')">📱 MFA settings</button>
+        <button class="btn btn-ghost btn-sm" onclick="alert('Edit profile')">✏️ Edit profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Accounts -->
+  <div class="card bordered-v">
+    <div class="card-t">🤖 Service Accounts <span class="badge badge-sl" style="margin-left:4px">API integrations</span></div>
+    <div class="alert alert-v" style="margin-bottom:12px"><span class="alert-ic">🔑</span><div>Service Accounts are non-human identities that authenticate via API Key + HMAC-SHA256. Used for webhook receivers, automation scripts, and third-party integrations. <strong>Keys rotate every 90 days.</strong></div></div>
+    <table class="tbl">
+      <thead><tr><th>Name</th><th>Account type</th><th>API key (masked)</th><th>Last used</th><th>Key expires</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>svc-webhook-receiver</strong></td>
+          <td><span class="badge badge-svc">🤖 Service Account</span></td>
+          <td style="font-family:monospace;font-size:11px">ak_••••••••3a2f</td>
+          <td style="color:var(--sll)">2 hours ago</td>
+          <td><span class="badge badge-a">Dec 15 2026</span></td>
+          <td><span class="badge badge-g">Active</span></td>
+          <td><button class="action-btn" onclick="alert('Rotate key')">Rotate key</button></td>
+        </tr>
+        <tr>
+          <td><strong>svc-inventory-sync</strong></td>
+          <td><span class="badge badge-svc">🤖 Service Account</span></td>
+          <td style="font-family:monospace;font-size:11px">ak_••••••••9c1d</td>
+          <td style="color:var(--sll)">Yesterday</td>
+          <td><span class="badge badge-g">Jan 10 2027</span></td>
+          <td><span class="badge badge-g">Active</span></td>
+          <td><button class="action-btn" onclick="alert('Rotate key')">Rotate key</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="btn-row">
+      <button class="btn btn-purple btn-sm" onclick="openNewServiceAcct()">+ Create Service Account</button>
+    </div>
+  </div>
+
+  <!-- Tenant & Upgrade path -->
+  <div class="card bordered-or">
+    <div class="card-t">🏢 Tenant & Upgrade Path</div>
+    <div class="kv"><span class="kv-k">Tenant name</span><span class="kv-v">FreshCart Foods</span></div>
+    <div class="kv"><span class="kv-k">Current tier</span><span class="kv-v"><span class="badge badge-or">⚡ Vendor</span></span></div>
+    <div class="kv"><span class="kv-k">Upgraded from</span><span class="kv-v" style="color:var(--sll)">Individual → Organisation → Vendor</span></div>
+    <div class="kv"><span class="kv-k">Platform plan</span><span class="kv-v">Growth · ₹2,999/mo</span></div>
+    <div class="sep"></div>
+    <div style="font-size:12px;color:var(--sll);margin-bottom:8px">Upgrade journey:</div>
+    <div class="upgrade-steps">
+      <div class="upgrade-step"><div class="upgrade-step-dot done">✓</div><div class="upgrade-step-lbl">Individual</div></div>
+      <div class="upgrade-step"><div class="upgrade-step-dot done">✓</div><div class="upgrade-step-lbl">Organisation</div></div>
+      <div class="upgrade-step"><div class="upgrade-step-dot active">⚡</div><div class="upgrade-step-lbl">Vendor (current)</div></div>
+    </div>
+    <div class="alert alert-g" style="margin-top:12px"><span class="alert-ic">✅</span><div>You're a fully verified Vendor. You can use Platform Plugins immediately and submit your own plugins for Platform Admin approval.</div></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-hdr"><div class="page-hdr-left"><div class="page-title">⚙️ Vendor Settings</div><div class="page-sub">Business profile, payment info, and notification preferences.</div></div></div>
+  <div class="card"><div class="card-t">🏢 Business profile</div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Business name</label><input value="FreshCart Foods Pvt. Ltd."/></div>
+      <div class="form-row"><label>GST number</label><input value="27AABCF1234G1ZK"/></div>
+      <div class="form-row"><label>Business email</label><input value="ops@freshcartfoods.in"/></div>
+      <div class="form-row"><label>Support phone</label><input value="+91 98765 43210"/></div>
+    </div>
+    <div class="form-row"><label>Business address</label><textarea style="height:64px">14, Andheri Industrial Estate, Mumbai - 400 093, Maharashtra</textarea></div>
+    <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="alert('Saved!')">Save changes</button></div>
+  </div>
+  <div class="card"><div class="card-t">💳 Settlement bank account</div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Account holder</label><input value="FreshCart Foods Pvt Ltd"/></div>
+      <div class="form-row"><label>Account number</label><input value="••••••••1234" type="password"/></div>
+      <div class="form-row"><label>IFSC code</label><input value="HDFC0001234"/></div>
+      <div class="form-row"><label>Bank name</label><input value="HDFC Bank"/></div>
+    </div>
+    <div class="alert alert-g"><span class="alert-ic">✓</span><div>Bank account verified via penny drop on 15 Mar 2024.</div></div>
+  </div>
+  <div class="card"><div class="card-t">🔔 Notifications</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:12px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked/> New order notifications</label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked/> Low stock alerts</label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" checked/> Settlement notifications</label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox"/> Plugin review updates</label>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-city" onclick="if(event.target===this)closeModal('modal-city')">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('modal-city')">✕</button>
+  <div class="modal-t">📍 Add City Coverage</div>
+  <div class="form-row"><label>City</label>
+    <select id="new-city"><option value="">Select city</option><option>Chennai</option><option>Ahmedabad</option><option>Kolkata</option><option>Delhi</option></select>
+  </div>
+  <div class="form-row"><label>Pincodes (comma-separated)</label><input id="new-pins" placeholder="e.g. 600001, 600002, 600020"/></div>
+  <div class="alert alert-t"><span class="alert-ic">💡</span><div>Adding a city here enables it for product assignment. Go to Products → assign this city to each relevant product.</div></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="addCity()">Add coverage</button>
+    <button class="btn btn-ghost" onclick="closeModal('modal-city')">Cancel</button>
+  </div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-pin-edit" onclick="if(event.target===this)closeModal('modal-pin-edit')">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('modal-pin-edit')">✕</button>
+  <div class="modal-t" id="mpe-title">Edit Pincodes</div>
+  <div class="form-row"><label>Add pincodes (comma-separated)</label><input id="mpe-add" placeholder="400001, 400002"/></div>
+  <div style="font-size:12px;font-weight:700;color:var(--sll);margin-bottom:8px">Current pincodes (click × to remove)</div>
+  <div class="pincode-grid" id="mpe-pins"></div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="savePins()">Save pincodes</button><button class="btn btn-ghost" onclick="closeModal('modal-pin-edit')">Cancel</button></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-new-plugin" onclick="if(event.target===this)closeModal('modal-new-plugin')">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('modal-new-plugin')">✕</button>
+  <div class="modal-t">🔌 Submit Plugin for Review</div>
+  <div class="alert alert-a"><span class="alert-ic">📋</span><div>Your plugin will be reviewed by Platform Admin before going live. Provide a semantic version (e.g. v1.0.0) and upload a ZIP containing manifest.json + handler code.</div></div>
+  <div class="form-row"><label>Plugin name</label><input placeholder="e.g. MyShipping Plugin"/></div>
+  <div class="form-row"><label>Version (semver)</label><input placeholder="v1.0.0"/></div>
+  <div class="form-row"><label>Category</label><select><option>Payments</option><option>Tax</option><option>Shipping</option><option>Analytics</option><option>Notifications</option><option>Custom</option></select></div>
+  <div class="form-row"><label>Description</label><textarea style="height:72px" placeholder="What does this plugin do?"></textarea></div>
+  <div class="form-row"><label>Plugin ZIP (manifest.json + handlers)</label><input type="file" accept=".zip" style="color:var(--sll)"/></div>
+  <div class="btn-row"><button class="btn btn-primary" onclick="alert('Plugin submitted! Platform Admin will review within 2-5 business days.');closeModal('modal-new-plugin')">Submit for review</button><button class="btn btn-ghost" onclick="closeModal('modal-new-plugin')">Cancel</button></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-new-svc" onclick="if(event.target===this)closeModal('modal-new-svc')">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('modal-new-svc')">✕</button>
+  <div class="modal-t">🤖 Create Service Account</div>
+  <div class="alert alert-v"><span class="alert-ic">🔑</span><div>A Service Account uses <strong>API Key + HMAC-SHA256</strong> authentication only. It cannot log in via email/password. Keys auto-expire in 90 days and must be rotated.</div></div>
+  <div class="form-row"><label>Service account name</label><input placeholder="e.g. svc-erp-sync"/></div>
+  <div class="form-row"><label>Purpose</label><input placeholder="e.g. ERP stock sync, webhook receiver"/></div>
+  <div class="form-row"><label>Scopes</label>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;font-size:12px">
+      <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" checked/> read:products</label>
+      <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" checked/> write:inventory</label>
+      <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox"/> read:orders</label>
+      <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox"/> write:webhook</label>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-purple" onclick="alert('Service account created!\nAPI Key: ak_XXXX...XXXX\n\nSave this key now — it will not be shown again. Rotates in 90 days.');">Create & generate API key</button><button class="btn btn-ghost" onclick="closeModal('modal-new-svc')">Cancel</button></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-new-product" onclick="if(event.target===this)closeModal('modal-new-product')">
+<div class="modal wide">
+  <button class="modal-close" onclick="closeModal('modal-new-product')">✕</button>
+  <div class="modal-t">🛍️ Add New Product</div>
+  <div class="alert alert-a" style="margin-bottom:14px">
+    <span class="alert-ic">⏳</span>
+    <div>New listings go to <strong>Pending Review</strong> and are not visible to customers until <strong>Platform Admin approves</strong> the content and images. Typical review: 4–24 hours.</div>
+  </div>
+
+  <div class="form-grid2">
+    <div class="form-row"><label>Product name <span style="color:var(--rl)">*</span></label><input id="np-name" placeholder="e.g. Amul Butter 500g"/></div>
+    <div class="form-row"><label>Category <span style="color:var(--rl)">*</span></label><select id="np-cat"><option>Fresh Produce</option><option>Dairy</option><option>Beverages</option><option>Snacks</option><option>Grains</option><option>Bakery</option></select></div>
+    <div class="form-row"><label>SKU / barcode</label><input id="np-sku" placeholder="FC-BU-500"/></div>
+    <div class="form-row"><label>MRP / Price (₹) <span style="color:var(--rl)">*</span></label><input id="np-price" type="number" placeholder="0.00"/></div>
+    <div class="form-row"><label>Net weight / volume</label><input placeholder="e.g. 500g, 1L, 250ml"/></div>
+    <div class="form-row"><label>Brand name</label><input placeholder="e.g. Amul, Britannia"/></div>
+  </div>
+  <div class="form-row"><label>Description <span style="color:var(--rl)">*</span></label><textarea id="np-desc" style="height:72px" placeholder="Accurate product description — ingredients, usage, storage. Do not include unverified health claims."></textarea></div>
+
+  <!-- IMAGE UPLOAD SECTION -->
+  <div class="form-row" style="margin-top:4px">
+    <label>Product images <span style="color:var(--rl)">*</span> <span style="font-weight:400;color:var(--sll)">(min 1, up to 5)</span></label>
+    <div style="background:var(--card2);border:1px dashed var(--bdr2);border-radius:10px;padding:16px;margin-top:8px">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px">
+        <div id="img-slot-1" class="img-slot img-slot-filled" onclick="simulateImgUpload(1)">
+          <div class="img-slot-inner" style="background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(14,165,233,.05));border-color:var(--tl)">
+            <div style="font-size:20px">🥛</div>
+            <div style="font-size:9px;color:var(--gl);font-weight:700;margin-top:4px">✓ Main</div>
+            <div style="font-size:9px;color:var(--sll)">800×800</div>
+          </div>
+        </div>
+        <div id="img-slot-2" class="img-slot img-slot-filled" onclick="simulateImgUpload(2)">
+          <div class="img-slot-inner" style="background:rgba(14,165,233,.07);border-color:rgba(14,165,233,.3)">
+            <div style="font-size:20px">🥛</div>
+            <div style="font-size:9px;color:var(--sll);margin-top:4px">Side view</div>
+          </div>
+        </div>
+        <div id="img-slot-3" class="img-slot img-slot-empty" onclick="simulateImgUpload(3)">
+          <div class="img-slot-inner">
+            <div style="font-size:18px;color:var(--bdr2)">+</div>
+            <div style="font-size:9px;color:var(--sl)">Add image</div>
+          </div>
+        </div>
+        <div id="img-slot-4" class="img-slot img-slot-empty" onclick="simulateImgUpload(4)">
+          <div class="img-slot-inner">
+            <div style="font-size:18px;color:var(--bdr2)">+</div>
+            <div style="font-size:9px;color:var(--sl)">Add image</div>
+          </div>
+        </div>
+        <div id="img-slot-5" class="img-slot img-slot-empty" onclick="simulateImgUpload(5)">
+          <div class="img-slot-inner">
+            <div style="font-size:18px;color:var(--bdr2)">+</div>
+            <div style="font-size:9px;color:var(--sl)">Add image</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18);border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.8;color:var(--sll)">
+        <div style="font-weight:700;color:var(--al);margin-bottom:4px">📐 Image requirements (checked by Platform Admin)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 16px">
+          <div>• <strong>Size:</strong> 800×800 px minimum (square)</div>
+          <div>• <strong>Format:</strong> JPEG or PNG, max 2 MB each</div>
+          <div>• <strong>Main image:</strong> product only, white/neutral background</div>
+          <div>• <strong>No watermarks</strong>, promotional text, or borders</div>
+          <div>• <strong>Must match</strong> product name and description exactly</div>
+          <div>• <strong>No stock photos</strong> — actual product photos only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT AUTHENTICITY CHECKLIST -->
+  <div class="form-row" style="margin-top:4px">
+    <label>Content authenticity checklist <span style="color:var(--rl)">*</span> <span style="font-weight:400;color:var(--sll)">— all must be confirmed before submitting</span></label>
+    <div style="background:var(--card2);border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;margin-top:8px;display:flex;flex-direction:column;gap:10px;font-size:12px;line-height:1.6">
+      <label style="display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:start;cursor:pointer;width:100%"><input type="checkbox" id="chk1" style="margin-top:3px"/><span>The product name, description, and images <strong>accurately represent the actual product</strong> I am selling.</span></label>
+      <label style="display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:start;cursor:pointer;width:100%"><input type="checkbox" id="chk2" style="margin-top:3px"/><span>I have the <strong>legal right to sell this product</strong> (licensed distributor, manufacturer, or authorised reseller).</span></label>
+      <label style="display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:start;cursor:pointer;width:100%"><input type="checkbox" id="chk3" style="margin-top:3px"/><span>The listed price is the <strong>correct MRP</strong> and I will not charge customers more than this amount.</span></label>
+      <label style="display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:start;cursor:pointer;width:100%"><input type="checkbox" id="chk4" style="margin-top:3px"/><span>I have <strong>not included misleading health claims, fake certifications, or counterfeit branding</strong> in any text or image.</span></label>
+      <label style="display:grid;grid-template-columns:16px 1fr;gap:10px;align-items:start;cursor:pointer;width:100%"><input type="checkbox" id="chk5" style="margin-top:3px"/><span>I understand that Platform Admin may <strong>reject or remove</strong> this listing if it violates the AdanPradan Vendor Policy.</span></label>
+    </div>
+  </div>
+
+  <div class="form-row" style="margin-top:2px">
+    <label>Serviceable cities <span style="color:var(--rl)">* Required for visibility after approval</span></label>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:12px">
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer;padding:5px 10px;border:1px solid var(--bdr);border-radius:6px"><input type="checkbox" checked/> Mumbai</label>
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer;padding:5px 10px;border:1px solid var(--bdr);border-radius:6px"><input type="checkbox" checked/> Pune</label>
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer;padding:5px 10px;border:1px solid var(--bdr);border-radius:6px"><input type="checkbox"/> Bangalore</label>
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer;padding:5px 10px;border:1px solid var(--bdr);border-radius:6px"><input type="checkbox"/> Hyderabad</label>
+    </div>
+    <div style="font-size:11px;color:var(--sll);margin-top:4px">Only cities you've configured in Locations & Pincodes appear here. Visibility activates only after PA approval.</div>
+  </div>
+
+  <div class="btn-row"><button class="btn btn-primary" onclick="submitNewProduct()">📤 Submit for Review</button><button class="btn btn-ghost" onclick="closeModal('modal-new-product')">Cancel</button></div>
+</div>
+</div>
+
+<script>
+var CITIES=[
+  {name:'Mumbai',pincodes:['400001','400002','400003','400021','400051','400058','400072','400093']},
+  {name:'Pune',pincodes:['411001','411004','411007','411017','411038','411041']},
+  {name:'Bangalore',pincodes:['560001','560034','560040','560076']},
+  {name:'Hyderabad',pincodes:['500001','500032','500072','500081']}
+];
+var STD_PLUGINS=[
+  {id:'STD-001',name:'Basic Payments (UPI)',ver:'v1.2.0',cat:'Payments',icon:'💳',bg:'rgba(16,185,129,.12)',caps:['payments','upi','razorpay'],desc:'Accept UPI, credit/debit card, and net banking payments. Pre-integrated with Razorpay. Tax-ready.',installs:312,active:true},
+  {id:'STD-002',name:'GST Calculator',ver:'v2.0.0',cat:'Tax',icon:'🧮',bg:'rgba(251,191,36,.12)',caps:['tax','gst','compliance'],desc:'Auto-calculates GST by product category and customer state. Generates GST-compliant invoices.',installs:298,active:true},
+  {id:'STD-003',name:'Delhivery Shipping',ver:'v1.4.2',cat:'Shipping',icon:'🚚',bg:'rgba(14,165,233,.12)',caps:['shipping','tracking','delhivery'],desc:'Real-time shipping rates, label generation, and tracking. Supports same-day and next-day delivery.',installs:201,active:false},
+  {id:'STD-004',name:'Vendor Analytics',ver:'v1.1.0',cat:'Analytics',icon:'📊',bg:'rgba(139,92,246,.12)',caps:['analytics','reports','dashboard'],desc:'Revenue dashboards, cohort analysis, and customer lifetime value tracking for vendors.',installs:188,active:true},
+  {id:'STD-005',name:'SMS Notifications',ver:'v1.0.5',cat:'Notifications',icon:'📱',bg:'rgba(249,115,22,.12)',caps:['sms','otp','notifications'],desc:'Send order confirmations, OTPs, and delivery updates via SMS using pre-configured templates.',installs:245,active:false},
+  {id:'STD-006',name:'BlueDart Courier',ver:'v1.2.1',cat:'Shipping',icon:'📦',bg:'rgba(14,165,233,.12)',caps:['shipping','express','bluedart'],desc:'Express shipping with BlueDart. B2B rates, bulk manifesting, and real-time AWB tracking.',installs:134,active:false},
+  {id:'STD-007',name:'FSSAI Compliance',ver:'v1.0.0',cat:'Compliance',icon:'🏛️',bg:'rgba(100,116,139,.12)',caps:['compliance','fssai','food-safety'],desc:'FSSAI license validation, expiry alerts, and food-safety compliance badge for food vendors.',installs:89,active:false},
+  {id:'STD-008',name:'Review & Ratings',ver:'v1.3.0',cat:'Analytics',icon:'⭐',bg:'rgba(245,158,11,.12)',caps:['reviews','ratings','nps'],desc:'Collect, display, and respond to customer reviews. NPS surveys and sentiment analysis included.',installs:276,active:true}
+];
+var MY_PLUGINS=[
+  {id:'VP-001',name:'MyTax v1.1',ver:'v1.1.0',cat:'Tax',status:'Under Review',submitted:'Oct 10 2026',notes:'Additional GST slabs for organic products'},
+  {id:'VP-002',name:'InventorySync',ver:'v2.0.0',cat:'Integration',status:'Approved',submitted:'Aug 5 2026',notes:'ERP sync via webhook'},
+  {id:'VP-003',name:'BulkSMS Custom',ver:'v1.0.2',cat:'Notifications',status:'Rejected',submitted:'Sep 2 2026',notes:'PA note: Duplicate of STD-005. Use platform SMS plugin instead.'}
+];
+var PRODUCTS=[
+  {id:'P1',name:'Amul Milk 1L',cat:'Dairy',price:68,cities:['Mumbai','Pune','Bangalore'],stock:'OK',status:'Live',images:3},
+  {id:'P2',name:'Fresh Spinach 500g',cat:'Fresh Produce',price:45,cities:['Mumbai','Hyderabad'],stock:'Low',status:'Live',images:2},
+  {id:'P3',name:'Orange Juice 1L',cat:'Beverages',price:120,cities:['Hyderabad','Pune'],stock:'OK',status:'Live',images:4},
+  {id:'P4',name:'Wheat Bread',cat:'Bakery',price:55,cities:['Mumbai','Pune'],stock:'OK',status:'Live',images:2},
+  {id:'P5',name:'Greek Yogurt 200g',cat:'Dairy',price:80,cities:['Pune','Bangalore'],stock:'OK',status:'Pending Review',images:2},
+  {id:'P6',name:'Mixed Nuts 250g',cat:'Snacks',price:380,cities:[],stock:'OK',status:'Pending Review',images:1},
+  {id:'P7',name:'Aloe Vera Juice',cat:'Beverages',price:220,cities:['Bangalore'],stock:'OK',status:'Live',images:3},
+  {id:'P8',name:'Brown Rice 1kg',cat:'Grains',price:95,cities:[],stock:'OK',status:'Rejected',images:0}
+];
+var editCity=null;
+
+function nav(el,page){
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active')});
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  var pg=document.getElementById('page-'+page);
+  if(pg){pg.classList.add('on');onPageLoad(page);}
+}
+function onPageLoad(p){
+  if(p==='locations')renderLocations();
+  if(p==='std-plugins')renderStdPlugins();
+  if(p==='my-plugins')renderMyPlugins();
+  if(p==='products')renderProducts();
+  if(p==='overview')renderSparkline();
+  if(p==='fulfilment')renderFulfilment();
+  if(p==='returns')renderReturns();
+}
+
+/* ── FULFILMENT DATA ── */
+var SHIPMENTS=[
+  {id:'ORD-8821',cust:'Priya Mehta',city:'Mumbai',items:'3 items',amt:'₹840',date:'Today 11:42',status:'to_pack',courier:'',awb:''},
+  {id:'ORD-8823',cust:'Fatima Khan',city:'Mumbai',items:'2 items',amt:'₹560',date:'Today 10:55',status:'to_pack',courier:'',awb:''},
+  {id:'ORD-8824',cust:'Amit Sharma',city:'Pune',items:'5 items',amt:'₹1,450',date:'Today 09:30',status:'to_pack',courier:'',awb:''},
+  {id:'ORD-8825',cust:'Deepa Nair',city:'Hyderabad',items:'1 item',amt:'₹280',date:'Today 09:10',status:'to_pack',courier:'',awb:''},
+  {id:'ORD-8820',cust:'Ravi Kumar',city:'Pune',items:'5 items',amt:'₹1,200',date:'Yesterday',status:'packed',courier:'',awb:''},
+  {id:'ORD-8816',cust:'Kavya Reddy',city:'Bangalore',items:'4 items',amt:'₹920',date:'Yesterday',status:'packed',courier:'',awb:''},
+  {id:'ORD-8815',cust:'Nitin Joshi',city:'Mumbai',items:'6 items',amt:'₹2,100',date:'2 days ago',status:'packed',courier:'',awb:''},
+  {id:'ORD-8814',cust:'Sunita Rao',city:'Mumbai',items:'2 items',amt:'₹680',date:'2 days ago',status:'dispatched',courier:'Delhivery',awb:'DV98234501',eta:'Tomorrow'},
+  {id:'ORD-8813',cust:'Vivek Mehta',city:'Pune',items:'3 items',amt:'₹1,100',date:'3 days ago',status:'dispatched',courier:'Blue Dart',awb:'BD7712345',eta:'Today 6pm'},
+  {id:'ORD-8810',cust:'Reena Shah',city:'Bangalore',items:'8 items',amt:'₹3,200',date:'3 days ago',status:'dispatched',courier:'Ekart',awb:'EK44521',eta:'Tomorrow'},
+  {id:'ORD-8817',cust:'Meera Iyer',city:'Mumbai',items:'4 items',amt:'₹780',date:'3 days ago',status:'ofd',courier:'Delhivery',awb:'DV99001122',eta:'Today'}
+];
+var dispatchTarget=null;
+
+function renderFulfilment(){
+  var cols={to_pack:[],packed:[],dispatched:[],ofd:[]};
+  SHIPMENTS.forEach(function(s){if(cols[s.status])cols[s.status].push(s);});
+
+  function shipCard(s,colStatus){
+    var btn='';
+    if(colStatus==='to_pack') btn='<button class="btn btn-amber btn-sm" onclick="markPacked(\''+s.id+'\')">📦 Mark Packed</button>';
+    if(colStatus==='packed') btn='<button class="btn btn-primary btn-sm" onclick="openDispatch(\''+s.id+'\')">🚚 Dispatch</button>';
+    if(colStatus==='dispatched') btn='<button class="btn btn-ghost btn-sm" style="font-size:10px" onclick="alert(\'Track: '+s.awb+'\')"">Track</button>';
+    if(colStatus==='ofd') btn='<span class="badge badge-a">Courier confirms OFD</span>';
+    return '<div style="background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:8px"><div style="font-size:11px;font-weight:800;color:var(--w);margin-bottom:3px">#'+s.id+'</div><div style="font-size:11px;color:var(--sll)">'+s.cust+' · '+s.city+'</div><div style="font-size:11px;color:var(--sll)">'+s.items+' · <strong style="color:var(--w)">'+s.amt+'</strong></div>'+(s.awb?'<div style="font-size:10px;color:var(--vl);margin-top:3px">'+s.courier+' · '+s.awb+'</div>':'')+'<div style="margin-top:8px">'+btn+'</div></div>';
+  }
+
+  var el=document.getElementById('col-topack');if(el)el.innerHTML=cols.to_pack.map(function(s){return shipCard(s,'to_pack');}).join('');
+  var ep=document.getElementById('col-packed');if(ep)ep.innerHTML=cols.packed.map(function(s){return shipCard(s,'packed');}).join('');
+  var et=document.getElementById('col-transit');if(et)et.innerHTML=cols.dispatched.map(function(s){return shipCard(s,'dispatched');}).join('');
+  var eo=document.getElementById('col-ofd');if(eo)eo.innerHTML=cols.ofd.map(function(s){return shipCard(s,'ofd');}).join('');
+
+  var STATUS_MAP={to_pack:'<span class="badge badge-a">To Pack</span>',packed:'<span class="badge badge-v">Packed</span>',dispatched:'<span class="badge badge-t">In Transit</span>',ofd:'<span class="badge badge-or">Out for delivery</span>'};
+  var tbl='';
+  SHIPMENTS.forEach(function(s){
+    var action='';
+    if(s.status==='to_pack') action='<button class="action-btn" onclick="markPacked(\''+s.id+'\')">📦 Pack</button>';
+    else if(s.status==='packed') action='<button class="action-btn" onclick="openDispatch(\''+s.id+'\')">🚚 Dispatch</button>';
+    else action='<button class="action-btn" onclick="alert(\'AWB: '+s.awb+'\')"">🔍 Track</button>';
+    tbl+='<tr><td><strong>#'+s.id+'</strong></td><td>'+s.cust+'</td><td>'+s.city+'</td><td>'+s.amt+'</td><td style="color:var(--sll)">'+(s.courier||'—')+'</td><td style="font-size:11px;color:var(--vl)">'+(s.awb||'—')+'</td><td style="color:var(--sll)">'+(s.eta||'—')+'</td><td>'+STATUS_MAP[s.status]+'</td><td>'+action+'</td></tr>';
+  });
+  var tb=document.getElementById('fulfil-tbl-body');if(tb)tb.innerHTML=tbl;
+}
+function markPacked(id){
+  var s=SHIPMENTS.find(function(x){return x.id===id;});
+  if(s){s.status='packed';renderFulfilment();showToast('📦 #'+id+' marked as Packed — ready for courier pickup');}
+}
+function openDispatch(id){
+  dispatchTarget=SHIPMENTS.find(function(x){return x.id===id;});
+  if(!dispatchTarget)return;
+  document.getElementById('dispatch-order-info').textContent='Order #'+dispatchTarget.id+' · '+dispatchTarget.cust+' · '+dispatchTarget.city+' · '+dispatchTarget.amt;
+  document.getElementById('dispatch-awb').value='';
+  document.getElementById('modal-dispatch').classList.add('open');
+}
+function confirmDispatch(){
+  var awb=document.getElementById('dispatch-awb').value.trim();
+  var courier=document.getElementById('dispatch-courier').value;
+  if(!awb){alert('Please enter the AWB / tracking number');return;}
+  if(dispatchTarget){dispatchTarget.status='dispatched';dispatchTarget.courier=courier;dispatchTarget.awb=awb;dispatchTarget.eta='2–3 days';}
+  closeModal('modal-dispatch');
+  renderFulfilment();
+  showToast('🚚 #'+dispatchTarget.id+' dispatched via '+courier+' · AWB: '+awb);
+}
+
+/* ── RETURNS DATA ── */
+var RETURNS=[
+  {id:'RET-221',order:'ORD-8800',cust:'Anjali Verma',products:'Amul Milk 1L x2',reason:'Wrong item received',requested:'Oct 13, 2026',amt:480,status:'pending'},
+  {id:'RET-222',order:'ORD-8798',cust:'Rohit Das',products:'Greek Yogurt 500g',reason:'Product expired',requested:'Oct 13, 2026',amt:240,status:'pending'},
+  {id:'RET-223',order:'ORD-8793',cust:'Lata Krishnan',products:'Mixed Nuts 250g',reason:'Packaging damaged',requested:'Oct 12, 2026',amt:380,status:'pending'},
+  {id:'RET-224',order:'ORD-8780',cust:'Suresh Pillai',products:'Amul Butter 100g',reason:'Taste issue',requested:'Oct 11, 2026',amt:64,status:'approved'}
+];
+var retTarget=null;
+
+function renderReturns(){
+  var STATUS_BADGE={pending:'<span class="badge badge-a">Pending review</span>',approved:'<span class="badge badge-t">Approved · refund pending</span>',rejected:'<span class="badge badge-r">Rejected</span>',refunded:'<span class="badge badge-g">✓ Refunded</span>'};
+  var tbl='';
+  RETURNS.forEach(function(r){
+    var btn=r.status==='pending'?'<button class="btn btn-primary btn-sm" onclick="openReturnAction(\''+r.id+'\')">Review →</button>':
+      r.status==='approved'?'<button class="btn btn-success btn-sm" onclick="issueRefund(\''+r.id+'\')">Issue refund</button>':'';
+    tbl+='<tr><td><strong>#'+r.id+'</strong></td><td>#'+r.order+'</td><td>'+r.cust+'</td><td style="color:var(--sll)">'+r.products+'</td><td style="color:var(--sll)">'+r.reason+'</td><td style="color:var(--sll)">'+r.requested+'</td><td><strong>₹'+r.amt+'</strong></td><td>'+STATUS_BADGE[r.status]+'</td><td>'+btn+'</td></tr>';
+  });
+  var tb=document.getElementById('returns-tbl-body');if(tb)tb.innerHTML=tbl;
+}
+function openReturnAction(id){
+  retTarget=RETURNS.find(function(r){return r.id===id;});
+  if(!retTarget)return;
+  document.getElementById('ret-modal-title').textContent='Review Return #'+retTarget.id;
+  document.getElementById('ret-modal-sub').textContent='Order #'+retTarget.order+' · '+retTarget.cust;
+  document.getElementById('ret-modal-details').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><span style="color:var(--sll)">Products:</span><span>'+retTarget.products+'</span><span style="color:var(--sll)">Reason:</span><span>'+retTarget.reason+'</span><span style="color:var(--sll)">Requested:</span><span>'+retTarget.requested+'</span><span style="color:var(--sll)">Order amount:</span><strong style="color:var(--gl)">₹'+retTarget.amt+'</strong></div>';
+  document.getElementById('ret-refund-amt').value=retTarget.amt;
+  document.getElementById('ret-max-hint').textContent='max ₹'+retTarget.amt;
+  document.getElementById('ret-notes').value='';
+  document.getElementById('modal-return-action').classList.add('open');
+}
+function submitReturnAction(action){
+  if(!retTarget)return;
+  if(action==='approve'){
+    var amt=parseFloat(document.getElementById('ret-refund-amt').value);
+    if(!amt||amt<=0){alert('Enter a valid refund amount');return;}
+    var method=document.getElementById('ret-refund-method').value;
+    retTarget.status='approved';
+    closeModal('modal-return-action');
+    renderReturns();
+    showToast('✓ Return #'+retTarget.id+' approved · ₹'+amt+' refund via '+method+' will be issued');
+  } else {
+    if(!confirm('Reject return request from '+retTarget.cust+'? This cannot be undone.'))return;
+    retTarget.status='rejected';
+    closeModal('modal-return-action');
+    renderReturns();
+    showToast('Return #'+retTarget.id+' rejected');
+  }
+}
+function issueRefund(id){
+  var r=RETURNS.find(function(x){return x.id===id;});
+  if(!r)return;
+  if(!confirm('Issue refund of ₹'+r.amt+' to '+r.cust+'?'))return;
+  r.status='refunded';
+  renderReturns();
+  showToast('💚 Refund of ₹'+r.amt+' issued to '+r.cust+' — settlement adjusted');
+}
+function renderSparkline(){
+  var vals=[18,24,19,28,32,41,38];
+  var max=Math.max.apply(null,vals);
+  var el=document.getElementById('ov-spark');
+  if(!el)return;
+  el.innerHTML=vals.map(function(v){return '<span style="height:'+Math.round(v/max*32)+'px"></span>';}).join('');
+}
+function renderLocations(){
+  var h='';
+  CITIES.forEach(function(c){
+    h+='<div class="loc-row"><div style="display:flex;align-items:center;gap:10px;flex:1"><span class="loc-city">🏙️ '+c.name+'</span><div class="pincode-grid" style="margin:0">';
+    c.pincodes.forEach(function(p){h+='<span class="pincode-tag city">'+p+'</span>';});
+    h+='</div></div><div style="display:flex;gap:8px"><span class="badge badge-g">'+c.pincodes.length+' pincodes</span><button class="action-btn" onclick="openEditPins(\''+c.name+'\')">Edit pincodes</button><button class="action-btn btn-danger" onclick="confirmRemoveCity(\''+c.name+'\')">Remove city</button></div></div>';
+  });
+  var el=document.getElementById('city-cards');if(el)el.innerHTML=h;
+  var tbl='';
+  PRODUCTS.forEach(function(p){
+    var cityBadges=p.cities.length?p.cities.map(function(c){return '<span class="badge badge-t" style="margin-right:3px">'+c+'</span>';}).join(''):
+      '<span class="badge badge-r">⚠ No location</span>';
+    var status=p.cities.length?'<span class="badge badge-g">Visible</span>':'<span class="badge badge-r">Hidden</span>';
+    tbl+='<tr><td><strong>'+p.name+'</strong></td><td style="color:var(--sll)">'+p.cat+'</td><td>'+cityBadges+'</td><td>'+status+'</td><td><button class="action-btn" onclick="assignCity(\''+p.id+'\')">Assign cities</button></td></tr>';
+  });
+  var tel=document.getElementById('prod-loc-tbl');if(tel)tel.innerHTML=tbl;
+}
+function openAddCity(){document.getElementById('modal-city').classList.add('open');}
+function openEditPins(city){
+  editCity=CITIES.find(function(c){return c.name===city;});
+  if(!editCity)return;
+  document.getElementById('mpe-title').textContent='Edit pincodes · '+city;
+  document.getElementById('mpe-add').value='';
+  document.getElementById('mpe-pins').innerHTML=editCity.pincodes.map(function(p){return '<span class="pincode-tag">'+p+'<span class="rm" onclick="removePincode(\''+p+'\')">×</span></span>';}).join('');
+  document.getElementById('modal-pin-edit').classList.add('open');
+}
+function removePincode(pin){
+  if(!editCity)return;
+  editCity.pincodes=editCity.pincodes.filter(function(p){return p!==pin;});
+  document.getElementById('mpe-pins').innerHTML=editCity.pincodes.map(function(p){return '<span class="pincode-tag">'+p+'<span class="rm" onclick="removePincode(\''+p+'\')">×</span></span>';}).join('');
+}
+function savePins(){
+  var adds=document.getElementById('mpe-add').value.split(',').map(function(p){return p.trim();}).filter(Boolean);
+  if(editCity){editCity.pincodes=editCity.pincodes.concat(adds.filter(function(a){return !editCity.pincodes.includes(a);}));}
+  closeModal('modal-pin-edit');renderLocations();
+}
+function addCity(){
+  var city=document.getElementById('new-city').value;
+  var pins=document.getElementById('new-pins').value.split(',').map(function(p){return p.trim();}).filter(Boolean);
+  if(!city){alert('Select a city');return;}
+  if(!CITIES.find(function(c){return c.name===city;})){CITIES.push({name:city,pincodes:pins});}
+  closeModal('modal-city');renderLocations();
+}
+function confirmRemoveCity(city){if(confirm('Remove '+city+' and unassign all products from it?')){CITIES=CITIES.filter(function(c){return c.name!==city;});renderLocations();}}
+function assignCity(prodId){
+  var p=PRODUCTS.find(function(x){return x.id===prodId;});
+  if(!p)return;
+  var choices=CITIES.map(function(c){return c.name;}).join(', ');
+  alert('Assign cities to '+p.name+'.\nAvailable: '+choices+'\n\n(In the full app, a multi-select modal would open.)');
+}
+function renderStdPlugins(){
+  var q=(document.getElementById('sp-search')||{}).value||'';
+  var cat=(document.getElementById('sp-cat')||{}).value||'';
+  var filtered=STD_PLUGINS.filter(function(p){
+    var mq=!q||p.name.toLowerCase().includes(q.toLowerCase())||p.desc.toLowerCase().includes(q.toLowerCase());
+    var mc=!cat||p.cat===cat;
+    return mq&&mc;
+  });
+  var h=filtered.map(function(p){
+    var capBadges=p.caps.map(function(c){return '<span class="plugin-cap">'+c+'</span>';}).join('');
+    var btn=p.active?
+      '<button class="btn btn-ghost btn-sm" onclick="toggleStdPlugin(\''+p.id+'\')">⏸ Deactivate</button>':
+      '<button class="btn btn-success btn-sm" onclick="toggleStdPlugin(\''+p.id+'\')">⚡ Activate</button>';
+    var activeBadge=p.active?'<span class="badge badge-g">Active</span>':'<span class="badge badge-sl">Inactive</span>';
+    return '<div class="std-plugin-card">'+
+      '<div class="std-plugin-icon" style="background:'+p.bg+'">'+p.icon+'</div>'+
+      '<div class="std-plugin-info">'+
+      '<div class="std-plugin-name">'+p.name+' <span style="font-size:10px;color:var(--sll);font-weight:600">'+p.ver+'</span></div>'+
+      '<div class="std-plugin-meta"><span>📂 '+p.cat+'</span><span>⬇ '+p.installs+' vendors</span><span class="badge badge-t" style="font-size:9px;padding:1px 6px">Platform Plugin</span></div>'+
+      '<div class="std-plugin-caps">'+capBadges+'</div>'+
+      '<div style="font-size:11px;color:var(--sll)">'+p.desc+'</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'+activeBadge+btn+'</div>'+
+      '</div>';
+  }).join('');
+  if(!h)h='<div class="empty-state"><div class="es-icon">🔌</div><h3>No plugins match your search</h3><p>Try a different keyword or category.</p></div>';
+  var el=document.getElementById('std-plugins-list');if(el)el.innerHTML=h;
+}
+function toggleStdPlugin(id){
+  var p=STD_PLUGINS.find(function(x){return x.id===id;});
+  if(p){p.active=!p.active;renderStdPlugins();}
+}
+function renderMyPlugins(){
+  var h=MY_PLUGINS.map(function(p){
+    var statusBadge=p.status==='Approved'?'<span class="badge badge-g">✓ Approved</span>':
+      p.status==='Rejected'?'<span class="badge badge-r">✗ Rejected</span>':
+      '<span class="badge badge-a">⏳ Under Review</span>';
+    var noteHtml=p.notes?'<div class="alert '+(p.status==='Rejected'?'alert-r':'alert-t')+'" style="margin:8px 0 0"><span class="alert-ic">'+(p.status==='Rejected'?'🚫':'💬')+'</span><div>'+(p.status==='Rejected'?'PA note: ':'')+p.notes+'</div></div>':'';
+    return '<div class="card" style="margin-bottom:10px"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'+
+      '<div><div style="font-size:13px;font-weight:800">'+p.name+' <span style="font-size:11px;font-weight:600;color:var(--sll)">'+p.ver+'</span></div>'+
+      '<div style="font-size:11px;color:var(--sll);margin-top:2px">'+p.cat+' · Submitted '+p.submitted+'</div>'+noteHtml+'</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">'+statusBadge+
+      (p.status!=='Under Review'?'<button class="btn btn-ghost btn-sm" onclick="openNewPlugin()">Submit new version</button>':'<span style="font-size:11px;color:var(--sll)">2–5 business days</span>')+
+      '</div></div></div>';
+  }).join('');
+  if(!h)h='<div class="empty-state"><div class="es-icon">🔌</div><h3>No custom plugins yet</h3><p>Submit your first plugin for Platform Admin review.</p></div>';
+  var el=document.getElementById('my-plugins-list');if(el)el.innerHTML=h;
+}
+function renderProducts(){
+  var q=(document.getElementById('prod-search')||{}).value||'';
+  var locF=(document.getElementById('prod-loc-filter')||{}).value||'';
+  var stF=(document.getElementById('prod-status-filter')||{}).value||'';
+  var filtered=PRODUCTS.filter(function(p){
+    var mq=!q||p.name.toLowerCase().includes(q.toLowerCase());
+    var ml=!locF||p.cities.includes(locF);
+    var ms=!stF||p.status===stF;
+    return mq&&ml&&ms;
+  });
+  // show rejected banner if any rejected products exist
+  var rejected=PRODUCTS.filter(function(p){return p.status==='Rejected';});
+  var rb=document.getElementById('prod-rejected-banner');
+  var rt=document.getElementById('prod-rejected-text');
+  if(rb&&rt){
+    if(rejected.length){
+      rb.style.display='flex';
+      rt.innerHTML='<strong>'+rejected.length+' product(s) rejected by Platform Admin.</strong> Open each rejected listing to see the reason and resubmit with corrections.';
+    } else {rb.style.display='none';}
+  }
+  var STATUS_BADGE={
+    'Live':'<span class="badge badge-g">✓ Live</span>',
+    'Pending Review':'<span class="badge badge-a">⏳ Pending Review</span>',
+    'Rejected':'<span class="badge badge-r">✕ Rejected</span>'
+  };
+  var h='<div class="card" style="padding:0;overflow:hidden"><table class="tbl"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Images</th><th>Cities</th><th>Stock</th><th>PA Status</th><th>Visibility</th><th></th></tr></thead><tbody>';
+  h+=filtered.map(function(p){
+    var cityBadges=p.cities.length?p.cities.map(function(c){return '<span class="badge badge-t" style="margin-right:2px">'+c+'</span>';}).join(''):
+      '<span class="badge badge-r">⚠ No city</span>';
+    var vis=p.status==='Live'&&p.cities.length?'<span class="badge badge-g">Visible</span>':
+            p.status==='Pending Review'?'<span class="badge badge-sl">Awaiting PA</span>':
+            p.status==='Rejected'?'<span class="badge badge-r">Hidden</span>':
+            '<span class="badge badge-sl">Hidden</span>';
+    var stk=p.stock==='Low'?'<span class="badge badge-r">Low</span>':'<span class="badge badge-g">OK</span>';
+    var imgBadge=p.images>0?'<span style="color:var(--sll);font-size:11px">🖼 '+p.images+'</span>':'<span class="badge badge-r" style="font-size:10px">⚠ No images</span>';
+    var paStatus=STATUS_BADGE[p.status]||p.status;
+    var editLbl=p.status==='Rejected'?'Fix & Resubmit':'Edit';
+    return '<tr class="cr"><td><strong>'+p.name+'</strong></td><td style="color:var(--sll)">'+p.cat+'</td><td>₹'+p.price+'</td><td>'+imgBadge+'</td><td>'+cityBadges+'</td><td>'+stk+'</td><td>'+paStatus+'</td><td>'+vis+'</td><td><button class="action-btn" onclick="openEditProduct(\''+p.id+'\')">'+editLbl+'</button></td></tr>';
+  }).join('');
+  if(!filtered.length)h+='<tr><td colspan="9" style="text-align:center;color:var(--sll);padding:28px">No products match your filters.</td></tr>';
+  h+='</tbody></table></div>';
+  var el=document.getElementById('prod-list');if(el)el.innerHTML=h;
+}
+function openEditProduct(id){
+  var p=PRODUCTS.find(function(x){return x.id===id;});
+  if(!p)return;
+  if(p.status==='Rejected'){
+    alert('Rejected product: '+p.name+'\n\nPA rejection reason: "Images do not match the product description. Please upload clear, accurate product photos and resubmit."\n\nFix the issues and click Save & Resubmit to send for review again.');
+  } else {
+    alert('Edit product: '+p.name+'\n\n(In production this would open the full edit form with existing values pre-filled.)');
+  }
+}
+function openNewProduct(){document.getElementById('modal-new-product').classList.add('open');}
+function simulateImgUpload(slot){
+  var el=document.getElementById('img-slot-'+slot);
+  if(!el)return;
+  var emojis=['🥦','🍎','🥛','🍞','🥚','🧀','🫙','🫐'];
+  var em=emojis[Math.floor(Math.random()*emojis.length)];
+  var label=slot===1?'<div style="font-size:9px;color:var(--gl);font-weight:700;margin-top:4px">✓ Main</div>':'';
+  el.className='img-slot img-slot-filled';
+  el.querySelector('.img-slot-inner').style.background='linear-gradient(135deg,rgba(14,165,233,.12),rgba(14,165,233,.04))';
+  el.querySelector('.img-slot-inner').style.borderColor='rgba(14,165,233,.4)';
+  el.querySelector('.img-slot-inner').style.borderStyle='solid';
+  el.querySelector('.img-slot-inner').innerHTML='<div style="font-size:22px">'+em+'</div>'+label+'<div style="font-size:9px;color:var(--sll);margin-top:2px">800×800px</div>';
+  showToast('Image '+slot+' uploaded (800×800 px, 1.2 MB)');
+}
+function submitNewProduct(){
+  var checks=['chk1','chk2','chk3','chk4','chk5'];
+  var allChecked=checks.every(function(id){var el=document.getElementById(id);return el&&el.checked;});
+  var name=(document.getElementById('np-name')||{}).value||'';
+  var price=(document.getElementById('np-price')||{}).value||'';
+  if(!name||!price){showToast('Please fill in product name and price.','error');return;}
+  if(!allChecked){showToast('Please confirm all items in the authenticity checklist.','error');return;}
+  var hasFilled=document.querySelector('.img-slot-filled');
+  if(!hasFilled){showToast('Upload at least 1 product image before submitting.','error');return;}
+  var newProd={id:'P'+(PRODUCTS.length+1),name:name,cat:(document.getElementById('np-cat')||{}).value||'Other',price:parseFloat(price),cities:['Mumbai','Pune'],stock:'OK',status:'Pending Review',images:document.querySelectorAll('.img-slot-filled').length};
+  PRODUCTS.push(newProd);
+  closeModal('modal-new-product');
+  renderProducts();
+  showToast('✅ Product submitted for Platform Admin review. You\'ll be notified once approved.');
+}
+function openNewPlugin(){document.getElementById('modal-new-plugin').classList.add('open');}
+function openNewServiceAcct(){document.getElementById('modal-new-svc').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showToast(msg,type){
+  var t=document.getElementById('toast-el');
+  if(!t){t=document.createElement('div');t.id='toast-el';t.style.cssText='position:fixed;bottom:28px;right:28px;z-index:9999;padding:11px 18px;border-radius:10px;font-size:12px;font-weight:600;max-width:380px;line-height:1.5;box-shadow:0 4px 24px rgba(0,0,0,.4);transition:opacity .3s;';document.body.appendChild(t);}
+  if(type==='error'){t.style.background='rgba(239,68,68,.18)';t.style.border='1px solid rgba(239,68,68,.4)';t.style.color='#fecaca';}
+  else{t.style.background='rgba(16,185,129,.18)';t.style.border='1px solid rgba(16,185,129,.3)';t.style.color='#a7f3d0';}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},3400);
+}
+window.onload=function(){renderSparkline();renderProducts();document.getElementById('low-pill').style.display='inline';};
+</script>
+</body>
+</html>
+
+</body></html>

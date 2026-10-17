@@ -1,0 +1,618 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Delivery Partner Portal — AdanPradan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--or:#f97316;--orl:#fb923c;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr;height:100vh}
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.badge-dp{background:rgba(249,115,22,.12);color:var(--orl);border:1px solid rgba(249,115,22,.3)}
+.badge-online{background:rgba(16,185,129,.12);color:var(--gl);border:1px solid rgba(16,185,129,.25)}
+.badge-offline{background:rgba(100,116,139,.12);color:var(--sll);border:1px solid rgba(100,116,139,.25)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--or),var(--r));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.status-toggle{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--bdr);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:11px;font-weight:700}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--gl)}
+.status-dot.off{background:var(--sl)}
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(249,115,22,.08);border-left-color:var(--orl)}
+.nav-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.main{overflow-y:auto;scrollbar-width:thin}
+.page{display:none;padding:24px 28px 48px;max-width:1080px;animation:fadein .18s ease}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.stat-val{font-size:26px;font-weight:800;letter-spacing:-.04em}
+.stat-lbl{font-size:11px;color:var(--sll)}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-or{background:rgba(249,115,22,.1);color:var(--orl);border-color:rgba(249,115,22,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;font-weight:600}
+.action-btn:hover{border-color:var(--orl);color:var(--orl)}
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--orl);color:var(--ink)}.btn-primary:hover{opacity:.9}
+.btn-success{background:var(--gl);color:var(--ink)}.btn-success:hover{opacity:.9}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-amber{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--al)}.btn-amber:hover{background:rgba(245,158,11,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-g{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2);color:#a7f3d0}
+.alert-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:#fde68a}
+.alert-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:#fecaca}
+.alert-t{background:rgba(14,165,233,.07);border-color:rgba(14,165,233,.2);color:#bae6fd}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr);border-radius:14px;width:100%;max-width:520px;padding:24px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:800}
+.modal-close{background:transparent;border:none;color:var(--sll);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close:hover{color:var(--w)}
+.inp{width:100%;padding:9px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:12px}
+.inp:focus{outline:none;border-color:var(--orl)}
+label.lbl{font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:5px}
+.delivery-card{background:var(--card2);border:1px solid var(--bdr);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.dc-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.dc-id{font-size:12px;font-weight:800;color:var(--w)}
+.dc-addr{font-size:11px;color:var(--sll);margin-bottom:8px;line-height:1.6}
+.dc-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.dc-meta span{font-size:10px;color:var(--sll)}
+.dc-meta strong{color:var(--w)}
+.route-stop{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.route-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.route-line{width:2px;background:var(--bdr);flex-shrink:0;margin-left:4px;height:20px;margin-top:-4px}
+.route-info{font-size:11px;color:var(--sll)}
+.route-info strong{color:var(--w);display:block;margin-bottom:2px}
+.pod-upload{border:2px dashed var(--bdr);border-radius:8px;padding:20px;text-align:center;cursor:pointer;color:var(--sll);font-size:12px;margin-bottom:12px}
+.pod-upload:hover{border-color:var(--orl);color:var(--orl)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;font-size:12px;font-weight:600;z-index:9999;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:fadein .2s ease}
+.filter-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:7px 12px;background:var(--card);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:12px}
+.filter-bar select{cursor:pointer}
+.sep{height:1px;background:var(--bdr);margin:14px 0}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">Adan<span>Pradan</span></div>
+  <span class="tb-badge badge-dp">🛵 Delivery Partner</span>
+  <div class="tb-sep"></div>
+  <span id="dp-zone" style="font-size:11px;color:var(--sll)">📍 Zone: Mumbai North · Bandra–Andheri</span>
+  <div class="tb-right">
+    <div class="status-toggle" onclick="toggleOnlineStatus()" id="status-toggle">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-label">Online</span>
+    </div>
+    <div class="tb-stat"><span>Today</span> <strong id="tb-earnings">₹0</strong></div>
+    <div class="tb-stat"><span>Delivered</span> <strong id="tb-delivered">0</strong></div>
+    <div class="avatar">AR</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="nav-section">Today's Work</div>
+  <button class="nav-item active" onclick="nav(this,'dashboard')"><span class="nav-ic">🏠</span><span class="nav-label">Dashboard</span></button>
+  <button class="nav-item" onclick="nav(this,'route')"><span class="nav-ic">🗺️</span><span class="nav-label">My Route</span><span class="nav-pill" id="route-pill">5</span></button>
+  <button class="nav-item" onclick="nav(this,'pickups')"><span class="nav-ic">📦</span><span class="nav-label">Pickups</span><span class="nav-pill" id="pickup-pill">3</span></button>
+  <button class="nav-item" onclick="nav(this,'deliveries')"><span class="nav-ic">🛵</span><span class="nav-label">Active Deliveries</span><span class="nav-pill" id="active-pill">2</span></button>
+
+  <div class="nav-section">Exceptions</div>
+  <button class="nav-item" onclick="nav(this,'failed')"><span class="nav-ic">❌</span><span class="nav-label">Failed Deliveries</span><span class="nav-pill" id="failed-pill">1</span></button>
+  <button class="nav-item" onclick="nav(this,'returns')"><span class="nav-ic">↩️</span><span class="nav-label">Return to Vendor</span></button>
+
+  <div class="nav-section">History</div>
+  <button class="nav-item" onclick="nav(this,'history')"><span class="nav-ic">📋</span><span class="nav-label">Delivery History</span></button>
+  <button class="nav-item" onclick="nav(this,'earnings')"><span class="nav-ic">💰</span><span class="nav-label">Earnings</span></button>
+
+  <div class="nav-section">Account</div>
+  <button class="nav-item" onclick="nav(this,'profile')"><span class="nav-ic">👤</span><span class="nav-label">My Profile</span></button>
+
+  <div class="sidebar-foot">
+    <div style="font-size:10px;color:var(--sl);margin-bottom:4px">Delivery Partner</div>
+    <div style="font-size:12px;font-weight:700">Aryan Rathore</div>
+    <div style="font-size:11px;color:var(--sll)">ID: DP-1042 · Delhivery</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page on" id="page-dashboard">
+  <div class="page-hdr"><div><div class="page-title">Good morning, Aryan 👋</div><div class="page-sub">Thursday, 15 Oct 2026 · Mumbai North Zone</div></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[onclick*=route]'),'route')">🗺️ View route</button>
+      <button class="btn btn-primary btn-sm" onclick="nav(document.querySelector('[onclick*=pickups]'),'pickups')">📦 Start pickups</button>
+    </div>
+  </div>
+
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--orl)">5</div><div class="stat-lbl">Assigned today</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)" id="dash-delivered">0</div><div class="stat-lbl">Delivered</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--rl)" id="dash-failed">1</div><div class="stat-lbl">Failed</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)" id="dash-earn">₹0</div><div class="stat-lbl">Earned today</div></div>
+  </div>
+
+  <div class="alert alert-a"><span class="alert-ic">📦</span><div><strong>3 pickups pending</strong> — Head to FreshCart Foods warehouse (Andheri East) by 10:30 AM to collect today's orders.</div></div>
+
+  <!-- Today's summary -->
+  <div class="card bordered-or" style="border-left:3px solid var(--orl)">
+    <div class="card-t">📋 Today's delivery summary</div>
+    <div id="dash-summary"></div>
+  </div>
+
+  <!-- Performance -->
+  <div class="grid2">
+    <div class="card">
+      <div class="card-t">⭐ Performance (this week)</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--sll)">On-time delivery</span><div style="display:flex;align-items:center;gap:8px"><div style="width:120px;height:6px;background:var(--bdr);border-radius:3px"><div style="width:94%;height:100%;background:var(--gl);border-radius:3px"></div></div><strong style="font-size:12px">94%</strong></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--sll)">Customer rating</span><div style="display:flex;align-items:center;gap:8px"><div style="width:120px;height:6px;background:var(--bdr);border-radius:3px"><div style="width:91%;height:100%;background:var(--al);border-radius:3px"></div></div><strong style="font-size:12px">4.6 ★</strong></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--sll)">Attempts per order</span><div style="display:flex;align-items:center;gap:8px"><div style="width:120px;height:6px;background:var(--bdr);border-radius:3px"><div style="width:98%;height:100%;background:var(--tl);border-radius:3px"></div></div><strong style="font-size:12px">1.04</strong></div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--sll)">Orders this week</span><strong style="font-size:12px">34</strong></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">💰 Earnings this week</div>
+      <div style="font-size:28px;font-weight:800;color:var(--gl);margin-bottom:4px">₹3,420</div>
+      <div style="font-size:11px;color:var(--sll);margin-bottom:12px">34 orders × avg ₹100.6</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">Base delivery fee</span><span>₹2,720</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">Surge (peak hours)</span><span style="color:var(--al)">₹480</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">Tip</span><span style="color:var(--gl)">₹220</span></div>
+        <div class="sep" style="margin:6px 0"></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>Total</span><span style="color:var(--gl)">₹3,420</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROUTE -->
+<div class="page" id="page-route">
+  <div class="page-hdr"><div><div class="page-title">🗺️ My Route</div><div class="page-sub">Optimised delivery sequence for today — 5 stops.</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="alert('Navigate via Google Maps')">📍 Open in Maps</button>
+  </div>
+  <div class="alert alert-t"><span class="alert-ic">🛵</span><div>Route optimised by distance. Follow the sequence to minimise travel time. Total estimated distance: <strong>18.4 km</strong> · ETA: <strong>3h 20m</strong></div></div>
+  <div class="card" id="route-card"></div>
+</div>
+
+<!-- PICKUPS -->
+<div class="page" id="page-pickups">
+  <div class="page-hdr"><div><div class="page-title">📦 Pickups</div><div class="page-sub">Collect these orders from the vendor warehouse before starting deliveries.</div></div></div>
+  <div class="alert alert-a"><span class="alert-ic">📍</span><div><strong>Pickup location:</strong> FreshCart Foods · Warehouse 3, MIDC Andheri East, Mumbai 400093<br>Contact: Kiran Fadnavis · +91 98200 12345 · Expected ready by 10:30 AM</div></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="card-t" style="padding:14px 20px 0">📦 Orders to pick up (<span id="pickup-count">3</span>)</div>
+    <table class="tbl"><thead><tr><th>Order</th><th>Items</th><th>Customer</th><th>Delivery area</th><th>COD amount</th><th>Status</th><th></th></tr></thead>
+    <tbody id="pickup-tbl"></tbody></table>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="confirmAllPickups()">📦 Confirm all pickups collected</button>
+    <button class="btn btn-ghost" onclick="alert('Report issue with pickup')">⚠️ Report issue</button>
+  </div>
+</div>
+
+<!-- ACTIVE DELIVERIES -->
+<div class="page" id="page-deliveries">
+  <div class="page-hdr"><div><div class="page-title">🛵 Active Deliveries</div><div class="page-sub">Orders in your possession — mark each as delivered or report issues.</div></div></div>
+  <div id="active-delivery-list"></div>
+</div>
+
+<!-- FAILED DELIVERIES -->
+<div class="page" id="page-failed">
+  <div class="page-hdr"><div><div class="page-title">❌ Failed Deliveries</div><div class="page-sub">Deliveries that could not be completed — log reason and schedule reattempt.</div></div></div>
+  <div class="alert alert-r"><span class="alert-ic">⚠️</span><div>Failed deliveries must be logged with a reason within 30 minutes. After 3 failed attempts, the order is auto-escalated to Support.</div></div>
+  <div id="failed-list"></div>
+</div>
+
+<!-- RETURN TO VENDOR -->
+<div class="page" id="page-returns">
+  <div class="page-hdr"><div><div class="page-title">↩️ Return to Vendor</div><div class="page-sub">Orders that must be returned to the vendor after failed attempts.</div></div></div>
+  <div class="card">
+    <div class="card-t">↩️ Pending returns</div>
+    <table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Attempts</th><th>Reason</th><th>Return to</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>#ORD-8805</td><td>Vinod Sharma</td><td>3 / 3</td><td>Customer not reachable</td><td>FreshCart Foods</td><td><span class="badge badge-r">Must return</span></td><td><button class="btn btn-danger btn-sm" onclick="confirmReturn('ORD-8805')">↩️ Mark returned</button></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="page-hdr"><div><div class="page-title">📋 Delivery History</div><div class="page-sub">All completed and attempted deliveries.</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="alert('Export CSV')">⬇ Export</button>
+  </div>
+  <div class="filter-bar">
+    <input type="text" placeholder="Search order…"/>
+    <select><option>All outcomes</option><option>Delivered</option><option>Failed</option><option>Returned</option></select>
+    <select><option>Last 7 days</option><option>Last 30 days</option><option>This month</option></select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>Date</th><th>Order</th><th>Customer</th><th>Area</th><th>Outcome</th><th>Attempts</th><th>POD</th></tr></thead>
+    <tbody>
+      <tr><td>Oct 14</td><td>#ORD-8818</td><td>Arjun Singh</td><td>Koramangala, Bangalore</td><td><span class="badge badge-g">✓ Delivered</span></td><td>1</td><td><span style="color:var(--tl);font-size:11px;cursor:pointer">📷 View</span></td></tr>
+      <tr><td>Oct 14</td><td>#ORD-8815</td><td>Sneha Patel</td><td>Bandra, Mumbai</td><td><span class="badge badge-g">✓ Delivered</span></td><td>1</td><td><span style="color:var(--tl);font-size:11px;cursor:pointer">📷 View</span></td></tr>
+      <tr><td>Oct 14</td><td>#ORD-8810</td><td>Meera Nair</td><td>Andheri, Mumbai</td><td><span class="badge badge-g">✓ Delivered</span></td><td>2</td><td><span style="color:var(--tl);font-size:11px;cursor:pointer">📷 View</span></td></tr>
+      <tr><td>Oct 13</td><td>#ORD-8805</td><td>Vinod Sharma</td><td>Dadar, Mumbai</td><td><span class="badge badge-r">❌ Failed</span></td><td>3</td><td>—</td></tr>
+      <tr><td>Oct 13</td><td>#ORD-8800</td><td>Priya Mehta</td><td>Santacruz, Mumbai</td><td><span class="badge badge-g">✓ Delivered</span></td><td>1</td><td><span style="color:var(--tl);font-size:11px;cursor:pointer">📷 View</span></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- EARNINGS -->
+<div class="page" id="page-earnings">
+  <div class="page-hdr"><div><div class="page-title">💰 Earnings</div><div class="page-sub">Your delivery income, breakdown, and payout history.</div></div></div>
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)">₹3,420</div><div class="stat-lbl">This week</div></div>
+    <div class="stat-card"><div class="stat-val">₹11,840</div><div class="stat-lbl">This month</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)">₹1,200</div><div class="stat-lbl">Next payout (in 2 days)</div></div>
+  </div>
+  <div class="card">
+    <div class="card-t">Daily breakdown (last 7 days)</div>
+    <table class="tbl"><thead><tr><th>Date</th><th>Orders</th><th>Base fee</th><th>Surge</th><th>Tips</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td>Oct 15 (today)</td><td id="earn-today-ord">0</td><td>₹0</td><td>₹0</td><td>₹0</td><td><strong id="earn-today">₹0</strong></td></tr>
+      <tr><td>Oct 14</td><td>8</td><td>₹640</td><td>₹120</td><td>₹80</td><td><strong style="color:var(--gl)">₹840</strong></td></tr>
+      <tr><td>Oct 13</td><td>5</td><td>₹400</td><td>₹60</td><td>₹40</td><td><strong style="color:var(--gl)">₹500</strong></td></tr>
+      <tr><td>Oct 12</td><td>9</td><td>₹720</td><td>₹180</td><td>₹60</td><td><strong style="color:var(--gl)">₹960</strong></td></tr>
+      <tr><td>Oct 11</td><td>7</td><td>₹560</td><td>₹80</td><td>₹20</td><td><strong style="color:var(--gl)">₹660</strong></td></tr>
+    </tbody></table>
+  </div>
+  <div class="card">
+    <div class="card-t">Payout history</div>
+    <table class="tbl"><thead><tr><th>Payout ID</th><th>Period</th><th>Amount</th><th>Account</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>#PAY-0218</td><td>Oct 8–14</td><td>₹3,420</td><td>•••• 4821</td><td><span class="badge badge-g">✓ Paid</span></td></tr>
+      <tr><td>#PAY-0217</td><td>Oct 1–7</td><td>₹2,800</td><td>•••• 4821</td><td><span class="badge badge-g">✓ Paid</span></td></tr>
+      <tr><td>#PAY-0216</td><td>Sep 24–30</td><td>₹3,100</td><td>•••• 4821</td><td><span class="badge badge-g">✓ Paid</span></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="page-hdr"><div><div class="page-title">👤 My Profile</div><div class="page-sub">Your account, vehicle, documents, and preferences.</div></div></div>
+  <div class="card">
+    <div class="card-t">🧑 Account</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--or),var(--r));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800">AR</div>
+      <div><div style="font-size:15px;font-weight:800">Aryan Rathore</div><div style="font-size:11px;color:var(--sll)">aryan.rathore@gmail.com · +91 98765 43210</div><div style="margin-top:4px"><span class="badge badge-dp">🛵 Delivery Partner</span> <span class="badge badge-g">Active</span></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+      <div style="color:var(--sll)">Partner ID</div><div>DP-1042</div>
+      <div style="color:var(--sll)">Courier company</div><div>Delhivery</div>
+      <div style="color:var(--sll)">Zone</div><div>Mumbai North · Bandra–Andheri</div>
+      <div style="color:var(--sll)">Vehicle</div><div>Honda Activa · MH01 AB 1234</div>
+      <div style="color:var(--sll)">Joined</div><div>Jan 2025</div>
+      <div style="color:var(--sll)">Total deliveries</div><div>1,284</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-t">📄 Documents</div>
+    <table class="tbl"><thead><tr><th>Document</th><th>Status</th><th>Expires</th></tr></thead>
+    <tbody>
+      <tr><td>Driving licence</td><td><span class="badge badge-g">✓ Verified</span></td><td>Oct 2028</td></tr>
+      <tr><td>Vehicle registration (RC)</td><td><span class="badge badge-g">✓ Verified</span></td><td>Jan 2027</td></tr>
+      <tr><td>Vehicle insurance</td><td><span class="badge badge-a">⚠ Expiring soon</span></td><td>Nov 15, 2026</td></tr>
+      <tr><td>Police verification</td><td><span class="badge badge-g">✓ Verified</span></td><td>—</td></tr>
+    </tbody></table>
+    <div class="alert alert-a" style="margin-top:12px;margin-bottom:0"><span class="alert-ic">⚠️</span><div>Your vehicle insurance expires on <strong>15 Nov 2026</strong>. Upload the renewal to avoid account suspension.</div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MODALS -->
+<!-- Delivery confirm modal -->
+<div class="modal-overlay" id="modal-deliver" onclick="if(event.target===this)closeModal('modal-deliver')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">✅ Confirm Delivery</div><button class="modal-close" onclick="closeModal('modal-deliver')">✕</button></div>
+    <div style="font-size:12px;color:var(--sll);margin-bottom:14px" id="deliver-info"></div>
+    <div style="background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px" id="deliver-address"></div>
+    <div class="pod-upload" onclick="alert('Camera / gallery picker would open here')">
+      <div style="font-size:24px;margin-bottom:6px">📷</div>
+      <div style="font-weight:700;margin-bottom:3px">Upload Proof of Delivery</div>
+      <div style="font-size:11px">Photo of package at door, with timestamp · Required</div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="lbl">DELIVERY METHOD</label>
+      <select id="deliver-method" class="inp" style="margin:0">
+        <option value="handed">Handed to customer</option>
+        <option value="door">Left at door (with photo)</option>
+        <option value="security">Left with security guard</option>
+        <option value="neighbour">Left with neighbour</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="lbl">OTP / SIGNATURE VERIFICATION</label>
+      <input type="text" id="deliver-otp" class="inp" placeholder="Enter 4-digit OTP from customer" style="margin:0"/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-deliver')">Cancel</button>
+      <button class="btn btn-success" style="flex:1" onclick="confirmDelivery()">✅ Mark Delivered</button>
+    </div>
+  </div>
+</div>
+
+<!-- Failed delivery modal -->
+<div class="modal-overlay" id="modal-failed" onclick="if(event.target===this)closeModal('modal-failed')">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">❌ Report Failed Delivery</div><button class="modal-close" onclick="closeModal('modal-failed')">✕</button></div>
+    <div style="font-size:12px;color:var(--sll);margin-bottom:14px" id="failed-info"></div>
+    <div style="margin-bottom:12px">
+      <label class="lbl">REASON FOR FAILURE</label>
+      <select id="fail-reason" class="inp" style="margin:0">
+        <option value="not_home">Customer not home</option>
+        <option value="not_reachable">Customer not reachable by phone</option>
+        <option value="wrong_address">Wrong / incomplete address</option>
+        <option value="refused">Customer refused delivery</option>
+        <option value="access_denied">Could not access building / gated community</option>
+        <option value="cod_short">Customer short on COD amount</option>
+        <option value="damaged">Package damaged in transit</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="lbl">REATTEMPT PREFERENCE</label>
+      <select id="fail-reattempt" class="inp" style="margin:0">
+        <option value="tomorrow_am">Tomorrow morning (9am–12pm)</option>
+        <option value="tomorrow_pm">Tomorrow afternoon (2pm–6pm)</option>
+        <option value="day_after">Day after tomorrow</option>
+        <option value="customer_call">Call customer to reschedule</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="lbl">NOTES</label>
+      <textarea id="fail-notes" class="inp" rows="3" placeholder="E.g. tried calling 3 times, no answer. Building access code needed." style="resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-failed')">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" onclick="submitFailed()">❌ Log failed attempt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+var isOnline=true;
+var deliveredCount=0;
+var todayEarnings=0;
+var activeTarget=null;
+var failTarget=null;
+
+var PICKUPS=[
+  {id:'ORD-8821',items:'3 items (Amul Milk x2, Bread)',cust:'Priya Mehta',area:'Bandra West',cod:0,status:'pending'},
+  {id:'ORD-8823',items:'2 items (Greek Yogurt, Butter)',cust:'Fatima Khan',area:'Santacruz West',cod:0,status:'pending'},
+  {id:'ORD-8824',items:'5 items (Grocery basket)',cust:'Amit Sharma',area:'Andheri West',cod:450,status:'pending'}
+];
+
+var ACTIVE=[
+  {id:'ORD-8820',items:'5 items',cust:'Ravi Kumar',phone:'+91 98200 77890',addr:'Flat 4B, Sunrise Apts, Baner Rd, Pune 411045',area:'Baner, Pune',cod:0,attempt:1,status:'active'},
+  {id:'ORD-8816',items:'4 items',cust:'Kavya Reddy',phone:'+91 97400 55660',addr:'12, 4th Cross, Koramangala 5th Block, Bangalore 560095',area:'Koramangala, Bangalore',cod:320,attempt:1,status:'active'}
+];
+
+var FAILED_ORDERS=[
+  {id:'ORD-8809',items:'2 items',cust:'Vinod Sharma',phone:'+91 99100 23456',addr:'Plot 7, Dadar TT, Mumbai 400014',area:'Dadar, Mumbai',attempt:2,reason:'Customer not home',next:'Tomorrow AM',status:'failed'}
+];
+
+function toggleOnlineStatus(){
+  isOnline=!isOnline;
+  document.getElementById('status-dot').className='status-dot'+(isOnline?'':' off');
+  document.getElementById('status-label').textContent=isOnline?'Online':'Offline';
+  showToast(isOnline?'🟢 You are now online — orders may be assigned':'⚫ You are now offline');
+}
+
+function nav(el,page){
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active')});
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  var pg=document.getElementById('page-'+page);
+  if(pg){pg.classList.add('on');onPageLoad(page);}
+}
+function onPageLoad(p){
+  if(p==='dashboard')renderDashboard();
+  if(p==='route')renderRoute();
+  if(p==='pickups')renderPickups();
+  if(p==='deliveries')renderActiveDeliveries();
+  if(p==='failed')renderFailed();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},3200);}
+
+function renderDashboard(){
+  document.getElementById('dash-delivered').textContent=deliveredCount;
+  document.getElementById('dash-earn').textContent='₹'+todayEarnings;
+  document.getElementById('tb-earnings').textContent='₹'+todayEarnings;
+  document.getElementById('tb-delivered').textContent=deliveredCount;
+  // Summary rows
+  var all=PICKUPS.concat(ACTIVE).concat(FAILED_ORDERS);
+  var rows=all.map(function(o){
+    var outcome=o.status==='done'?'<span class="badge badge-g">✓ Delivered</span>':o.status==='failed'?'<span class="badge badge-r">❌ Failed</span>':o.status==='active'?'<span class="badge badge-a">En route</span>':'<span class="badge badge-sl">Pending pickup</span>';
+    return '<tr><td><strong>#'+o.id+'</strong></td><td>'+o.cust+'</td><td>'+o.area+'</td><td>'+(o.cod?'COD ₹'+o.cod:'Prepaid')+'</td><td>'+outcome+'</td></tr>';
+  }).join('');
+  document.getElementById('dash-summary').innerHTML='<table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Area</th><th>Payment</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+function renderRoute(){
+  var stops=[
+    {seq:1,type:'pickup',icon:'🏭',name:'FreshCart Foods Warehouse',addr:'Warehouse 3, MIDC Andheri East, Mumbai 400093',note:'Collect 3 orders · Contact Kiran +91 98200 12345',color:'var(--al)'},
+    {seq:2,type:'delivery',icon:'🛵',name:'Priya Mehta · #ORD-8821',addr:'Flat 12A, Sea View Apts, Bandra West, Mumbai 400050',note:'Prepaid · 3 items',color:'var(--tl)'},
+    {seq:3,type:'delivery',icon:'🛵',name:'Fatima Khan · #ORD-8823',addr:'8/B, Palm Grove, Santacruz West, Mumbai 400054',note:'Prepaid · 2 items',color:'var(--tl)'},
+    {seq:4,type:'delivery',icon:'🛵',name:'Ravi Kumar · #ORD-8820',addr:'Flat 4B, Sunrise Apts, Baner Rd, Pune 411045',note:'Prepaid · 5 items',color:'var(--gl)'},
+    {seq:5,type:'delivery',icon:'🛵',name:'Amit Sharma · #ORD-8824',addr:'23, Yari Rd, Versova, Andheri West, Mumbai 400061',note:'COD ₹450 · 5 items',color:'var(--vl)'}
+  ];
+  var html='<div style="position:relative">';
+  stops.forEach(function(s,i){
+    html+='<div style="display:flex;gap:14px;margin-bottom:'+(i<stops.length-1?'0':'0')+'px;align-items:flex-start">';
+    html+='<div style="display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0">';
+    html+='<div style="width:28px;height:28px;border-radius:50%;background:'+s.color+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--ink);flex-shrink:0">'+s.seq+'</div>';
+    if(i<stops.length-1) html+='<div style="width:2px;height:32px;background:var(--bdr);margin-top:4px"></div>';
+    html+='</div>';
+    html+='<div style="padding-bottom:24px;flex:1"><div style="font-size:12px;font-weight:700;margin-bottom:3px">'+s.icon+' '+s.name+'</div><div style="font-size:11px;color:var(--sll);margin-bottom:3px">'+s.addr+'</div><div style="font-size:11px;color:var(--sll)">'+s.note+'</div></div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  document.getElementById('route-card').innerHTML=html;
+}
+
+function renderPickups(){
+  var tbl='';
+  PICKUPS.forEach(function(p){
+    var badge=p.status==='collected'?'<span class="badge badge-g">✓ Collected</span>':'<span class="badge badge-a">Pending</span>';
+    var btn=p.status==='collected'?'':'<button class="action-btn" onclick="markPickupCollected(\''+p.id+'\')">✓ Collected</button>';
+    tbl+='<tr><td><strong>#'+p.id+'</strong></td><td style="color:var(--sll)">'+p.items+'</td><td>'+p.cust+'</td><td>'+p.area+'</td><td>'+(p.cod?'COD ₹'+p.cod:'<span style="color:var(--gl)">Prepaid</span>')+'</td><td>'+badge+'</td><td>'+btn+'</td></tr>';
+  });
+  document.getElementById('pickup-tbl').innerHTML=tbl;
+  document.getElementById('pickup-count').textContent=PICKUPS.length;
+}
+function markPickupCollected(id){
+  var p=PICKUPS.find(function(x){return x.id===id;});
+  if(p)p.status='collected';
+  renderPickups();
+  showToast('📦 #'+id+' marked as collected');
+}
+function confirmAllPickups(){
+  PICKUPS.forEach(function(p){p.status='collected';});
+  // Move to active
+  PICKUPS.forEach(function(p){
+    if(!ACTIVE.find(function(a){return a.id===p.id;})){
+      ACTIVE.push({id:p.id,items:p.items,cust:p.cust,phone:'+91 90000 00000',addr:'Customer address',area:p.area,cod:p.cod,attempt:1,status:'active'});
+    }
+  });
+  renderPickups();
+  document.getElementById('pickup-pill').style.display='none';
+  document.getElementById('active-pill').textContent=ACTIVE.length;
+  showToast('✅ All pickups confirmed — head to first delivery stop');
+}
+
+function renderActiveDeliveries(){
+  var html='';
+  if(!ACTIVE.length){html='<div class="card"><p style="color:var(--sll);font-size:12px;text-align:center;padding:20px">No active deliveries — collect pickups first.</p></div>';document.getElementById('active-delivery-list').innerHTML=html;return;}
+  ACTIVE.forEach(function(o){
+    html+='<div class="delivery-card"><div class="dc-hdr"><div><div class="dc-id">🛵 #'+o.id+' · '+o.cust+'</div><div style="font-size:11px;color:var(--sll)">'+o.items+' · '+(o.cod?'COD ₹'+o.cod:'Prepaid')+'</div></div><span class="badge badge-a">Attempt '+o.attempt+'</span></div>';
+    html+='<div class="dc-addr">📍 '+o.addr+'</div>';
+    html+='<div class="dc-meta"><span>📞 <strong>'+o.phone+'</strong></span> <span>🏘 <strong>'+o.area+'</strong></span></div>';
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-success btn-sm" onclick="openDeliver(\''+o.id+'\')">✅ Mark Delivered</button><button class="btn btn-ghost btn-sm" onclick="alert(\'Calling '+o.phone+'\')"">📞 Call customer</button><button class="btn btn-danger btn-sm" onclick="openFailed(\''+o.id+'\')">❌ Report failed</button><button class="btn btn-ghost btn-sm" onclick="alert(\'Navigate to address\')">📍 Navigate</button></div>';
+    html+='</div>';
+  });
+  document.getElementById('active-delivery-list').innerHTML=html;
+}
+
+function openDeliver(id){
+  activeTarget=ACTIVE.find(function(x){return x.id===id;});
+  if(!activeTarget)return;
+  document.getElementById('deliver-info').textContent='Order #'+activeTarget.id+' · '+activeTarget.cust+' · '+activeTarget.items;
+  document.getElementById('deliver-address').innerHTML='📍 '+activeTarget.addr+(activeTarget.cod?'<br><strong style="color:var(--al)">💵 COD: ₹'+activeTarget.cod+' — collect before handing over</strong>':'');
+  document.getElementById('deliver-otp').value='';
+  document.getElementById('modal-deliver').classList.add('open');
+}
+function confirmDelivery(){
+  var otp=document.getElementById('deliver-otp').value.trim();
+  if(!otp){alert('Enter the 4-digit OTP from the customer');return;}
+  if(!activeTarget)return;
+  activeTarget.status='done';
+  ACTIVE=ACTIVE.filter(function(x){return x.id!==activeTarget.id;});
+  deliveredCount++;
+  todayEarnings+=80+Math.floor(Math.random()*40);
+  closeModal('modal-deliver');
+  renderActiveDeliveries();
+  renderDashboard();
+  document.getElementById('active-pill').textContent=ACTIVE.length;
+  showToast('✅ #'+activeTarget.id+' delivered to '+activeTarget.cust+' · ₹80 earned');
+}
+
+function openFailed(id){
+  failTarget=ACTIVE.find(function(x){return x.id===id;});
+  if(!failTarget)return;
+  document.getElementById('failed-info').textContent='Order #'+failTarget.id+' · '+failTarget.cust+' · Attempt '+failTarget.attempt;
+  document.getElementById('modal-failed').classList.add('open');
+}
+function submitFailed(){
+  if(!failTarget)return;
+  var reason=document.getElementById('fail-reason').value;
+  var reattempt=document.getElementById('fail-reattempt').value;
+  failTarget.status='failed';
+  failTarget.reason=reason;
+  failTarget.next=reattempt;
+  failTarget.attempt++;
+  if(failTarget.attempt>3){
+    ACTIVE=ACTIVE.filter(function(x){return x.id!==failTarget.id;});
+    FAILED_ORDERS.push(failTarget);
+    document.getElementById('failed-pill').textContent=FAILED_ORDERS.length;
+    closeModal('modal-failed');
+    showToast('⚠️ #'+failTarget.id+' — 3 failed attempts. Auto-escalated to Support.');
+  } else {
+    closeModal('modal-failed');
+    showToast('❌ Failed delivery logged · Reattempt scheduled: '+reattempt);
+  }
+  renderActiveDeliveries();
+  renderDashboard();
+}
+function renderFailed(){
+  var html='';
+  if(!FAILED_ORDERS.length){html='<div class="card"><p style="color:var(--sll);font-size:12px;text-align:center;padding:20px">No failed deliveries. 🎉</p></div>';document.getElementById('failed-list').innerHTML=html;return;}
+  FAILED_ORDERS.forEach(function(o){
+    html+='<div class="delivery-card"><div class="dc-hdr"><div><div class="dc-id">❌ #'+o.id+' · '+o.cust+'</div><div style="font-size:11px;color:var(--sll)">Attempt '+o.attempt+' · '+o.reason+'</div></div><span class="badge badge-r">Failed</span></div>';
+    html+='<div class="dc-addr">📍 '+o.addr+'</div>';
+    html+='<div class="dc-meta"><span>📞 <strong>'+o.phone+'</strong></span></div>';
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-amber btn-sm" onclick="openDeliver(\''+o.id+'\')">🔄 Reattempt now</button><button class="btn btn-ghost btn-sm" onclick="alert(\'Calling '+o.phone+'\')"">📞 Call customer</button><button class="btn btn-danger btn-sm" onclick="alert(\'Escalated to Support\')">🆘 Escalate</button></div>';
+    html+='</div>';
+  });
+  document.getElementById('failed-list').innerHTML=html;
+}
+function confirmReturn(id){
+  if(confirm('Mark #'+id+' as returned to vendor?')){showToast('↩️ #'+id+' returned to vendor — logged in system');}
+}
+
+window.onload=function(){renderDashboard();renderRoute();};
+</script>
+</body>
+</html>
+
+</body></html>

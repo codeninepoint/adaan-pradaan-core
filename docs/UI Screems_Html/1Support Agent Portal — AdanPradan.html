@@ -1,0 +1,672 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Support Agent Portal — AdanPradan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--or:#f97316;--orl:#fb923c;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:240px 1fr;grid-template-rows:52px 1fr;height:100vh}
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:12px}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.badge-sa{background:rgba(139,92,246,.12);color:var(--vl);border:1px solid rgba(139,92,246,.3)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--v),var(--t));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(139,92,246,.08);border-left-color:var(--vl)}
+.nav-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.main{overflow-y:auto;scrollbar-width:thin}
+.page{display:none;padding:24px 28px 48px;max-width:1160px;animation:fadein .18s ease}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.stat-val{font-size:26px;font-weight:800;letter-spacing:-.04em}
+.stat-lbl{font-size:11px;color:var(--sll)}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-or{background:rgba(249,115,22,.1);color:var(--orl);border-color:rgba(249,115,22,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.cr{cursor:pointer}.tbl tr.cr:hover td{background:rgba(255,255,255,.02)}
+.action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;font-weight:600}
+.action-btn:hover{border-color:var(--vl);color:var(--vl)}
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--vl);color:var(--ink)}.btn-primary:hover{background:var(--v)}
+.btn-success{background:var(--gl);color:var(--ink)}.btn-success:hover{opacity:.9}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-amber{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--al)}.btn-amber:hover{background:rgba(245,158,11,.2)}
+.btn-purple{background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:var(--vl)}.btn-purple:hover{background:rgba(139,92,246,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-g{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.2);color:#a7f3d0}
+.alert-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:#fde68a}
+.alert-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:#fecaca}
+.alert-t{background:rgba(14,165,233,.07);border-color:rgba(14,165,233,.2);color:#bae6fd}
+.alert-v{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.2);color:#ddd6fe}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr);border-radius:14px;width:100%;max-width:600px;padding:24px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:800}
+.modal-close{background:transparent;border:none;color:var(--sll);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close:hover{color:var(--w)}
+.inp{width:100%;padding:9px 12px;background:var(--card2);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:13px;margin-bottom:12px}
+.inp:focus{outline:none;border-color:var(--vl)}
+label.lbl{font-size:11px;color:var(--sll);font-weight:700;display:block;margin-bottom:5px}
+.sep{height:1px;background:var(--bdr);margin:14px 0}
+.ticket-row{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .12s}
+.ticket-row:hover{background:rgba(255,255,255,.02)}
+.ticket-row:last-child{border-bottom:none}
+.ticket-pri{width:4px;border-radius:2px 0 0 2px;align-self:stretch;flex-shrink:0}
+.ticket-body{flex:1;padding:12px 14px}
+.ticket-id{font-size:10px;color:var(--sll);font-weight:700;margin-bottom:3px}
+.ticket-subject{font-size:12px;font-weight:700;margin-bottom:4px}
+.ticket-meta{font-size:10px;color:var(--sll)}
+.ticket-right{padding:12px 14px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tl-body{flex:1}
+.tl-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.tl-meta{font-size:11px;color:var(--sll)}
+.filter-bar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:7px 12px;background:var(--card);border:1px solid var(--bdr);color:var(--w);border-radius:8px;font-family:inherit;font-size:12px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;font-size:12px;font-weight:600;z-index:9999;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:fadein .2s ease}
+.kv{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.kv:last-child{border-bottom:none}
+.kv-k{color:var(--sll)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">Adan<span>Pradan</span></div>
+  <span class="tb-badge badge-sa">🎧 Support Agent</span>
+  <div class="tb-sep"></div>
+  <div class="tb-right">
+    <div class="tb-stat"><span>Open tickets</span> <strong id="tb-open">8</strong></div>
+    <div class="tb-stat"><span>Resolved today</span> <strong id="tb-resolved">5</strong></div>
+    <div class="tb-stat"><span>Avg resolution</span> <strong>1h 24m</strong></div>
+    <div class="avatar">NP</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="nav-section">Tickets</div>
+  <button class="nav-item active" onclick="nav(this,'dashboard')"><span class="nav-ic">🏠</span><span class="nav-label">Dashboard</span></button>
+  <button class="nav-item" onclick="nav(this,'tickets')"><span class="nav-ic">🎫</span><span class="nav-label">All Tickets</span><span class="nav-pill">8</span></button>
+  <button class="nav-item" onclick="nav(this,'my-tickets')"><span class="nav-ic">👤</span><span class="nav-label">My Tickets</span><span class="nav-pill">3</span></button>
+
+  <div class="nav-section">Order Operations</div>
+  <button class="nav-item" onclick="nav(this,'order-lookup')"><span class="nav-ic">🔍</span><span class="nav-label">Order Lookup</span></button>
+  <button class="nav-item" onclick="nav(this,'disputes')"><span class="nav-ic">⚖️</span><span class="nav-label">Disputes</span><span class="nav-pill">2</span></button>
+  <button class="nav-item" onclick="nav(this,'refunds')"><span class="nav-ic">💸</span><span class="nav-label">Refund Override</span></button>
+
+  <div class="nav-section">Financial</div>
+  <button class="nav-item" onclick="nav(this,'chargebacks')"><span class="nav-ic">🏦</span><span class="nav-label">Chargebacks</span><span class="nav-pill">1</span></button>
+
+  <div class="nav-section">Escalation</div>
+  <button class="nav-item" onclick="nav(this,'escalations')"><span class="nav-ic">🆘</span><span class="nav-label">Escalate to PA</span></button>
+  <button class="nav-item" onclick="nav(this,'sla')"><span class="nav-ic">⏱️</span><span class="nav-label">SLA Monitor</span></button>
+
+  <div class="nav-section">Admin</div>
+  <button class="nav-item" onclick="nav(this,'macros')"><span class="nav-ic">⚡</span><span class="nav-label">Macros & Templates</span></button>
+  <button class="nav-item" onclick="nav(this,'reports')"><span class="nav-ic">📊</span><span class="nav-label">Reports</span></button>
+
+  <div class="sidebar-foot">
+    <div style="font-size:10px;color:var(--sl);margin-bottom:4px">Support Agent</div>
+    <div style="font-size:12px;font-weight:700">Neha Pillai</div>
+    <div style="font-size:11px;color:var(--sll)">Tier 2 · Mumbai team</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page on" id="page-dashboard">
+  <div class="page-hdr"><div><div class="page-title">Support Dashboard</div><div class="page-sub">Thursday, 15 Oct 2026 · Good morning, Neha 👋</div></div>
+    <button class="btn btn-primary btn-sm" onclick="nav(document.querySelector('[onclick*=tickets]'),'tickets')">🎫 View all tickets</button>
+  </div>
+  <div class="grid5" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--rl)">8</div><div class="stat-lbl">Open tickets</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)">2</div><div class="stat-lbl">SLA breached</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)">5</div><div class="stat-lbl">Resolved today</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--vl)">2</div><div class="stat-lbl">Disputes open</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--or)">1</div><div class="stat-lbl">Chargebacks</div></div>
+  </div>
+
+  <div class="alert alert-r"><span class="alert-ic">🚨</span><div><strong>2 tickets have breached SLA</strong> — TKT-1041 (Order dispute, 5h overdue) and TKT-1038 (Chargeback, 2h overdue). Act now or escalate.</div></div>
+
+  <div class="grid2">
+    <!-- Recent tickets -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="card-t" style="padding:14px 20px 0">🎫 Recent tickets</div>
+      <div id="dash-tickets"></div>
+    </div>
+    <!-- Quick actions -->
+    <div>
+      <div class="card">
+        <div class="card-t">⚡ Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav(document.querySelector('[onclick*=order-lookup]'),'order-lookup')">🔍 Look up an order</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start" onclick="openRefundModal()">💸 Issue manual refund</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav(document.querySelector('[onclick*=disputes]'),'disputes')">⚖️ Open order dispute</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start" onclick="openNewTicket()">🎫 Create new ticket</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start" onclick="nav(document.querySelector('[onclick*=escalations]'),'escalations')">🆘 Escalate to Platform Admin</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t">📊 Today's performance</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">Tickets resolved</span><strong>5</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">Avg resolution time</span><strong>1h 24m</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">CSAT score</span><strong style="color:var(--gl)">4.4 ★</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--sll)">Escalations sent</span><strong style="color:var(--al)">1</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALL TICKETS -->
+<div class="page" id="page-tickets">
+  <div class="page-hdr"><div><div class="page-title">🎫 All Tickets</div><div class="page-sub">All open and pending customer support tickets.</div></div>
+    <button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ New ticket</button>
+  </div>
+  <div class="filter-bar">
+    <input type="text" placeholder="Search ticket, order, customer…" oninput="renderTickets()"/>
+    <select onchange="renderTickets()"><option value="">All categories</option><option>Order issue</option><option>Refund request</option><option>Delivery dispute</option><option>Payment issue</option><option>Product complaint</option></select>
+    <select onchange="renderTickets()"><option value="">All priorities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+    <select onchange="renderTickets()"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Waiting</option><option>Escalated</option></select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden" id="ticket-list-card">
+    <div id="ticket-list"></div>
+  </div>
+</div>
+
+<!-- MY TICKETS -->
+<div class="page" id="page-my-tickets">
+  <div class="page-hdr"><div><div class="page-title">👤 My Tickets</div><div class="page-sub">Tickets assigned to you — Neha Pillai.</div></div></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="my-ticket-list"></div>
+  </div>
+</div>
+
+<!-- ORDER LOOKUP -->
+<div class="page" id="page-order-lookup">
+  <div class="page-hdr"><div><div class="page-title">🔍 Order Lookup</div><div class="page-sub">Search any order, customer, or transaction for full context before acting.</div></div></div>
+  <div class="card">
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <input type="text" id="lookup-q" class="inp" style="margin:0;flex:1" placeholder="Enter order ID, customer name, email, or phone…" onkeydown="if(event.key==='Enter')doLookup()"/>
+      <button class="btn btn-primary" onclick="doLookup()">🔍 Search</button>
+    </div>
+    <div id="lookup-result"></div>
+  </div>
+</div>
+
+<!-- DISPUTES -->
+<div class="page" id="page-disputes">
+  <div class="page-hdr"><div><div class="page-title">⚖️ Order Disputes</div><div class="page-sub">Customer vs vendor disputes requiring agent mediation.</div></div></div>
+  <div class="alert alert-r"><span class="alert-ic">⚠️</span><div>Disputes unresolved for more than 48 hours are automatically escalated to Platform Admin.</div></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>Dispute ID</th><th>Order</th><th>Customer</th><th>Vendor</th><th>Issue</th><th>Amount at risk</th><th>Raised</th><th>SLA</th><th>Status</th><th></th></tr></thead>
+    <tbody id="dispute-tbl"></tbody></table>
+  </div>
+</div>
+
+<!-- REFUND OVERRIDE -->
+<div class="page" id="page-refunds">
+  <div class="page-hdr"><div><div class="page-title">💸 Refund Override</div><div class="page-sub">Issue refunds that bypass the vendor — for cases where vendor is unresponsive or at fault.</div></div></div>
+  <div class="alert alert-v"><span class="alert-ic">🛡️</span><div>Refund overrides are logged with your agent ID and reviewed by Platform Admin. Only use when vendor has failed to act within SLA or customer protection policy applies.</div></div>
+  <div class="card">
+    <div class="card-t">💸 Issue manual refund</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <label class="lbl">ORDER ID</label>
+        <input type="text" id="ref-order" class="inp" placeholder="e.g. ORD-8800"/>
+        <label class="lbl">CUSTOMER</label>
+        <input type="text" id="ref-cust" class="inp" placeholder="Customer name (auto-filled on lookup)"/>
+        <label class="lbl">REFUND AMOUNT (₹)</label>
+        <input type="number" id="ref-amt" class="inp" placeholder="e.g. 480"/>
+      </div>
+      <div>
+        <label class="lbl">REFUND METHOD</label>
+        <select id="ref-method" class="inp">
+          <option value="original">Original payment method</option>
+          <option value="wallet">Platform wallet credit (instant)</option>
+          <option value="upi">Direct UPI transfer</option>
+          <option value="bank">Bank transfer (1–2 business days)</option>
+        </select>
+        <label class="lbl">REASON / POLICY</label>
+        <select id="ref-reason" class="inp">
+          <option>Vendor unresponsive > 72h</option>
+          <option>Vendor returned wrong item</option>
+          <option>Product not as described</option>
+          <option>Delivery failed - vendor fault</option>
+          <option>Customer protection policy</option>
+          <option>Goodwill compensation</option>
+        </select>
+        <label class="lbl">INTERNAL NOTES</label>
+        <textarea id="ref-notes" class="inp" rows="3" placeholder="Document your reasoning here…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="submitRefundOverride()">💸 Issue refund override</button>
+      <button class="btn btn-ghost" onclick="alert('Preview email to customer')">📧 Preview notification</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-t">📋 Recent override refunds</div>
+    <table class="tbl"><thead><tr><th>Ref ID</th><th>Order</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Agent</th><th>Date</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>#REF-OV-044</td><td>#ORD-8750</td><td>Rohit Das</td><td>₹380</td><td>Vendor unresponsive > 72h</td><td>Neha P.</td><td>Oct 12</td><td><span class="badge badge-g">✓ Processed</span></td></tr>
+      <tr><td>#REF-OV-043</td><td>#ORD-8721</td><td>Lata Krishnan</td><td>₹1,200</td><td>Wrong item delivered</td><td>Rahul K.</td><td>Oct 10</td><td><span class="badge badge-g">✓ Processed</span></td></tr>
+      <tr><td>#REF-OV-042</td><td>#ORD-8700</td><td>Sunita Rao</td><td>₹240</td><td>Customer protection policy</td><td>Neha P.</td><td>Oct 8</td><td><span class="badge badge-g">✓ Processed</span></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- CHARGEBACKS -->
+<div class="page" id="page-chargebacks">
+  <div class="page-hdr"><div><div class="page-title">🏦 Chargebacks</div><div class="page-sub">Bank-initiated chargebacks requiring evidence submission and response.</div></div></div>
+  <div class="alert alert-r"><span class="alert-ic">🚨</span><div><strong>1 chargeback requires response within 48 hours.</strong> Bank dispute reference: #CB-2024-1019. Submit evidence by Oct 17, 2026.</div></div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>CB Reference</th><th>Order</th><th>Customer</th><th>Amount</th><th>Reason</th><th>Bank</th><th>Deadline</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>#CB-2024-1019</td><td>#ORD-8680</td><td>Vikram Nair</td><td>₹3,400</td><td>Goods not received</td><td>HDFC Bank</td><td><span style="color:var(--rl);font-weight:700">Oct 17 🔴</span></td><td><span class="badge badge-r">Action needed</span></td><td><button class="btn btn-danger btn-sm" onclick="openChargebackModal()">📋 Respond</button></td></tr>
+      <tr><td>#CB-2024-1015</td><td>#ORD-8601</td><td>Anjali Shah</td><td>₹1,800</td><td>Duplicate charge</td><td>ICICI Bank</td><td>Oct 22</td><td><span class="badge badge-t">Evidence submitted</span></td><td><button class="action-btn">View</button></td></tr>
+      <tr><td>#CB-2024-1008</td><td>#ORD-8540</td><td>Rajan Mehta</td><td>₹960</td><td>Product not as described</td><td>SBI</td><td>Oct 10</td><td><span class="badge badge-g">Won</span></td><td><button class="action-btn">View</button></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ESCALATIONS -->
+<div class="page" id="page-escalations">
+  <div class="page-hdr"><div><div class="page-title">🆘 Escalate to Platform Admin</div><div class="page-sub">For cases beyond support authority — policy violations, fraud, large refunds, or complex disputes.</div></div></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-t">🆘 Submit escalation</div>
+      <label class="lbl">TICKET / ORDER REFERENCE</label>
+      <input type="text" id="esc-ref" class="inp" placeholder="TKT-xxxx or ORD-xxxx"/>
+      <label class="lbl">ESCALATION TYPE</label>
+      <select id="esc-type" class="inp">
+        <option>Fraud suspected — vendor</option>
+        <option>Fraud suspected — customer</option>
+        <option>High-value dispute (> ₹5,000)</option>
+        <option>Policy violation by vendor</option>
+        <option>Repeated chargeback</option>
+        <option>Account ban request</option>
+        <option>Legal / regulatory matter</option>
+        <option>Other (explain below)</option>
+      </select>
+      <label class="lbl">PRIORITY</label>
+      <select id="esc-priority" class="inp">
+        <option>Critical — needs same-day response</option>
+        <option>High — within 4 hours</option>
+        <option>Medium — within 24 hours</option>
+      </select>
+      <label class="lbl">SUMMARY</label>
+      <textarea id="esc-summary" class="inp" rows="4" placeholder="Briefly explain what happened, what you have tried, and why this needs PA involvement…" style="resize:vertical"></textarea>
+      <div class="btn-row" style="margin:0">
+        <button class="btn btn-danger" onclick="submitEscalation()">🆘 Submit escalation</button>
+        <button class="btn btn-ghost" onclick="alert('Attach supporting files')">📎 Attach files</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">📋 Escalation history</div>
+      <table class="tbl"><thead><tr><th>Ref</th><th>Type</th><th>Submitted</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>TKT-1021</td><td>Vendor fraud</td><td>Oct 8</td><td><span class="badge badge-g">Resolved by PA</span></td></tr>
+        <tr><td>TKT-1005</td><td>High-value dispute</td><td>Sep 30</td><td><span class="badge badge-g">Resolved by PA</span></td></tr>
+        <tr><td>TKT-0988</td><td>Account ban request</td><td>Sep 18</td><td><span class="badge badge-g">Resolved by PA</span></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- SLA MONITOR -->
+<div class="page" id="page-sla">
+  <div class="page-hdr"><div><div class="page-title">⏱️ SLA Monitor</div><div class="page-sub">Tickets approaching or past SLA thresholds.</div></div></div>
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--rl)">2</div><div class="stat-lbl">SLA breached</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)">3</div><div class="stat-lbl">Due in < 2 hours</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)">3</div><div class="stat-lbl">Within SLA</div></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>Ticket</th><th>Category</th><th>Customer</th><th>SLA target</th><th>Time remaining</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>#TKT-1041</td><td>Order dispute</td><td>Vikram Nair</td><td>24h</td><td><span style="color:var(--rl);font-weight:700">−5h 12m (overdue)</span></td><td><span class="badge badge-r">Breached</span></td><td><button class="btn btn-danger btn-sm" onclick="alert('Escalated to PA')">Escalate</button></td></tr>
+      <tr><td>#TKT-1038</td><td>Chargeback</td><td>Anjali Shah</td><td>12h</td><td><span style="color:var(--rl);font-weight:700">−2h 4m (overdue)</span></td><td><span class="badge badge-r">Breached</span></td><td><button class="btn btn-danger btn-sm" onclick="alert('Escalated to PA')">Escalate</button></td></tr>
+      <tr><td>#TKT-1043</td><td>Refund request</td><td>Priya Mehta</td><td>4h</td><td><span style="color:var(--al);font-weight:700">1h 30m</span></td><td><span class="badge badge-a">At risk</span></td><td><button class="action-btn">View</button></td></tr>
+      <tr><td>#TKT-1044</td><td>Product complaint</td><td>Ravi Kumar</td><td>8h</td><td><span style="color:var(--al);font-weight:700">1h 55m</span></td><td><span class="badge badge-a">At risk</span></td><td><button class="action-btn">View</button></td></tr>
+      <tr><td>#TKT-1042</td><td>Delivery issue</td><td>Anjali Verma</td><td>4h</td><td><span style="color:var(--gl)">3h 10m</span></td><td><span class="badge badge-g">OK</span></td><td><button class="action-btn">View</button></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- MACROS -->
+<div class="page" id="page-macros">
+  <div class="page-hdr"><div><div class="page-title">⚡ Macros & Templates</div><div class="page-sub">Canned responses and action macros for common support scenarios.</div></div>
+    <button class="btn btn-primary btn-sm" onclick="alert('Create new macro')">+ New macro</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="tbl"><thead><tr><th>Macro name</th><th>Category</th><th>Action</th><th>Used today</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Order delayed apology</td><td>Delivery</td><td>Send email template</td><td>3</td><td><button class="action-btn">Preview</button></td></tr>
+      <tr><td>Refund confirmation</td><td>Refund</td><td>Send email + issue wallet credit</td><td>2</td><td><button class="action-btn">Preview</button></td></tr>
+      <tr><td>Wrong item — vendor alert</td><td>Product</td><td>Email customer + alert vendor</td><td>1</td><td><button class="action-btn">Preview</button></td></tr>
+      <tr><td>Chargeback evidence pack</td><td>Chargeback</td><td>Compile POD + invoice + tracking</td><td>0</td><td><button class="action-btn">Preview</button></td></tr>
+      <tr><td>Account ban notice</td><td>Policy</td><td>Send ban email + escalate to PA</td><td>0</td><td><button class="action-btn">Preview</button></td></tr>
+      <tr><td>COD collection failure</td><td>Delivery</td><td>Log COD failure + reschedule</td><td>1</td><td><button class="action-btn">Preview</button></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="page-reports">
+  <div class="page-hdr"><div><div class="page-title">📊 Reports</div><div class="page-sub">Support volume, resolution rates, and team performance.</div></div></div>
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="stat-card"><div class="stat-val">41</div><div class="stat-lbl">Tickets this week</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)">88%</div><div class="stat-lbl">Within SLA</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--al)">1h 38m</div><div class="stat-lbl">Avg resolution time</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gl)">4.3 ★</div><div class="stat-lbl">CSAT score</div></div>
+  </div>
+  <div class="card">
+    <div class="card-t">Top issue categories (this month)</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px"><span style="width:120px;font-size:12px">Delivery dispute</span><div style="flex:1;height:8px;background:var(--bdr);border-radius:4px"><div style="width:38%;height:100%;background:var(--rl);border-radius:4px"></div></div><span style="font-size:11px;color:var(--sll);width:30px">38%</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span style="width:120px;font-size:12px">Refund request</span><div style="flex:1;height:8px;background:var(--bdr);border-radius:4px"><div style="width:28%;height:100%;background:var(--al);border-radius:4px"></div></div><span style="font-size:11px;color:var(--sll);width:30px">28%</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span style="width:120px;font-size:12px">Product issue</span><div style="flex:1;height:8px;background:var(--bdr);border-radius:4px"><div style="width:18%;height:100%;background:var(--tl);border-radius:4px"></div></div><span style="font-size:11px;color:var(--sll);width:30px">18%</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span style="width:120px;font-size:12px">Payment issue</span><div style="flex:1;height:8px;background:var(--bdr);border-radius:4px"><div style="width:10%;height:100%;background:var(--vl);border-radius:4px"></div></div><span style="font-size:11px;color:var(--sll);width:30px">10%</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span style="width:120px;font-size:12px">Other</span><div style="flex:1;height:8px;background:var(--bdr);border-radius:4px"><div style="width:6%;height:100%;background:var(--sl);border-radius:4px"></div></div><span style="font-size:11px;color:var(--sll);width:30px">6%</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MODALS -->
+<!-- Ticket detail modal -->
+<div class="modal-overlay" id="modal-ticket" onclick="if(event.target===this)closeModal('modal-ticket')">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-hdr"><div class="modal-title" id="modal-t-title">Ticket</div><button class="modal-close" onclick="closeModal('modal-ticket')">✕</button></div>
+    <div id="modal-t-body"></div>
+  </div>
+</div>
+
+<!-- Refund override modal -->
+<div class="modal-overlay" id="modal-refund-quick" onclick="if(event.target===this)closeModal('modal-refund-quick')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hdr"><div class="modal-title">💸 Quick Refund Override</div><button class="modal-close" onclick="closeModal('modal-refund-quick')">✕</button></div>
+    <label class="lbl">ORDER ID</label><input type="text" id="qr-order" class="inp" placeholder="ORD-xxxx"/>
+    <label class="lbl">REFUND AMOUNT (₹)</label><input type="number" id="qr-amt" class="inp" placeholder="e.g. 480"/>
+    <label class="lbl">REASON</label>
+    <select id="qr-reason" class="inp"><option>Vendor unresponsive > 72h</option><option>Wrong item</option><option>Customer protection policy</option><option>Goodwill</option></select>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-refund-quick')">Cancel</button>
+      <button class="btn btn-success" style="flex:1" onclick="quickRefund()">💸 Issue refund</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chargeback modal -->
+<div class="modal-overlay" id="modal-chargeback" onclick="if(event.target===this)closeModal('modal-chargeback')">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hdr"><div class="modal-title">🏦 Respond to Chargeback #CB-2024-1019</div><button class="modal-close" onclick="closeModal('modal-chargeback')">✕</button></div>
+    <div class="alert alert-r" style="margin-bottom:16px"><span class="alert-ic">🚨</span><div>Deadline: <strong>Oct 17, 2026</strong> · ₹3,400 at risk · HDFC Bank</div></div>
+    <label class="lbl">EVIDENCE TO SUBMIT</label>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox" checked/> Order confirmation email</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox" checked/> Delivery tracking (AWB: DV98234501)</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox" checked/> Proof of delivery photo</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox"/> Customer communication log</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px"><input type="checkbox"/> Signed delivery receipt</label>
+    </div>
+    <label class="lbl">REBUTTAL NOTES</label>
+    <textarea class="inp" rows="4" placeholder="Explain why the chargeback is invalid, citing evidence above…" style="resize:vertical"></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-chargeback')">Cancel</button>
+      <button class="btn btn-danger" style="flex:1" onclick="closeModal('modal-chargeback');showToast('📋 Chargeback response submitted to HDFC Bank')">📤 Submit to bank</button>
+    </div>
+  </div>
+</div>
+
+<!-- New ticket modal -->
+<div class="modal-overlay" id="modal-new-ticket" onclick="if(event.target===this)closeModal('modal-new-ticket')">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hdr"><div class="modal-title">🎫 Create New Ticket</div><button class="modal-close" onclick="closeModal('modal-new-ticket')">✕</button></div>
+    <label class="lbl">CUSTOMER</label><input type="text" id="nt-cust" class="inp" placeholder="Customer name or email"/>
+    <label class="lbl">ORDER ID (if applicable)</label><input type="text" id="nt-order" class="inp" placeholder="ORD-xxxx"/>
+    <label class="lbl">CATEGORY</label>
+    <select id="nt-cat" class="inp"><option>Delivery dispute</option><option>Refund request</option><option>Product complaint</option><option>Payment issue</option><option>Other</option></select>
+    <label class="lbl">PRIORITY</label>
+    <select id="nt-pri" class="inp"><option>Medium</option><option>High</option><option>Critical</option><option>Low</option></select>
+    <label class="lbl">SUBJECT</label><input type="text" id="nt-sub" class="inp" placeholder="Brief summary of the issue"/>
+    <label class="lbl">DESCRIPTION</label>
+    <textarea id="nt-desc" class="inp" rows="4" placeholder="Full details of the issue…" style="resize:vertical"></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-new-ticket')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="createTicket()">🎫 Create ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+var TICKETS=[
+  {id:'TKT-1041',cust:'Vikram Nair',order:'ORD-8680',cat:'Order dispute',subject:'Order shows delivered but not received',priority:'Critical',status:'Open',assigned:'Neha P.',created:'Oct 10',sla:'Breached'},
+  {id:'TKT-1042',cust:'Anjali Verma',order:'ORD-8800',cat:'Delivery dispute',subject:'Wrong item delivered — requested refund',priority:'High',status:'In progress',assigned:'Neha P.',created:'Oct 14',sla:'OK'},
+  {id:'TKT-1043',cust:'Priya Mehta',order:'ORD-8821',cat:'Refund request',subject:'Return approved but refund not received',priority:'High',status:'Open',assigned:'Rahul K.',created:'Oct 15',sla:'At risk'},
+  {id:'TKT-1044',cust:'Ravi Kumar',order:'ORD-8820',cat:'Product complaint',subject:'Milk delivered near expiry date',priority:'Medium',status:'Open',assigned:'Neha P.',created:'Oct 15',sla:'At risk'},
+  {id:'TKT-1045',cust:'Sneha Patel',order:'ORD-8819',cat:'Payment issue',subject:'Charged twice for same order',priority:'High',status:'Open',assigned:'Rahul K.',created:'Oct 15',sla:'OK'},
+  {id:'TKT-1038',cust:'Anjali Shah',order:'ORD-8601',cat:'Chargeback',subject:'Chargeback filed - duplicate charge',priority:'Critical',status:'Escalated',assigned:'Neha P.',created:'Oct 12',sla:'Breached'},
+  {id:'TKT-1040',cust:'Amit Sharma',order:'ORD-8824',cat:'Delivery dispute',subject:'Delivery partner rude and unprofessional',priority:'Low',status:'Waiting',assigned:'Rahul K.',created:'Oct 13',sla:'OK'},
+  {id:'TKT-1039',cust:'Deepa Nair',order:'ORD-8825',cat:'Order issue',subject:'Order cancelled by vendor without notice',priority:'Medium',status:'Open',assigned:'—',created:'Oct 13',sla:'OK'}
+];
+var DISPUTES=[
+  {id:'DSP-088',order:'ORD-8680',cust:'Vikram Nair',vendor:'FreshCart Foods',issue:'Customer claims non-delivery; vendor has POD',amount:'₹3,400',raised:'Oct 10',sla:'Breached ❌',status:'open'},
+  {id:'DSP-089',order:'ORD-8760',cust:'Sunita Rao',vendor:'Organic Valley',issue:'Product not as described — claims organic but not certified',amount:'₹1,200',raised:'Oct 13',sla:'22h left',status:'open'}
+];
+
+function nav(el,page){
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active')});
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  var pg=document.getElementById('page-'+page);
+  if(pg){pg.classList.add('on');onPageLoad(page);}
+}
+function onPageLoad(p){
+  if(p==='dashboard')renderDashboard();
+  if(p==='tickets')renderTickets();
+  if(p==='my-tickets')renderMyTickets();
+  if(p==='disputes')renderDisputes();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},3200);}
+
+var PRI_COLOR={Critical:'var(--rl)',High:'var(--al)',Medium:'var(--tl)',Low:'var(--sll)'};
+var SLA_BADGE={Breached:'<span class="badge badge-r">SLA breached</span>','At risk':'<span class="badge badge-a">SLA at risk</span>',OK:'<span class="badge badge-g">Within SLA</span>'};
+var STATUS_BADGE={Open:'<span class="badge badge-a">Open</span>','In progress':'<span class="badge badge-t">In progress</span>',Waiting:'<span class="badge badge-v">Waiting</span>',Escalated:'<span class="badge badge-r">Escalated</span>',Resolved:'<span class="badge badge-g">Resolved</span>'};
+
+function ticketRow(t){
+  return '<div class="ticket-row" onclick="openTicket(\''+t.id+'\')">'
+    +'<div class="ticket-pri" style="background:'+PRI_COLOR[t.priority]+'"></div>'
+    +'<div class="ticket-body"><div class="ticket-id">#'+t.id+' · '+t.cat+' · '+t.order+'</div>'
+    +'<div class="ticket-subject">'+t.subject+'</div>'
+    +'<div class="ticket-meta">'+t.cust+' · Created '+t.created+' · Assigned: '+t.assigned+'</div></div>'
+    +'<div class="ticket-right">'+STATUS_BADGE[t.status]+SLA_BADGE[t.sla||'OK']+'</div></div>';
+}
+function renderDashboard(){
+  document.getElementById('dash-tickets').innerHTML=TICKETS.slice(0,5).map(ticketRow).join('');
+}
+function renderTickets(){
+  document.getElementById('ticket-list').innerHTML=TICKETS.map(ticketRow).join('');
+}
+function renderMyTickets(){
+  var mine=TICKETS.filter(function(t){return t.assigned==='Neha P.';});
+  document.getElementById('my-ticket-list').innerHTML=mine.map(ticketRow).join('');
+}
+function openTicket(id){
+  var t=TICKETS.find(function(x){return x.id===id;});
+  if(!t)return;
+  document.getElementById('modal-t-title').textContent='🎫 '+t.id+' — '+t.subject;
+  var html='<div class="grid2" style="margin-bottom:14px"><div class="card" style="margin:0"><div class="card-t">📋 Details</div>'
+    +'<div class="kv"><span class="kv-k">Customer</span><span>'+t.cust+'</span></div>'
+    +'<div class="kv"><span class="kv-k">Order</span><span>'+t.order+'</span></div>'
+    +'<div class="kv"><span class="kv-k">Category</span><span>'+t.cat+'</span></div>'
+    +'<div class="kv"><span class="kv-k">Priority</span><span style="color:'+PRI_COLOR[t.priority]+'">'+t.priority+'</span></div>'
+    +'<div class="kv"><span class="kv-k">Status</span>'+STATUS_BADGE[t.status]+'</div>'
+    +'<div class="kv"><span class="kv-k">SLA</span>'+SLA_BADGE[t.sla||'OK']+'</div>'
+    +'<div class="kv"><span class="kv-k">Assigned</span><span>'+t.assigned+'</span></div>'
+    +'</div>'
+    +'<div class="card" style="margin:0"><div class="card-t">⚡ Actions</div>'
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +'<button class="btn btn-success btn-sm" onclick="resolveTicket(\''+t.id+'\')">✅ Mark Resolved</button>'
+    +'<button class="btn btn-amber btn-sm" onclick="openRefundModal()">💸 Issue refund</button>'
+    +'<button class="btn btn-danger btn-sm" onclick="closeModal(\'modal-ticket\');showToast(\'🆘 Escalated to Platform Admin\')">🆘 Escalate to PA</button>'
+    +'<button class="btn btn-ghost btn-sm" onclick="alert(\'Reply sent to customer\')">📧 Reply to customer</button>'
+    +'</div></div></div>'
+    +'<div class="card"><div class="card-t">💬 Conversation & notes</div><div style="display:flex;flex-direction:column;gap:10px">'
+    +'<div style="background:var(--card2);padding:10px 12px;border-radius:8px;font-size:12px"><div style="font-weight:700;margin-bottom:4px">'+t.cust+' (Customer) · '+t.created+'</div><div style="color:var(--sll)">'+t.subject+' — Please resolve urgently.</div></div>'
+    +'<div style="background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.15);padding:10px 12px;border-radius:8px;font-size:12px"><div style="font-weight:700;margin-bottom:4px;color:var(--vl)">Neha P. (Support) · '+t.created+'</div><div style="color:var(--sll)">Looking into this. Contacted vendor for details.</div></div>'
+    +'</div>'
+    +'<textarea class="inp" style="margin-top:12px" rows="3" placeholder="Add a note or reply…"></textarea>'
+    +'<div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="showToast(\'📝 Internal note added\')">📝 Add internal note</button><button class="btn btn-primary btn-sm" onclick="showToast(\'📧 Reply sent to customer\')">📧 Send reply</button></div>'
+    +'</div>';
+  document.getElementById('modal-t-body').innerHTML=html;
+  document.getElementById('modal-ticket').classList.add('open');
+}
+function resolveTicket(id){
+  var t=TICKETS.find(function(x){return x.id===id;});
+  if(t)t.status='Resolved';
+  closeModal('modal-ticket');
+  renderTickets();renderMyTickets();renderDashboard();
+  showToast('✅ Ticket #'+id+' marked as resolved');
+}
+function renderDisputes(){
+  var tbl='';
+  DISPUTES.forEach(function(d){
+    var badge=d.status==='open'?'<span class="badge badge-r">Open</span>':'<span class="badge badge-g">Resolved</span>';
+    tbl+='<tr><td><strong>#'+d.id+'</strong></td><td>#'+d.order+'</td><td>'+d.cust+'</td><td>'+d.vendor+'</td><td style="color:var(--sll)">'+d.issue+'</td><td><strong style="color:var(--al)">'+d.amount+'</strong></td><td>'+d.raised+'</td><td style="color:var(--rl);font-size:11px">'+d.sla+'</td><td>'+badge+'</td><td><button class="btn btn-purple btn-sm" onclick="resolveDispute(\''+d.id+'\')">⚖️ Mediate</button></td></tr>';
+  });
+  document.getElementById('dispute-tbl').innerHTML=tbl;
+}
+function resolveDispute(id){
+  var d=DISPUTES.find(function(x){return x.id===id;});
+  if(!d)return;
+  var decision=prompt('Dispute #'+d.id+'\nCustomer: '+d.cust+' · Vendor: '+d.vendor+'\nIssue: '+d.issue+'\n\nEnter your decision (or cancel):','Refund approved — vendor at fault');
+  if(decision){d.status='resolved';renderDisputes();showToast('⚖️ Dispute #'+id+' resolved: '+decision);}
+}
+function openRefundModal(){
+  closeModal('modal-ticket');
+  document.getElementById('modal-refund-quick').classList.add('open');
+}
+function quickRefund(){
+  var order=document.getElementById('qr-order').value.trim();
+  var amt=document.getElementById('qr-amt').value;
+  if(!order||!amt){alert('Enter order ID and amount');return;}
+  closeModal('modal-refund-quick');
+  showToast('💸 Refund of ₹'+amt+' issued for '+order+' — logged under your agent ID');
+}
+function submitRefundOverride(){
+  var order=document.getElementById('ref-order').value.trim();
+  var amt=document.getElementById('ref-amt').value;
+  if(!order||!amt){alert('Enter order ID and amount');return;}
+  showToast('💸 Refund override of ₹'+amt+' for '+order+' submitted — pending PA review');
+}
+function openChargebackModal(){
+  document.getElementById('modal-chargeback').classList.add('open');
+}
+function submitEscalation(){
+  var ref=document.getElementById('esc-ref').value.trim();
+  var type=document.getElementById('esc-type').value;
+  if(!ref){alert('Enter a ticket or order reference');return;}
+  showToast('🆘 Escalation for '+ref+' ('+type+') submitted to Platform Admin');
+}
+function openNewTicket(){closeModal('modal-ticket');document.getElementById('modal-new-ticket').classList.add('open');}
+function createTicket(){
+  var sub=document.getElementById('nt-sub').value.trim();
+  if(!sub){alert('Enter a subject');return;}
+  var newId='TKT-'+(1046+TICKETS.length);
+  TICKETS.unshift({id:newId,cust:document.getElementById('nt-cust').value||'Unknown',order:document.getElementById('nt-order').value||'—',cat:document.getElementById('nt-cat').value,subject:sub,priority:document.getElementById('nt-pri').value,status:'Open',assigned:'Neha P.',created:'Oct 15',sla:'OK'});
+  closeModal('modal-new-ticket');
+  renderTickets();renderDashboard();
+  showToast('🎫 '+newId+' created and assigned to you');
+}
+function doLookup(){
+  var q=document.getElementById('lookup-q').value.trim();
+  if(!q){return;}
+  var t=TICKETS.find(function(x){return x.order.toLowerCase().includes(q.toLowerCase())||x.cust.toLowerCase().includes(q.toLowerCase());});
+  var html='';
+  if(t){
+    html='<div class="alert alert-g"><span class="alert-ic">✓</span><div>Found order <strong>'+t.order+'</strong> — Customer: <strong>'+t.cust+'</strong></div></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'
+      +'<div class="card" style="margin:0"><div class="card-t">📦 Order details</div>'
+      +'<div class="kv"><span class="kv-k">Order ID</span><span>'+t.order+'</span></div>'
+      +'<div class="kv"><span class="kv-k">Customer</span><span>'+t.cust+'</span></div>'
+      +'<div class="kv"><span class="kv-k">Status</span><span class="badge badge-g">Delivered</span></div>'
+      +'<div class="kv"><span class="kv-k">Amount</span><span>₹3,400</span></div>'
+      +'<div class="kv"><span class="kv-k">Vendor</span><span>FreshCart Foods</span></div>'
+      +'<div class="kv"><span class="kv-k">Delivery</span><span>Oct 13, 2026</span></div>'
+      +'</div>'
+      +'<div class="card" style="margin:0"><div class="card-t">🎫 Related ticket</div>'
+      +'<div style="font-size:12px;margin-bottom:8px"><strong>#'+t.id+'</strong> — '+t.subject+'</div>'
+      +STATUS_BADGE[t.status]+'<div class="btn-row"><button class="btn btn-primary btn-sm" onclick="openTicket(\''+t.id+'\')">View ticket</button><button class="btn btn-amber btn-sm" onclick="openRefundModal()">💸 Issue refund</button></div>'
+      +'</div></div>';
+  } else {
+    html='<div class="alert alert-a"><span class="alert-ic">⚠️</span><div>No exact match for "<strong>'+q+'</strong>". Try the order ID format ORD-xxxx.</div></div>';
+  }
+  document.getElementById('lookup-result').innerHTML=html;
+}
+window.onload=function(){renderDashboard();};
+</script>
+</body>
+</html>
+
+</body></html>

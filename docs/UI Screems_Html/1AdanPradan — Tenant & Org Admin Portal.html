@@ -1,0 +1,1294 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AdanPradan — Tenant & Org Admin Portal</title>
+<style>
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2336;--border:#2a2f45;
+  --tl:#38bdf8;--gl:#34d399;--al:#fbbf24;--rl:#f87171;--vl:#a78bfa;--pl:#fb923c;
+  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;
+  --rad:10px;--rad-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',system-ui,sans-serif;font-size:14px;min-height:100vh;display:flex}
+.sidebar{width:230px;min-height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.logo-mark{font-size:18px;font-weight:800;color:var(--tl)}
+.logo-sub{font-size:10px;color:var(--txt3);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+.logo-tenant{display:flex;align-items:center;gap:8px;margin-top:10px;background:var(--card2);padding:8px 10px;border-radius:var(--rad-sm);cursor:pointer}
+.tenant-avatar{width:28px;height:28px;border-radius:6px;background:#38bdf822;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--tl)}
+.tenant-name{font-size:12px;font-weight:600;flex:1}
+.tenant-plan{font-size:10px;color:var(--gl);background:#34d39922;padding:2px 6px;border-radius:4px}
+.nav-section{padding:12px 8px 4px;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 4px;border-radius:var(--rad-sm);cursor:pointer;color:var(--txt2);transition:all .15s;font-size:13px}
+.nav-item:hover{background:var(--card2);color:var(--txt)}
+.nav-item.active{background:#38bdf822;color:var(--tl);font-weight:600}
+.nav-badge{margin-left:auto;background:var(--al);color:#000;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700}
+.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid var(--border);font-size:11px;color:var(--txt3)}
+.sidebar-footer strong{color:var(--vl);display:block;font-size:12px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--card);flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;flex:1}
+.topbar-breadcrumb{font-size:12px;color:var(--txt3)}
+.topbar-actions{display:flex;gap:8px}
+.content{flex:1;overflow-y:auto;padding:24px}
+.page{display:none}.page.active{display:block}
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:16px}
+.stat-val{font-size:28px;font-weight:800;line-height:1}
+.stat-lbl{font-size:11px;color:var(--txt3);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.stat-delta{font-size:11px;margin-top:6px}
+.col-t{color:var(--tl)}.col-g{color:var(--gl)}.col-a{color:var(--al)}.col-r{color:var(--rl)}.col-v{color:var(--vl)}.col-p{color:var(--pl)}.col-txt3{color:var(--txt3)}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+/* Table */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:10px 12px;color:var(--txt3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;border-bottom:1px solid var(--border)}
+.tbl td{padding:11px 12px;border-bottom:1px solid #1e2336;vertical-align:middle}
+.tbl tr:hover td{background:#1a1f2e}
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:#34d39922;color:var(--gl)}
+.badge-pending{background:#fbbf2422;color:var(--al)}
+.badge-inactive{background:#64748b22;color:var(--txt3)}
+.badge-admin{background:#a78bfa22;color:var(--vl)}
+.badge-member{background:#38bdf822;color:var(--tl)}
+.badge-viewer{background:#fb923c22;color:var(--pl)}
+.badge-done{background:#34d39922;color:var(--gl)}
+.badge-progress{background:#38bdf822;color:var(--tl)}
+.badge-locked{background:#f8717122;color:var(--rl)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--rad-sm);border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
+.btn-primary{background:var(--tl);color:#000}.btn-primary:hover{filter:brightness(1.1)}
+.btn-success{background:var(--gl);color:#000}
+.btn-danger{background:var(--rl);color:#fff}
+.btn-ghost{background:transparent;color:var(--txt2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--card2);color:var(--txt)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-v{background:var(--vl);color:#000}
+/* Forms */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
+.form-row-3{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-label{font-size:12px;color:var(--txt2);font-weight:500}
+.form-input{background:var(--card2);border:1px solid var(--border);border-radius:var(--rad-sm);color:var(--txt);padding:8px 12px;font-size:13px;outline:none;transition:border .15s;width:100%}
+.form-input:focus{border-color:var(--tl)}
+select.form-input option{background:var(--card2)}
+textarea.form-input{resize:vertical}
+/* Alert */
+.alert{padding:12px 16px;border-radius:var(--rad-sm);font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px}
+.alert-g{background:#34d39922;border:1px solid #34d39944;color:var(--gl)}
+.alert-a{background:#fbbf2422;border:1px solid #fbbf2444;color:var(--al)}
+.alert-r{background:#f8717122;border:1px solid #f8717144;color:var(--rl)}
+.alert-t{background:#38bdf822;border:1px solid #38bdf844;color:var(--tl)}
+.alert-v{background:#a78bfa22;border:1px solid #a78bfa44;color:var(--vl)}
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:10px 18px;cursor:pointer;color:var(--txt3);font-size:13px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--txt)}.tab.active{color:var(--tl);border-bottom-color:var(--tl);font-weight:600}
+/* Onboarding */
+.onboard-step{display:flex;gap:16px;padding:16px;border:1px solid var(--border);border-radius:var(--rad);margin-bottom:12px;transition:border-color .15s}
+.onboard-step:hover{border-color:var(--tl)}
+.onboard-step.done{border-color:#34d39944;background:#34d39908}
+.onboard-step.active-step{border-color:var(--tl);background:#38bdf808}
+.onboard-step.locked{opacity:.5}
+.step-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.step-body{flex:1}
+.step-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--txt3);line-height:1.5}
+.step-action{margin-top:10px}
+/* Project cards */
+.project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:16px}
+.project-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:16px;transition:border-color .15s;cursor:pointer}
+.project-card:hover{border-color:var(--tl)}
+.pc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pc-icon{font-size:24px}
+.pc-title{font-weight:700;font-size:14px;margin-bottom:3px}
+.pc-desc{font-size:12px;color:var(--txt3);margin-bottom:12px;line-height:1.4}
+.pc-meta{display:flex;gap:12px;font-size:11px;color:var(--txt3)}
+/* Member row */
+.member-row{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
+.member-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.member-info{flex:1}
+.member-name{font-weight:600;font-size:13px}
+.member-email{font-size:11px;color:var(--txt3)}
+/* Realm card */
+.realm-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--rad);padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.realm-icon{font-size:24px;width:44px;height:44px;background:var(--card);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.realm-info{flex:1}
+.realm-name{font-weight:700;font-size:14px}
+.realm-id{font-size:11px;color:var(--txt3);font-family:monospace;margin-top:2px}
+.realm-stats{display:flex;gap:16px;margin-top:6px;font-size:11px;color:var(--txt3)}
+/* Progress bar */
+.progress-wrap{background:var(--card2);border-radius:4px;height:8px;overflow:hidden;margin:6px 0}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:#00000088;display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);width:90%;max-width:640px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px #00000066}
+.modal-box.modal-lg{max-width:820px}.modal-box.modal-sm{max-width:440px}
+.modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--txt3);font-size:20px;cursor:pointer;padding:0 4px}
+.modal-close:hover{color:var(--txt)}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+/* Toast */
+#toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--card2);border:1px solid var(--border);border-radius:var(--rad-sm);padding:12px 16px;font-size:13px;animation:slideIn .2s ease;max-width:320px}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#2a2f45;border-radius:3px}
+/* Settings grid */
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:20px}
+.settings-nav{display:flex;flex-direction:column;gap:2px}
+.settings-nav-item{padding:9px 12px;border-radius:var(--rad-sm);cursor:pointer;color:var(--txt2);font-size:13px;transition:all .15s}
+.settings-nav-item:hover{background:var(--card2);color:var(--txt)}
+.settings-nav-item.active{background:#38bdf822;color:var(--tl);font-weight:600}
+/* Switch */
+.switch{position:relative;display:inline-block;width:40px;height:22px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#2a2f45;border-radius:22px;transition:.3s}
+.slider:before{position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--gl)}
+input:checked+.slider:before{transform:translateX(18px)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-info strong{font-size:13px;display:block;margin-bottom:2px}
+.setting-info span{font-size:12px;color:var(--txt3)}
+/* Chip filter */
+.filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--txt3);font-size:12px;cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--tl);color:var(--tl)}
+.chip.active{background:var(--tl);color:#000;border-color:var(--tl);font-weight:600}
+/* Upgrade banner */
+.upgrade-banner{background:linear-gradient(135deg,#7c3aed22,#a78bfa11);border:1px solid #7c3aed44;border-radius:var(--rad);padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.upgrade-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:#a78bfa11}
+/* Grid 2 */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+/* Meta */
+.meta-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px}
+.meta-key{color:var(--txt3);min-width:130px}
+.meta-val{color:var(--txt);font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">AdanPradan</div>
+    <div class="logo-sub">FairShare Marketplace</div>
+    <div class="logo-tenant" onclick="showPage('t_settings')">
+      <div class="tenant-avatar">N</div>
+      <div class="tenant-name">Ninepoint Demo Org</div>
+      <div class="tenant-plan">Enterprise</div>
+    </div>
+  </div>
+
+  <div class="nav-section">Tenant Admin</div>
+  <div class="nav-item active" onclick="showPage('t_dash')">📊 Dashboard</div>
+  <div class="nav-item" onclick="showPage('t_create')">🏢 Create Tenant</div>
+  <div class="nav-item" onclick="showPage('t_project')">📁 Projects <span class="nav-badge">3</span></div>
+  <div class="nav-item" onclick="showPage('t_members')">👥 Members</div>
+  <div class="nav-item" onclick="showPage('t_settings')">⚙️ Settings</div>
+  <div class="nav-item" onclick="showPage('t_onboard')">🚀 Onboarding Journey</div>
+
+  <div class="nav-section">Plugins</div>
+  <div class="nav-item" onclick="showPage('t_plugin_catalog')">🔧 Plugin Catalog</div>
+
+  <div class="nav-section">Locations</div>
+  <div class="nav-item" onclick="showPage('t_locations')">📍 Locations & Coverage</div>
+
+  <div class="nav-section">Org Admin</div>
+  <div class="nav-item" onclick="showPage('o_overview')">🏛️ Org Overview</div>
+  <div class="nav-item" onclick="showPage('o_upgrade')">⬆️ Upgrade to Org</div>
+  <div class="nav-item" onclick="showPage('o_realm')">🌐 Realm Provisioning</div>
+  <div class="nav-item" onclick="showPage('o_members')">👤 Org Members</div>
+  <div class="nav-item" onclick="showPage('o_upgrade_vendor')">⚡ Upgrade to Vendor</div>
+
+  <div class="sidebar-footer">
+    <strong>vanithakur81@gmail.com</strong>
+    Tenant Admin · TEN-0001
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-breadcrumb" id="topbar-breadcrumb">Tenant Admin</div>
+      <div class="topbar-title" id="topbar-title">📊 Dashboard</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="showPage('t_onboard')">🚀 Onboarding</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('t_create')">+ New Tenant</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- ═══════════════════════════════════
+         t_dash — Tenant Dashboard
+    ═══════════════════════════════════ -->
+    <div class="page active" id="page-t_dash">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val col-g">₹48.7L</div><div class="stat-lbl">GMV This Month</div><div class="stat-delta col-g">↑18% vs Oct '25</div></div>
+        <div class="stat"><div class="stat-val col-t">12,447</div><div class="stat-lbl">Total Orders</div><div class="stat-delta col-t">↑22% MTD</div></div>
+        <div class="stat"><div class="stat-val col-v">22</div><div class="stat-lbl">Active Vendors</div><div class="stat-delta col-txt3">+4 new this month</div></div>
+        <div class="stat"><div class="stat-val col-a">3</div><div class="stat-lbl">Active Projects</div><div class="stat-delta col-txt3">1 pending setup</div></div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">⚡ Quick Actions</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="showPage('t_create')">🏢 New Tenant</button>
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="openInviteMember()">👤 Invite Member</button>
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="showPage('t_project')">📁 New Project</button>
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="showPage('o_realm')">🌐 New Realm</button>
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="showPage('t_onboard')">🚀 Onboarding</button>
+            <button class="btn btn-ghost" style="justify-content:flex-start" onclick="showPage('t_settings')">⚙️ Settings</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Tenant Health</div>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Onboarding Progress</span><span class="col-g">75%</span></div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:75%;background:var(--gl)"></div></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Vendor KYC Rate</span><span class="col-t">82%</span></div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:82%;background:var(--tl)"></div></div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Plugin Adoption</span><span class="col-v">60%</span></div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:60%;background:var(--vl)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>SLA Compliance</span><span class="col-a">94%</span></div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:94%;background:var(--al)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">🏢 Tenants Overview</div>
+          <table class="tbl">
+            <thead><tr><th>Tenant</th><th>Plan</th><th>Orders</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Ninepoint Demo Org</strong><br><small class="col-txt3">TEN-0001 · Current</small></td><td>Enterprise</td><td>4,210</td><td><span class="badge badge-active">● Active</span></td></tr>
+              <tr><td><strong>Agro Connect</strong><br><small class="col-txt3">TEN-0002</small></td><td>Growth</td><td>1,204</td><td><span class="badge badge-active">● Active</span></td></tr>
+              <tr><td><strong>MediMart</strong><br><small class="col-txt3">TEN-0003</small></td><td>Starter</td><td>218</td><td><span class="badge badge-pending">⏳ Trial</span></td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="showPage('t_create')">+ Add Tenant</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📢 Recent Activity</div>
+          <div id="dash-activity"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_create — Create New Tenant
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_create">
+      <div class="card" style="max-width:680px">
+        <div class="card-title">🏢 Create New Tenant</div>
+        <div class="alert alert-t">ℹ️ A tenant is an isolated marketplace instance with its own vendors, catalog, and order pipeline. Each tenant maps to a subdomain.</div>
+
+        <div class="tabs">
+          <div class="tab active" onclick="setCreateTab('basic',this)">1. Basic Info</div>
+          <div class="tab" onclick="setCreateTab('config',this)">2. Configuration</div>
+          <div class="tab" onclick="setCreateTab('billing',this)">3. Billing</div>
+          <div class="tab" onclick="setCreateTab('review',this)">4. Review</div>
+        </div>
+
+        <div id="create-basic">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Tenant Name *</label><input class="form-input" id="tc-name" placeholder="e.g. Agro Connect Marketplace"></div>
+            <div class="form-group"><label class="form-label">Subdomain *</label>
+              <div style="display:flex;align-items:center;gap:0"><input class="form-input" id="tc-slug" placeholder="agro-connect" style="border-radius:6px 0 0 6px"><span style="background:var(--card2);border:1px solid var(--border);border-left:0;padding:8px 12px;border-radius:0 6px 6px 0;color:var(--txt3);font-size:13px">.adanpradan.io</span></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Admin Email *</label><input class="form-input" id="tc-email" placeholder="admin@company.com"></div>
+            <div class="form-group"><label class="form-label">Industry</label>
+              <select class="form-input" id="tc-industry"><option>Retail / E-commerce</option><option>Agriculture</option><option>Healthcare</option><option>Education</option><option>Logistics</option><option>Technology</option><option>Other</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="tc-desc" rows="2" placeholder="Brief description of this tenant's marketplace purpose…"></textarea></div>
+          <div class="form-group"><label class="form-label">Logo URL (optional)</label><input class="form-input" placeholder="https://…"></div>
+          <button class="btn btn-primary" onclick="setCreateTab('config',document.querySelectorAll(\'#page-t_create .tab\')[1])">Next: Configuration →</button>
+        </div>
+
+        <div id="create-config" style="display:none">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Default Currency</label>
+              <select class="form-input"><option>INR (₹)</option><option>USD ($)</option><option>EUR (€)</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Commission Rate (%)</label><input class="form-input" type="number" value="10" min="0" max="40"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Settlement Cycle</label>
+              <select class="form-input"><option>Weekly (T+7)</option><option>Bi-weekly (T+14)</option><option>Monthly</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Timezone</label>
+              <select class="form-input"><option>Asia/Kolkata (IST)</option><option>UTC</option><option>America/New_York</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Features to Enable</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked> <span style="font-size:13px">COD Payments</span></label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked> <span style="font-size:13px">Plugin Marketplace</span></label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"> <span style="font-size:13px">B2B Orders</span></label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked> <span style="font-size:13px">Automated Settlements</span></label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"> <span style="font-size:13px">AI Recommendations</span></label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox"> <span style="font-size:13px">Multi-warehouse</span></label>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" onclick="setCreateTab('basic',document.querySelectorAll('#page-t_create .tab')[0])">← Back</button>
+            <button class="btn btn-primary" onclick="setCreateTab('billing',document.querySelectorAll('#page-t_create .tab')[2])">Next: Billing →</button>
+          </div>
+        </div>
+
+        <div id="create-billing" style="display:none">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Plan</label>
+              <select class="form-input" id="tc-plan" onchange="updatePlanSummary()">
+                <option value="starter">Starter — ₹2,999/mo</option>
+                <option value="growth">Growth — ₹9,999/mo</option>
+                <option value="enterprise" selected>Enterprise — Custom</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Billing Cycle</label>
+              <select class="form-input"><option>Monthly</option><option>Annual (20% off)</option></select>
+            </div>
+          </div>
+          <div class="card" style="background:var(--card2);border-color:#7c3aed44" id="plan-summary">
+            <div style="font-weight:700;color:var(--vl);margin-bottom:8px">Enterprise Plan</div>
+            <div style="font-size:12px;color:var(--txt3);line-height:1.8">✅ Unlimited vendors · ✅ Unlimited orders · ✅ All plugins · ✅ Custom domain · ✅ Dedicated support · ✅ SLA 99.9%</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" onclick="setCreateTab('config',document.querySelectorAll('#page-t_create .tab')[1])">← Back</button>
+            <button class="btn btn-primary" onclick="setCreateTab('review',document.querySelectorAll('#page-t_create .tab')[3])">Next: Review →</button>
+          </div>
+        </div>
+
+        <div id="create-review" style="display:none">
+          <div class="alert alert-g">✅ Everything looks good. Review and submit to provision the tenant.</div>
+          <div class="card" style="background:var(--card2)">
+            <div class="meta-row"><span class="meta-key">Tenant Name</span><span class="meta-val" id="review-name">—</span></div>
+            <div class="meta-row"><span class="meta-key">Subdomain</span><span class="meta-val" id="review-slug" style="font-family:monospace;color:var(--tl)">—</span></div>
+            <div class="meta-row"><span class="meta-key">Admin Email</span><span class="meta-val" id="review-email">—</span></div>
+            <div class="meta-row"><span class="meta-key">Plan</span><span class="meta-val">Enterprise</span></div>
+            <div class="meta-row"><span class="meta-key">Commission</span><span class="meta-val">10%</span></div>
+            <div class="meta-row"><span class="meta-key">Settlement</span><span class="meta-val">Weekly (T+7)</span></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" onclick="setCreateTab('billing',document.querySelectorAll('#page-t_create .tab')[2])">← Back</button>
+            <button class="btn btn-success" onclick="createTenant()">🏢 Create Tenant</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_project — Projects
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_project">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:16px;font-weight:700">📁 Projects</h2>
+          <p style="color:var(--txt3);font-size:12px;margin-top:4px">Projects group vendors, offerings, and settings within a tenant.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateProject()">+ New Project</button>
+      </div>
+
+      <div class="project-grid" id="project-grid"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_members — Members
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_members">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <span class="card-title" style="margin-bottom:0">👥 Tenant Members</span>
+          <button class="btn btn-primary btn-sm" onclick="openInviteMember()">+ Invite Member</button>
+        </div>
+        <div class="filter-chips">
+          <div class="chip active" onclick="setMemberFilter('all',this)">All (8)</div>
+          <div class="chip" onclick="setMemberFilter('Admin',this)">👑 Admins (2)</div>
+          <div class="chip" onclick="setMemberFilter('Member',this)">👤 Members (4)</div>
+          <div class="chip" onclick="setMemberFilter('Viewer',this)">👁️ Viewers (2)</div>
+        </div>
+        <div id="members-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔐 Role Permissions</div>
+        <table class="tbl">
+          <thead><tr><th>Permission</th><th>Admin</th><th>Member</th><th>Viewer</th></tr></thead>
+          <tbody>
+            <tr><td>View dashboard & analytics</td><td>✅</td><td>✅</td><td>✅</td></tr>
+            <tr><td>Manage vendors</td><td>✅</td><td>✅</td><td>❌</td></tr>
+            <tr><td>Process orders</td><td>✅</td><td>✅</td><td>❌</td></tr>
+            <tr><td>Install / remove plugins</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Manage members</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Edit tenant settings</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Billing & plan changes</td><td>✅</td><td>❌</td><td>❌</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_settings — Tenant Settings
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_settings">
+      <div class="settings-grid">
+        <div class="settings-nav card" style="padding:12px;height:fit-content">
+          <div class="settings-nav-item active" onclick="setSettingsSection('general',this)">🏢 General</div>
+          <div class="settings-nav-item" onclick="setSettingsSection('commerce',this)">💳 Commerce</div>
+          <div class="settings-nav-item" onclick="setSettingsSection('notifications',this)">🔔 Notifications</div>
+          <div class="settings-nav-item" onclick="setSettingsSection('security',this)">🔐 Security</div>
+          <div class="settings-nav-item" onclick="setSettingsSection('integrations',this)">🔌 Integrations</div>
+          <div class="settings-nav-item" onclick="setSettingsSection('danger',this)" style="color:var(--rl)">⚠️ Danger Zone</div>
+        </div>
+        <div>
+          <div id="settings-general">
+            <div class="card">
+              <div class="card-title">🏢 General Settings</div>
+              <div class="form-group"><label class="form-label">Tenant Name</label><input class="form-input" value="Ninepoint Demo Org"></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Subdomain</label><input class="form-input" value="demo" disabled style="opacity:.6"></div>
+                <div class="form-group"><label class="form-label">Custom Domain</label><input class="form-input" placeholder="marketplace.yourcompany.com"></div>
+              </div>
+              <div class="form-group"><label class="form-label">Timezone</label><select class="form-input"><option selected>Asia/Kolkata (IST)</option><option>UTC</option></select></div>
+              <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" rows="2">Ninepoint's flagship demo marketplace for FairShare platform.</textarea></div>
+              <button class="btn btn-primary" onclick="toast('✅ General settings saved')">💾 Save Changes</button>
+            </div>
+          </div>
+          <div id="settings-commerce" style="display:none">
+            <div class="card">
+              <div class="card-title">💳 Commerce Settings</div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Default Currency</label><select class="form-input"><option selected>INR (₹)</option><option>USD ($)</option></select></div>
+                <div class="form-group"><label class="form-label">Commission Rate (%)</label><input class="form-input" type="number" value="10" min="0" max="40"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Settlement Cycle</label><select class="form-input"><option selected>Weekly (T+7)</option><option>Bi-weekly</option><option>Monthly</option></select></div>
+                <div class="form-group"><label class="form-label">Min. Order Value (₹)</label><input class="form-input" type="number" value="99"></div>
+              </div>
+              <div class="setting-row"><div class="setting-info"><strong>COD Payments</strong><span>Allow cash on delivery orders</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row"><div class="setting-info"><strong>Auto-settle Vendors</strong><span>Trigger settlement automatically on cycle end</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row" style="border:none"><div class="setting-info"><strong>Partial Refunds</strong><span>Allow partial refunds on delivered orders</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <button class="btn btn-primary" onclick="toast('✅ Commerce settings saved')">💾 Save Changes</button>
+            </div>
+          </div>
+          <div id="settings-notifications" style="display:none">
+            <div class="card">
+              <div class="card-title">🔔 Notification Settings</div>
+              <div class="setting-row"><div class="setting-info"><strong>New Order Email</strong><span>Send email on each new order</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row"><div class="setting-info"><strong>Settlement Notification</strong><span>Notify vendors when settlement is initiated</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row"><div class="setting-info"><strong>SLA Breach Alert</strong><span>Alert when order exceeds SLA window</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row"><div class="setting-info"><strong>Low Inventory Alert</strong><span>Alert when stock drops below threshold</span></div><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+              <div class="setting-row" style="border:none"><div class="setting-info"><strong>Weekly Digest</strong><span>Send weekly summary to all admins</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <button class="btn btn-primary" onclick="toast('✅ Notification settings saved')">💾 Save Changes</button>
+            </div>
+          </div>
+          <div id="settings-security" style="display:none">
+            <div class="card">
+              <div class="card-title">🔐 Security Settings</div>
+              <div class="setting-row"><div class="setting-info"><strong>Two-Factor Authentication</strong><span>Require 2FA for all admin logins</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row"><div class="setting-info"><strong>Session Timeout (30 min)</strong><span>Auto-logout inactive sessions</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <div class="setting-row"><div class="setting-info"><strong>IP Allowlist</strong><span>Restrict admin panel to specific IPs</span></div><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+              <div class="setting-row" style="border:none"><div class="setting-info"><strong>Audit Logging</strong><span>Log all admin actions for compliance</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+              <button class="btn btn-primary" onclick="toast('✅ Security settings saved')">💾 Save Changes</button>
+            </div>
+          </div>
+          <div id="settings-integrations" style="display:none">
+            <div class="card">
+              <div class="card-title">🔌 Integrations</div>
+              <div class="realm-card"><div class="realm-icon">📦</div><div class="realm-info"><div class="realm-name">Shiprocket</div><div class="realm-id">Logistics · Connected</div></div><span class="badge badge-active">● Active</span><button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="toast('Shiprocket settings opened')">Configure</button></div>
+              <div class="realm-card"><div class="realm-icon">💳</div><div class="realm-info"><div class="realm-name">Razorpay</div><div class="realm-id">Payments · Connected</div></div><span class="badge badge-active">● Active</span><button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="toast('Razorpay settings opened')">Configure</button></div>
+              <div class="realm-card"><div class="realm-icon">📊</div><div class="realm-info"><div class="realm-name">Google Analytics</div><div class="realm-id">Analytics · Not connected</div></div><span class="badge badge-inactive">○ Inactive</span><button class="btn btn-primary btn-sm" style="margin-left:8px" onclick="toast('Connect Google Analytics…')">Connect</button></div>
+              <div class="realm-card"><div class="realm-icon">📧</div><div class="realm-info"><div class="realm-name">SendGrid</div><div class="realm-id">Email · Connected</div></div><span class="badge badge-active">● Active</span><button class="btn btn-ghost btn-sm" style="margin-left:8px">Configure</button></div>
+            </div>
+          </div>
+          <div id="settings-danger" style="display:none">
+            <div class="card" style="border-color:#f8717144">
+              <div class="card-title" style="color:var(--rl)">⚠️ Danger Zone</div>
+              <div class="alert alert-r">These actions are irreversible. Proceed with extreme caution.</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+                <div><strong>Suspend Tenant</strong><div style="font-size:12px;color:var(--txt3)">Temporarily disable all marketplace operations</div></div>
+                <button class="btn btn-danger btn-sm" onclick="toast('⛔ Tenant suspended — operations paused')">Suspend</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)">
+                <div><strong>Reset Tenant</strong><div style="font-size:12px;color:var(--txt3)">Clear all data while keeping configuration</div></div>
+                <button class="btn btn-danger btn-sm" onclick="toast('⚠ Confirmation required — check your email')">Reset Data</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0">
+                <div><strong>Delete Tenant</strong><div style="font-size:12px;color:var(--txt3)">Permanently delete this tenant and all data</div></div>
+                <button class="btn btn-danger btn-sm" onclick="toast('⚠ Type tenant name to confirm deletion')">Delete Tenant</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_onboard — Onboarding Journey
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_onboard">
+      <div class="card" style="max-width:720px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="card-title" style="margin-bottom:0">🚀 Onboarding Journey</div>
+          <span class="col-g" style="font-size:13px;font-weight:700">3 / 4 complete</span>
+        </div>
+        <div class="progress-wrap" style="margin-bottom:20px"><div class="progress-fill" style="width:75%;background:var(--gl)"></div></div>
+
+        <div class="onboard-step done">
+          <div class="step-num" style="background:#34d39922;color:var(--gl)">✅</div>
+          <div class="step-body">
+            <div class="step-title">Tenant Created</div>
+            <div class="step-desc">Your marketplace tenant has been provisioned at <span style="color:var(--tl)">demo.adanpradan.io</span></div>
+            <div style="margin-top:6px;font-size:11px;color:var(--txt3)">Completed Oct 1, 2026</div>
+          </div>
+          <span class="badge badge-done">Done</span>
+        </div>
+
+        <div class="onboard-step done">
+          <div class="step-num" style="background:#34d39922;color:var(--gl)">✅</div>
+          <div class="step-body">
+            <div class="step-title">Invite Team Members</div>
+            <div class="step-desc">Add admins and members who will manage the marketplace.</div>
+            <div style="margin-top:6px;font-size:11px;color:var(--txt3)">8 members invited · Completed Oct 2, 2026</div>
+          </div>
+          <span class="badge badge-done">Done</span>
+        </div>
+
+        <div class="onboard-step done">
+          <div class="step-num" style="background:#34d39922;color:var(--gl)">✅</div>
+          <div class="step-body">
+            <div class="step-title">Configure Commerce Settings</div>
+            <div class="step-desc">Set commission rates, settlement cycles, currency, and payment methods.</div>
+            <div style="margin-top:6px;font-size:11px;color:var(--txt3)">Completed Oct 3, 2026</div>
+          </div>
+          <span class="badge badge-done">Done</span>
+        </div>
+
+        <div class="onboard-step active-step">
+          <div class="step-num" style="background:#38bdf822;color:var(--tl)">4</div>
+          <div class="step-body">
+            <div class="step-title">Onboard Your First Vendor</div>
+            <div class="step-desc">Invite vendors to register, complete KYC, and start listing products on your marketplace. You need at least one active vendor before going live.</div>
+            <div class="step-action">
+              <button class="btn btn-primary btn-sm" onclick="toast('📨 Vendor invite flow opened')">📨 Invite Vendor</button>
+              <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="toast('📋 KYC template preview')">Preview KYC</button>
+            </div>
+          </div>
+          <span class="badge badge-progress">In Progress</span>
+        </div>
+
+        <div class="onboard-step locked">
+          <div class="step-num" style="background:#2a2f4544;color:var(--txt3)">5</div>
+          <div class="step-body">
+            <div class="step-title">Install Plugins</div>
+            <div class="step-desc">Browse the plugin marketplace to add payments, shipping, analytics, and other capabilities.</div>
+          </div>
+          <span class="badge badge-locked">Locked</span>
+        </div>
+
+        <div class="onboard-step locked">
+          <div class="step-num" style="background:#2a2f4544;color:var(--txt3)">6</div>
+          <div class="step-body">
+            <div class="step-title">Go Live 🎉</div>
+            <div class="step-desc">Review your setup checklist and launch your marketplace to customers.</div>
+          </div>
+          <span class="badge badge-locked">Locked</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         o_overview — Org Overview
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-o_overview">
+      <div class="upgrade-banner">
+        <div style="position:relative;z-index:1">
+          <div style="font-size:22px;font-weight:800;color:var(--vl);margin-bottom:6px">🏛️ Ninepoint Solution and Services LLP</div>
+          <div style="color:var(--txt3);font-size:13px;margin-bottom:12px">Organization Account · ORG-0001 · Enterprise Plan</div>
+          <div style="display:flex;gap:20px;font-size:12px">
+            <span class="col-g">✅ KYC Verified</span>
+            <span class="col-t">3 Tenants</span>
+            <span class="col-v">22 Vendors</span>
+            <span class="col-a">₹48.7L GMV/month</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val col-v">3</div><div class="stat-lbl">Tenants</div><div class="stat-delta col-txt3">1 trial</div></div>
+        <div class="stat"><div class="stat-val col-g">22</div><div class="stat-lbl">Active Vendors</div><div class="stat-delta col-g">↑4 this month</div></div>
+        <div class="stat"><div class="stat-val col-t">12,447</div><div class="stat-lbl">Total Orders</div><div class="stat-delta col-t">MTD</div></div>
+        <div class="stat"><div class="stat-val col-a">₹48.7L</div><div class="stat-lbl">Org GMV</div><div class="stat-delta col-a">↑18%</div></div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="card-title">🏢 Tenants Under This Org</div>
+          <table class="tbl">
+            <thead><tr><th>Tenant</th><th>Plan</th><th>GMV</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><strong>Ninepoint Demo Org</strong><br><small class="col-txt3">demo.adanpradan.io</small></td><td>Enterprise</td><td class="col-g">₹22.1L</td><td><span class="badge badge-active">● Active</span></td><td><button class="btn btn-ghost btn-sm" onclick="showPage('t_dash')">Manage</button></td></tr>
+              <tr><td><strong>Agro Connect</strong><br><small class="col-txt3">agro.adanpradan.io</small></td><td>Growth</td><td class="col-g">₹6.2L</td><td><span class="badge badge-active">● Active</span></td><td><button class="btn btn-ghost btn-sm">Manage</button></td></tr>
+              <tr><td><strong>MediMart</strong><br><small class="col-txt3">medi.adanpradan.io</small></td><td>Starter</td><td class="col-a">₹0.8L</td><td><span class="badge badge-pending">⏳ Trial</span></td><td><button class="btn btn-ghost btn-sm">Manage</button></td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="showPage('t_create')">+ Add Tenant</button>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Org Billing Summary</div>
+          <div class="meta-row"><span class="meta-key">Plan</span><span class="meta-val">Enterprise (Custom)</span></div>
+          <div class="meta-row"><span class="meta-key">Billing Cycle</span><span class="meta-val">Annual</span></div>
+          <div class="meta-row"><span class="meta-key">Next Invoice</span><span class="meta-val">Nov 1, 2026</span></div>
+          <div class="meta-row"><span class="meta-key">Amount</span><span class="meta-val col-g">₹2,40,000/year</span></div>
+          <div class="meta-row"><span class="meta-key">Support</span><span class="meta-val">Dedicated CSM</span></div>
+          <div class="meta-row"><span class="meta-key">SLA</span><span class="meta-val">99.9% uptime</span></div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="toast('📋 Invoice history opened')">View Invoices</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         o_upgrade — Upgrade to Organization
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-o_upgrade">
+      <div class="upgrade-banner">
+        <div style="position:relative;z-index:1">
+          <div style="font-size:20px;font-weight:800;color:var(--vl);margin-bottom:6px">⬆️ Upgrade to Organization Account</div>
+          <div style="color:var(--txt2);font-size:13px">Manage multiple tenants, centralize billing, and unlock enterprise features.</div>
+        </div>
+      </div>
+
+      <div class="g3" style="margin-bottom:20px">
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:32px;margin-bottom:8px">🏢</div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">Multiple Tenants</div>
+          <div style="color:var(--txt3);font-size:12px">Create and manage unlimited tenant marketplaces under one organization umbrella.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:32px;margin-bottom:8px">💳</div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">Centralized Billing</div>
+          <div style="color:var(--txt3);font-size:12px">Single invoice for all tenants. Volume discounts and annual billing options.</div>
+        </div>
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:32px;margin-bottom:8px">🌐</div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">Realm Provisioning</div>
+          <div style="color:var(--txt3);font-size:12px">Isolate environments by geography, business unit, or customer segment.</div>
+        </div>
+      </div>
+
+      <div class="card" style="max-width:600px">
+        <div class="card-title">📝 Upgrade Application</div>
+        <div class="form-group"><label class="form-label">Organization Legal Name *</label><input class="form-input" value="Ninepoint Solution and Services LLP"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">GST Number *</label><input class="form-input" placeholder="22AAAAA0000A1Z5"></div>
+          <div class="form-group"><label class="form-label">PAN *</label><input class="form-input" placeholder="AAAAA0000A"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Registered Address *</label><textarea class="form-input" rows="2" placeholder="Full registered address…"></textarea></div>
+        <div class="form-group"><label class="form-label">Target Plan</label>
+          <select class="form-input">
+            <option>Growth Organization — ₹24,999/mo (up to 5 tenants)</option>
+            <option selected>Enterprise Organization — Custom pricing</option>
+          </select>
+        </div>
+        <div class="alert alert-v">🏛️ Upgrading will merge your current tenant into the organization. A dedicated CSM will contact you within 24 hours.</div>
+        <button class="btn btn-v" onclick="toast('🏛️ Upgrade request submitted — our team will contact you shortly.')">⬆️ Submit Upgrade Request</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         o_realm — Realm Provisioning
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-o_realm">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:16px;font-weight:700">🌐 Realm Provisioning</h2>
+          <p style="color:var(--txt3);font-size:12px;margin-top:4px">Realms isolate environments by geography, business unit, or customer segment.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateRealm()">+ New Realm</button>
+      </div>
+
+      <div class="g2">
+        <div>
+          <div class="realm-card">
+            <div class="realm-icon">🇮🇳</div>
+            <div class="realm-info">
+              <div class="realm-name">India Production</div>
+              <div class="realm-id">realm-in-prod · ap-south-1</div>
+              <div class="realm-stats"><span>22 vendors</span><span>12,447 orders/mo</span><span>IST timezone</span></div>
+            </div>
+            <span class="badge badge-active">● Active</span>
+            <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="openRealmDetail('india')">Manage</button>
+          </div>
+          <div class="realm-card">
+            <div class="realm-icon">🧪</div>
+            <div class="realm-info">
+              <div class="realm-name">Staging Environment</div>
+              <div class="realm-id">realm-staging · ap-south-1</div>
+              <div class="realm-stats"><span>3 vendors (test)</span><span>420 orders</span><span>Sandbox mode</span></div>
+            </div>
+            <span class="badge badge-pending">⏳ Staging</span>
+            <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="toast('Staging realm settings')">Manage</button>
+          </div>
+          <div class="realm-card" style="opacity:.6">
+            <div class="realm-icon">🌏</div>
+            <div class="realm-info">
+              <div class="realm-name">SEA Expansion</div>
+              <div class="realm-id">realm-sea-prod · ap-southeast-1</div>
+              <div class="realm-stats"><span>Not yet provisioned</span></div>
+            </div>
+            <span class="badge badge-inactive">○ Planned</span>
+            <button class="btn btn-primary btn-sm" style="margin-left:8px" onclick="toast('🌏 Provision SEA realm…')">Provision</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚙️ Realm Isolation Settings</div>
+          <div class="setting-row"><div class="setting-info"><strong>Data Isolation</strong><span>Tenant data never crosses realm boundaries</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+          <div class="setting-row"><div class="setting-info"><strong>Vendor Portability</strong><span>Allow vendors to operate across realms</span></div><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+          <div class="setting-row"><div class="setting-info"><strong>Cross-realm Analytics</strong><span>Aggregate metrics across all realms</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+          <div class="setting-row" style="border:none"><div class="setting-info"><strong>Shared Plugin Registry</strong><span>Publish plugins to all realms simultaneously</span></div><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+          <button class="btn btn-primary btn-sm" onclick="toast('✅ Realm settings saved')">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         o_members — Org Members
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-o_members">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <span class="card-title" style="margin-bottom:0">👤 Organization Members</span>
+          <button class="btn btn-primary btn-sm" onclick="openInviteOrgMember()">+ Add Org Member</button>
+        </div>
+        <div class="alert alert-t">ℹ️ Org members have cross-tenant visibility. Assign tenant-level roles to restrict access per tenant.</div>
+        <div id="org-members-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔐 Org-Level Role Matrix</div>
+        <table class="tbl">
+          <thead><tr><th>Permission</th><th>Org Owner</th><th>Org Admin</th><th>Tenant Admin</th><th>Viewer</th></tr></thead>
+          <tbody>
+            <tr><td>Manage all tenants</td><td>✅</td><td>✅</td><td>Own only</td><td>❌</td></tr>
+            <tr><td>Billing & plan changes</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Realm provisioning</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Invite org members</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td>View org analytics</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+            <tr><td>Manage vendor KYC</td><td>✅</td><td>✅</td><td>Own tenant</td><td>❌</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_plugin_catalog — Plugin Catalog
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_plugin_catalog">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:16px;font-weight:700">🔧 Plugin Catalog</h2>
+          <p style="color:var(--txt3);font-size:12px;margin-top:4px">Standard plugins published by Platform Admin. Activate instantly — no approval needed.</p>
+        </div>
+      </div>
+      <div class="alert alert-v" style="background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;font-size:12px;margin-bottom:16px;color:#ddd6fe">
+        <span style="font-size:16px">✅</span>
+        <div>Platform plugins are <strong>created and maintained by Platform Admin</strong>. They are pre-approved — activate them here to unlock capabilities like payments, GST, shipping, and analytics for all vendors in your org.</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <input type="text" class="form-input" style="flex:1;min-width:200px;max-width:320px" id="tpc-search" placeholder="Search plugins…" oninput="renderTenantPlugins()"/>
+        <select class="form-input" style="width:160px" id="tpc-cat" onchange="renderTenantPlugins()">
+          <option value="">All categories</option>
+          <option>Payments</option><option>Tax</option><option>Shipping</option><option>Analytics</option><option>Notifications</option><option>Compliance</option>
+        </select>
+      </div>
+      <div id="tenant-plugin-catalog"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         t_locations — Locations & Coverage
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-t_locations">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:16px;font-weight:700">📍 Locations & Coverage</h2>
+          <p style="color:var(--txt3);font-size:12px;margin-top:4px">Manage the cities and pincodes where your tenants and vendors operate.</p>
+        </div>
+        <button class="btn btn-primary" onclick="toast('Add city modal would open')">+ Add City</button>
+      </div>
+      <div class="alert alert-t" style="background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;font-size:12px;margin-bottom:16px;color:#bae6fd">
+        <span style="font-size:16px">💡</span>
+        <div>Cities configured here are available to all vendors under this org. Vendors then assign specific pincodes per product. Customers only see products that cover their pincode.</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+        <div class="stat" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px"><div class="stat-val col-t">6</div><div class="stat-lbl">Cities active</div></div>
+        <div class="stat" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px"><div class="stat-val col-g">148</div><div class="stat-lbl">Total pincodes</div></div>
+        <div class="stat" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px"><div class="stat-val col-v">22</div><div class="stat-lbl">Active vendors</div></div>
+        <div class="stat" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px"><div class="stat-val col-a">89%</div><div class="stat-lbl">Coverage rate</div></div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="border-bottom:1px solid var(--border)">
+            <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">City</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">State</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Pincodes</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Active vendors</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">GST zone</th>
+            <th style="padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Status</th>
+            <th style="padding:10px 14px"></th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 14px"><strong>Mumbai</strong></td><td style="padding:10px 14px;color:var(--txt3)">Maharashtra</td><td style="padding:10px 14px"><span class="badge badge-admin">32 pincodes</span></td><td style="padding:10px 14px">8 vendors</td><td style="padding:10px 14px;color:var(--txt3)">MH — 27</td><td style="padding:10px 14px"><span class="badge badge-member">Active</span></td><td style="padding:10px 14px"><button class="btn btn-ghost btn-sm" onclick="toast('Edit Mumbai pincodes')">Edit</button></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 14px"><strong>Delhi</strong></td><td style="padding:10px 14px;color:var(--txt3)">Delhi</td><td style="padding:10px 14px"><span class="badge badge-admin">28 pincodes</span></td><td style="padding:10px 14px">6 vendors</td><td style="padding:10px 14px;color:var(--txt3)">DL — 07</td><td style="padding:10px 14px"><span class="badge badge-member">Active</span></td><td style="padding:10px 14px"><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 14px"><strong>Bangalore</strong></td><td style="padding:10px 14px;color:var(--txt3)">Karnataka</td><td style="padding:10px 14px"><span class="badge badge-admin">24 pincodes</span></td><td style="padding:10px 14px">5 vendors</td><td style="padding:10px 14px;color:var(--txt3)">KA — 29</td><td style="padding:10px 14px"><span class="badge badge-member">Active</span></td><td style="padding:10px 14px"><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 14px"><strong>Pune</strong></td><td style="padding:10px 14px;color:var(--txt3)">Maharashtra</td><td style="padding:10px 14px"><span class="badge badge-admin">20 pincodes</span></td><td style="padding:10px 14px">4 vendors</td><td style="padding:10px 14px;color:var(--txt3)">MH — 27</td><td style="padding:10px 14px"><span class="badge badge-member">Active</span></td><td style="padding:10px 14px"><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 14px"><strong>Hyderabad</strong></td><td style="padding:10px 14px;color:var(--txt3)">Telangana</td><td style="padding:10px 14px"><span class="badge badge-admin">22 pincodes</span></td><td style="padding:10px 14px">3 vendors</td><td style="padding:10px 14px;color:var(--txt3)">TG — 36</td><td style="padding:10px 14px"><span class="badge badge-member">Active</span></td><td style="padding:10px 14px"><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+            <tr><td style="padding:10px 14px"><strong>Chennai</strong></td><td style="padding:10px 14px;color:var(--txt3)">Tamil Nadu</td><td style="padding:10px 14px"><span class="badge" style="background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)">22 pincodes</span></td><td style="padding:10px 14px">2 vendors</td><td style="padding:10px 14px;color:var(--txt3)">TN — 33</td><td style="padding:10px 14px"><span class="badge" style="background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)">Partial</span></td><td style="padding:10px 14px"><button class="btn btn-ghost btn-sm">Complete</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px">🗺️ Vendor × City coverage matrix</div>
+        <p style="font-size:12px;color:var(--txt3)">Shows which vendors serve which cities so you can identify gaps and encourage expansion.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:10px">
+          <thead><tr style="border-bottom:1px solid var(--border)"><th style="padding:6px 10px;text-align:left;color:var(--txt3)">Vendor</th><th style="padding:6px 10px;text-align:center;color:var(--txt3)">Mumbai</th><th style="padding:6px 10px;text-align:center;color:var(--txt3)">Delhi</th><th style="padding:6px 10px;text-align:center;color:var(--txt3)">Bangalore</th><th style="padding:6px 10px;text-align:center;color:var(--txt3)">Pune</th><th style="padding:6px 10px;text-align:center;color:var(--txt3)">Hyderabad</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 10px">FreshCart Foods</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--txt3)">—</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--gl)">✓</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 10px">TechGadgets</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--txt3)">—</td><td style="text-align:center;color:var(--txt3)">—</td><td style="text-align:center;color:var(--txt3)">—</td></tr>
+            <tr><td style="padding:8px 10px">BookNest</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--gl)">✓</td><td style="text-align:center;color:var(--txt3)">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         o_upgrade_vendor — Upgrade to Vendor
+    ═══════════════════════════════════ -->
+    <div class="page" id="page-o_upgrade_vendor">
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:16px;font-weight:700">⚡ Upgrade to Vendor</h2>
+        <p style="color:var(--txt3);font-size:12px;margin-top:4px">Become a Vendor to start selling products on the marketplace.</p>
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(251,191,36,.03));border:1px solid rgba(251,191,36,.25);border-radius:12px;padding:20px;margin-bottom:16px">
+        <div style="font-size:14px;font-weight:800;color:#fbbf24;margin-bottom:8px">⚡ Tenant → Vendor upgrade path</div>
+        <p style="font-size:12px;color:var(--txt3);margin-bottom:14px">Complete these steps to become an approved vendor. Current status: <strong style="color:var(--tl)">Organisation</strong></p>
+        <div style="display:flex;gap:0;margin-bottom:16px">
+          <div style="flex:1;text-align:center;position:relative">
+            <div style="position:absolute;top:14px;left:60%;width:80%;height:2px;background:var(--border)"></div>
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,.15);border:2px solid var(--gl);display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto 6px;color:var(--gl);position:relative;z-index:1">✓</div>
+            <div style="font-size:10px;color:var(--txt3)">Individual</div>
+          </div>
+          <div style="flex:1;text-align:center;position:relative">
+            <div style="position:absolute;top:14px;left:60%;width:80%;height:2px;background:var(--border)"></div>
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,.15);border:2px solid var(--gl);display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto 6px;color:var(--gl);position:relative;z-index:1">✓</div>
+            <div style="font-size:10px;color:var(--txt3)">Organisation</div>
+          </div>
+          <div style="flex:1;text-align:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,.15);border:2px solid #fbbf24;display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto 6px;color:#fbbf24;position:relative;z-index:1">3</div>
+            <div style="font-size:10px;color:#fbbf24;font-weight:700">Vendor (apply)</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px">📋 Vendor application</div>
+        <div class="form-row">
+          <label class="form-label">Business / Brand name *</label>
+          <input class="form-input" placeholder="e.g. Ninepoint Commerce"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label class="form-label">GST number *</label><input class="form-input" placeholder="27AABCN1234G1ZK"/></div>
+          <div class="form-row"><label class="form-label">PAN *</label><input class="form-input" placeholder="AABCN1234G"/></div>
+        </div>
+        <div class="form-row"><label class="form-label">Bank account number *</label><input class="form-input" placeholder="Account number"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="form-row"><label class="form-label">IFSC code *</label><input class="form-input" placeholder="HDFC0001234"/></div>
+          <div class="form-row"><label class="form-label">Bank name</label><input class="form-input" placeholder="e.g. HDFC Bank"/></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Product categories you'll sell</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;font-size:12px">
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox"/> Electronics</label>
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox"/> Fashion</label>
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" checked/> Food & Grocery</label>
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox"/> Home & Garden</label>
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox"/> Books</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Upload KYC documents *</label>
+          <div style="border:1px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--txt3);font-size:12px" onclick="toast('File picker would open')">
+            <div style="font-size:20px;margin-bottom:6px">📎</div>
+            GST certificate · PAN card · Bank statement (last 3 months)<br/>
+            <span style="font-size:10px">PDF, JPG, PNG · Max 5MB per file</span>
+          </div>
+        </div>
+        <div class="alert alert-v" style="background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;font-size:12px;margin-bottom:12px;color:#ddd6fe">
+          <span>🔍</span><div>Platform Admin will review your KYC documents and approve/reject within <strong>2–5 business days</strong>. Bank account will be verified via penny drop.</div>
+        </div>
+        <button class="btn btn-primary" onclick="toast('✅ Vendor application submitted! You'll hear back in 2–5 business days.')">⚡ Submit vendor application</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-head"><span class="modal-title" id="modal-title"></span><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────
+var MEMBERS = [
+  {name:'Vanitha Khurana',email:'vanithakur81@gmail.com',role:'Admin',status:'Active',joined:'2024-01-15',avatar:'V',color:'#a78bfa'},
+  {name:'Arjun Kapoor',email:'arjun.k@ninepoint.io',role:'Admin',status:'Active',joined:'2024-02-01',avatar:'A',color:'#38bdf8'},
+  {name:'Priya Sharma',email:'priya.s@ninepoint.io',role:'Member',status:'Active',joined:'2024-03-10',avatar:'P',color:'#34d399'},
+  {name:'Rahul Nair',email:'rahul.n@ninepoint.io',role:'Member',status:'Active',joined:'2024-04-05',avatar:'R',color:'#fbbf24'},
+  {name:'Sneha Patel',email:'sneha.p@ninepoint.io',role:'Member',status:'Active',joined:'2024-05-20',avatar:'S',color:'#fb923c'},
+  {name:'Dev Menon',email:'dev.m@ninepoint.io',role:'Member',status:'Active',joined:'2024-06-01',avatar:'D',color:'#f87171'},
+  {name:'Kavya Iyer',email:'kavya.i@ninepoint.io',role:'Viewer',status:'Active',joined:'2024-08-12',avatar:'K',color:'#64748b'},
+  {name:'Rohan Das',email:'rohan.d@ninepoint.io',role:'Viewer',status:'Active',joined:'2024-09-01',avatar:'R',color:'#64748b'},
+];
+
+var ORG_MEMBERS = [
+  {name:'Vanitha Khurana',email:'vanithakur81@gmail.com',role:'Org Owner',tenants:'All',avatar:'V',color:'#a78bfa'},
+  {name:'Arjun Kapoor',email:'arjun.k@ninepoint.io',role:'Org Admin',tenants:'All',avatar:'A',color:'#38bdf8'},
+  {name:'Roshan Mehta',email:'roshan.m@ninepoint.io',role:'Tenant Admin',tenants:'TEN-0002',avatar:'R',color:'#34d399'},
+  {name:'Anita Singh',email:'anita.s@medimart.in',role:'Tenant Admin',tenants:'TEN-0003',avatar:'A',color:'#fbbf24'},
+];
+
+var PROJECTS = [
+  {id:'PRJ-001',name:'B2C Retail Launch',icon:'🛍️',desc:'Consumer marketplace for direct retail with 15+ product categories.',vendors:12,offerings:48,status:'Active',created:'2024-03-01',members:5},
+  {id:'PRJ-002',name:'Agri Procurement',icon:'🌾',desc:'B2B agri-input procurement marketplace connecting farmers and distributors.',vendors:6,offerings:22,status:'Active',created:'2024-06-15',members:3},
+  {id:'PRJ-003',name:'MedTech Pilot',icon:'💊',desc:'Pilot marketplace for medical equipment and consumables. Compliance-first.',vendors:2,offerings:8,status:'Active',created:'2026-09-01',members:2},
+  {id:'PRJ-004',name:'Logistics Hub',icon:'🚚',desc:'Delivery-as-a-service pilot. Awaiting vendor onboarding.',vendors:0,offerings:0,status:'Pending',created:'2026-10-10',members:1},
+];
+
+var memberFilter = 'all';
+var settingsSection = 'general';
+
+// ─── RENDER ──────────────────────────────────────────
+function renderDashActivity() {
+  var el = document.getElementById('dash-activity'); if(!el) return;
+  var items = [
+    {icon:'🛍️',col:'var(--tl)',text:'3 new orders — B2C Retail',time:'10 min ago'},
+    {icon:'👤',col:'var(--vl)',text:'FastShip Logistics joined',time:'2 hrs ago'},
+    {icon:'💰',col:'var(--gl)',text:'Settlement ₹4.2L processed',time:'1 day ago'},
+    {icon:'🔌',col:'var(--al)',text:'PayFlow v1.5 submitted',time:'2 days ago'},
+    {icon:'⚠️',col:'var(--rl)',text:'SLA breach — ORD-10234',time:'3 days ago'},
+  ];
+  el.innerHTML = items.map(function(i){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="font-size:18px">'+i.icon+'</span>'
+      +'<div style="flex:1"><div style="font-size:13px">'+i.text+'</div><div style="font-size:11px;color:var(--txt3)">'+i.time+'</div></div></div>';
+  }).join('');
+}
+
+function renderProjectGrid() {
+  var el = document.getElementById('project-grid'); if(!el) return;
+  el.innerHTML = PROJECTS.map(function(p){
+    var statusBadge = p.status==='Active'?'<span class="badge badge-active">● Active</span>':'<span class="badge badge-pending">⏳ Pending</span>';
+    return '<div class="project-card" onclick="openProjectDetail(\''+p.id+'\')"><div class="pc-head"><span class="pc-icon">'+p.icon+'</span>'+statusBadge+'</div>'
+      +'<div class="pc-title">'+p.name+'</div>'
+      +'<div class="pc-desc">'+p.desc+'</div>'
+      +'<div class="pc-meta"><span>'+p.vendors+' vendors</span><span>'+p.offerings+' offerings</span><span>'+p.members+' members</span></div>'
+      +'<div style="font-size:11px;color:var(--txt3);margin-top:8px">'+p.id+' · Created '+p.created+'</div></div>';
+  }).join('')
+  +'<div class="project-card" style="display:flex;align-items:center;justify-content:center;min-height:160px;border-style:dashed;cursor:pointer" onclick="openCreateProject()">'
+  +'<div style="text-align:center;color:var(--txt3)"><div style="font-size:32px;margin-bottom:8px">+</div><div style="font-size:13px">New Project</div></div></div>';
+}
+
+function renderMembersList() {
+  var el = document.getElementById('members-list'); if(!el) return;
+  var list = memberFilter==='all' ? MEMBERS : MEMBERS.filter(function(m){return m.role===memberFilter});
+  el.innerHTML = list.map(function(m){
+    var roleBadge = {Admin:'<span class="badge badge-admin">👑 Admin</span>',Member:'<span class="badge badge-member">👤 Member</span>',Viewer:'<span class="badge badge-viewer">👁️ Viewer</span>'}[m.role]||m.role;
+    return '<div class="member-row"><div class="member-avatar" style="background:'+m.color+'22;color:'+m.color+'">'+m.avatar+'</div>'
+      +'<div class="member-info"><div class="member-name">'+m.name+'</div><div class="member-email">'+m.email+'</div></div>'
+      +roleBadge
+      +'<select class="form-input" style="width:120px;margin-left:12px;font-size:12px" onchange="changeMemberRole(\''+m.email+'\',this.value)"><option'+(m.role==='Admin'?' selected':'')+'>Admin</option><option'+(m.role==='Member'?' selected':'')+'>Member</option><option'+(m.role==='Viewer'?' selected':'')+'>Viewer</option></select>'
+      +'<button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="removeMember(\''+m.email+'\')">Remove</button></div>';
+  }).join('');
+}
+
+function renderOrgMembers() {
+  var el = document.getElementById('org-members-list'); if(!el) return;
+  el.innerHTML = ORG_MEMBERS.map(function(m){
+    var roleColor = {
+      'Org Owner':'var(--vl)','Org Admin':'var(--tl)','Tenant Admin':'var(--gl)','Viewer':'var(--txt3)'
+    }[m.role]||'var(--txt2)';
+    return '<div class="member-row"><div class="member-avatar" style="background:'+m.color+'22;color:'+m.color+'">'+m.avatar+'</div>'
+      +'<div class="member-info"><div class="member-name">'+m.name+'</div><div class="member-email">'+m.email+'</div></div>'
+      +'<span style="color:'+roleColor+';font-size:12px;font-weight:600">'+m.role+'</span>'
+      +'<span style="color:var(--txt3);font-size:11px;margin-left:16px">Tenants: '+m.tenants+'</span>'
+      +'<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="toast(\'Member settings for '+m.name+'\')">Edit</button></div>';
+  }).join('');
+}
+
+// ─── ACTIONS ─────────────────────────────────────────
+function setMemberFilter(f, el) {
+  memberFilter = f;
+  document.querySelectorAll('#page-t_members .chip').forEach(function(c){c.classList.remove('active')});
+  el.classList.add('active');
+  renderMembersList();
+}
+
+function changeMemberRole(email, role) {
+  var m = MEMBERS.find(function(x){return x.email===email}); if(!m) return;
+  m.role = role; toast('✅ '+m.name+' is now '+role);
+}
+
+function removeMember(email) {
+  var idx = MEMBERS.findIndex(function(x){return x.email===email});
+  if(idx>-1){var name=MEMBERS[idx].name; MEMBERS.splice(idx,1); toast('👤 '+name+' removed'); renderMembersList();}
+}
+
+function openInviteMember() {
+  openModal('📨 Invite Team Member',
+    '<div class="form-group"><label class="form-label">Email Address *</label><input class="form-input" id="inv-email" placeholder="colleague@company.com"></div>'
+    +'<div class="form-group"><label class="form-label">Role</label><select class="form-input" id="inv-role"><option>Admin</option><option selected>Member</option><option>Viewer</option></select></div>'
+    +'<div class="form-group"><label class="form-label">Personal message (optional)</label><textarea class="form-input" rows="2" placeholder="Welcome to the team…"></textarea></div>'
+    +'<div class="alert alert-t">ℹ️ They will receive an email invite to join this tenant.</div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="sendMemberInvite()">📨 Send Invite</button>',
+    'modal-lg');
+}
+
+function sendMemberInvite() {
+  var email = (document.getElementById('inv-email')||{value:''}).value;
+  if(!email){toast('⚠ Enter an email address.');return;}
+  closeModal(); toast('📨 Invite sent to '+email);
+}
+
+function openInviteOrgMember() {
+  openModal('📨 Add Organization Member',
+    '<div class="form-group"><label class="form-label">Email Address *</label><input class="form-input" placeholder="member@company.com"></div>'
+    +'<div class="form-group"><label class="form-label">Org Role</label><select class="form-input"><option>Org Admin</option><option selected>Tenant Admin</option><option>Viewer</option></select></div>'
+    +'<div class="form-group"><label class="form-label">Assign to Tenants</label><select class="form-input"><option>All Tenants</option><option>TEN-0001 — Ninepoint Demo Org</option><option>TEN-0002 — Agro Connect</option><option>TEN-0003 — MediMart</option></select></div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal();toast(\'📨 Org invite sent\')">Send Invite</button>',
+    'modal-lg');
+}
+
+function openCreateProject() {
+  openModal('📁 Create New Project',
+    '<div class="form-group"><label class="form-label">Project Name *</label><input class="form-input" id="prj-name" placeholder="e.g. Healthcare Pilot"></div>'
+    +'<div class="form-row"><div class="form-group"><label class="form-label">Icon</label><input class="form-input" id="prj-icon" placeholder="🚀 (emoji)" style="width:80px"></div>'
+    +'<div class="form-group"><label class="form-label">Status</label><select class="form-input"><option>Active</option><option>Pending</option></select></div></div>'
+    +'<div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="prj-desc" rows="2" placeholder="What is this project for?"></textarea></div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="createProject()">📁 Create Project</button>',
+    'modal-lg');
+}
+
+function createProject() {
+  var name = (document.getElementById('prj-name')||{value:''}).value;
+  var icon = (document.getElementById('prj-icon')||{value:'📁'}).value||'📁';
+  var desc = (document.getElementById('prj-desc')||{value:''}).value;
+  if(!name){toast('⚠ Enter a project name.');return;}
+  var id = 'PRJ-00'+(PROJECTS.length+1);
+  PROJECTS.push({id,name,icon,desc,vendors:0,offerings:0,status:'Active',created:new Date().toISOString().slice(0,10),members:1});
+  closeModal(); toast('📁 Project "'+name+'" created!'); renderProjectGrid();
+}
+
+function openProjectDetail(id) {
+  var p = PROJECTS.find(function(x){return x.id===id}); if(!p) return;
+  openModal(p.icon+' '+p.name,
+    '<div class="meta-row"><span class="meta-key">Project ID</span><span class="meta-val" style="font-family:monospace">'+p.id+'</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Status</span><span class="meta-val">'+p.status+'</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Vendors</span><span class="meta-val col-v">'+p.vendors+'</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Offerings</span><span class="meta-val col-t">'+p.offerings+'</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Members</span><span class="meta-val">'+p.members+'</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Created</span><span class="meta-val">'+p.created+'</span></div>'
+    +'<p style="color:var(--txt3);font-size:13px;margin-top:10px">'+p.desc+'</p>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="toast(\'📁 Project editor opened\');closeModal()">Edit Project</button>',
+    'modal-sm');
+}
+
+function openCreateRealm() {
+  openModal('🌐 Provision New Realm',
+    '<div class="form-group"><label class="form-label">Realm Name *</label><input class="form-input" placeholder="e.g. SEA Production"></div>'
+    +'<div class="form-row"><div class="form-group"><label class="form-label">Region</label><select class="form-input"><option>ap-south-1 (Mumbai)</option><option>ap-southeast-1 (Singapore)</option><option>us-east-1 (Virginia)</option><option>eu-west-1 (Ireland)</option></select></div>'
+    +'<div class="form-group"><label class="form-label">Environment</label><select class="form-input"><option>Production</option><option>Staging</option><option>Development</option></select></div></div>'
+    +'<div class="form-group"><label class="form-label">Realm ID (auto-generated)</label><input class="form-input" value="realm-sea-prod" disabled style="font-family:monospace;opacity:.7"></div>'
+    +'<div class="alert alert-a">⏳ Realm provisioning typically takes 5–10 minutes. You will be notified by email when ready.</div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="closeModal();toast(\'🌐 Realm provisioning started — you will be notified when ready\')">🌐 Provision Realm</button>',
+    'modal-lg');
+}
+
+function openRealmDetail(id) {
+  openModal('🌐 India Production Realm',
+    '<div class="meta-row"><span class="meta-key">Realm ID</span><span class="meta-val" style="font-family:monospace">realm-in-prod</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Region</span><span class="meta-val">ap-south-1 (Mumbai)</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Status</span><span class="meta-val col-g">● Active</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Vendors</span><span class="meta-val">22</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Orders/month</span><span class="meta-val">12,447</span></div>'
+    +'<div class="meta-row"><span class="meta-key">Uptime</span><span class="meta-val col-g">99.97%</span></div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Close</button>','modal-sm');
+}
+
+// ─── TABS & SECTIONS ─────────────────────────────────
+function setCreateTab(tab, el) {
+  document.querySelectorAll('#page-t_create .tab').forEach(function(t){t.classList.remove('active')});
+  if(el) el.classList.add('active');
+  ['basic','config','billing','review'].forEach(function(t){
+    var d = document.getElementById('create-'+t); if(d) d.style.display=t===tab?'block':'none';
+  });
+  if(tab==='review'){
+    var nameEl=document.getElementById('review-name'),slugEl=document.getElementById('review-slug'),emailEl=document.getElementById('review-email');
+    if(nameEl) nameEl.textContent=(document.getElementById('tc-name')||{value:'—'}).value||'—';
+    if(slugEl) slugEl.textContent=((document.getElementById('tc-slug')||{value:'—'}).value||'—')+'.adanpradan.io';
+    if(emailEl) emailEl.textContent=(document.getElementById('tc-email')||{value:'—'}).value||'—';
+  }
+}
+
+function setSettingsSection(sec, el) {
+  document.querySelectorAll('.settings-nav-item').forEach(function(n){n.classList.remove('active')});
+  el.classList.add('active');
+  ['general','commerce','notifications','security','integrations','danger'].forEach(function(s){
+    var d=document.getElementById('settings-'+s); if(d) d.style.display=s===sec?'block':'none';
+  });
+}
+
+function createTenant() {
+  var name=(document.getElementById('tc-name')||{value:''}).value;
+  closeModal && closeModal();
+  toast('🏢 Tenant "'+(name||'New Tenant')+'" created — provisioning in progress!');
+  showPage('t_dash');
+}
+
+function updatePlanSummary() {
+  var plan = (document.getElementById('tc-plan')||{value:'enterprise'}).value;
+  var ps = document.getElementById('plan-summary'); if(!ps) return;
+  var plans = {
+    starter:{name:'Starter Plan',color:'var(--tl)',desc:'✅ 5 vendors · ✅ 500 orders/mo · ✅ Basic plugins · ❌ Custom domain'},
+    growth:{name:'Growth Plan',color:'var(--gl)',desc:'✅ 20 vendors · ✅ 5,000 orders/mo · ✅ All plugins · ✅ Custom domain · ❌ Dedicated support'},
+    enterprise:{name:'Enterprise Plan',color:'var(--vl)',desc:'✅ Unlimited vendors · ✅ Unlimited orders · ✅ All plugins · ✅ Custom domain · ✅ Dedicated support · ✅ SLA 99.9%'},
+  };
+  var p = plans[plan]||plans.enterprise;
+  ps.innerHTML='<div style="font-weight:700;color:'+p.color+';margin-bottom:8px">'+p.name+'</div><div style="font-size:12px;color:var(--txt3);line-height:1.8">'+p.desc+'</div>';
+}
+
+// ─── NAVIGATION ──────────────────────────────────────
+var PAGE_META = {
+  t_dash:{title:'📊 Dashboard',crumb:'Tenant Admin'},
+  t_create:{title:'🏢 Create New Tenant',crumb:'Tenant Admin'},
+  t_project:{title:'📁 Projects',crumb:'Tenant Admin'},
+  t_members:{title:'👥 Members',crumb:'Tenant Admin'},
+  t_settings:{title:'⚙️ Tenant Settings',crumb:'Tenant Admin'},
+  t_onboard:{title:'🚀 Onboarding Journey',crumb:'Tenant Admin'},
+  o_overview:{title:'🏛️ Org Overview',crumb:'Org Admin'},
+  o_upgrade:{title:'⬆️ Upgrade to Organization',crumb:'Org Admin'},
+  o_realm:{title:'🌐 Realm Provisioning',crumb:'Org Admin'},
+  o_members:{title:'👤 Org Members',crumb:'Org Admin'},
+  o_upgrade_vendor:{title:'⚡ Upgrade to Vendor',crumb:'Org Admin'},
+  t_plugin_catalog:{title:'🔧 Plugin Catalog',crumb:'Plugins'},
+  t_locations:{title:'📍 Locations & Coverage',crumb:'Locations'},
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+  var pg = document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  // activate correct nav item
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+  var m = PAGE_META[id]||{title:id,crumb:'Admin'};
+  document.getElementById('topbar-title').textContent = m.title;
+  document.getElementById('topbar-breadcrumb').textContent = m.crumb;
+  // page-specific renders
+  if(id==='t_dash') renderDashActivity();
+  if(id==='t_project') renderProjectGrid();
+  if(id==='t_members') renderMembersList();
+  if(id==='o_members') renderOrgMembers();
+  if(id==='t_plugin_catalog') renderTenantPlugins();
+}
+
+var TENANT_STD_PLUGINS=[
+  {id:'STD-001',name:'Basic Payments (UPI)',ver:'v1.2.0',cat:'Payments',icon:'💳',bg:'rgba(16,185,129,.12)',caps:['payments','upi','razorpay'],desc:'Accept UPI, credit/debit card, and net banking. Integrated with Razorpay.',active:true,installs:312},
+  {id:'STD-002',name:'GST Calculator',ver:'v2.0.0',cat:'Tax',icon:'🧮',bg:'rgba(251,191,36,.12)',caps:['tax','gst','compliance'],desc:'Auto-calculates GST by product category and state. GST-compliant invoices.',active:true,installs:298},
+  {id:'STD-003',name:'Delhivery Shipping',ver:'v1.4.2',cat:'Shipping',icon:'🚚',bg:'rgba(14,165,233,.12)',caps:['shipping','tracking'],desc:'Real-time shipping rates, label generation, and tracking.',active:false,installs:201},
+  {id:'STD-004',name:'Vendor Analytics',ver:'v1.1.0',cat:'Analytics',icon:'📊',bg:'rgba(139,92,246,.12)',caps:['analytics','reports'],desc:'Revenue dashboards, cohort analysis, and CLV tracking for vendors.',active:false,installs:188},
+  {id:'STD-005',name:'SMS Notifications',ver:'v1.0.5',cat:'Notifications',icon:'📱',bg:'rgba(249,115,22,.12)',caps:['sms','otp'],desc:'Order confirmations, OTPs, and delivery updates via SMS.',active:true,installs:245},
+  {id:'STD-006',name:'BlueDart Courier',ver:'v1.2.1',cat:'Shipping',icon:'📦',bg:'rgba(14,165,233,.12)',caps:['shipping','express'],desc:'Express shipping with BlueDart. B2B rates and AWB tracking.',active:false,installs:134},
+  {id:'STD-007',name:'FSSAI Compliance',ver:'v1.0.0',cat:'Compliance',icon:'🏛️',bg:'rgba(100,116,139,.12)',caps:['compliance','fssai'],desc:'FSSAI license validation, expiry alerts, and food-safety badge.',active:false,installs:89},
+  {id:'STD-008',name:'Review & Ratings',ver:'v1.3.0',cat:'Analytics',icon:'⭐',bg:'rgba(245,158,11,.12)',caps:['reviews','nps'],desc:'Collect, display, and respond to customer reviews. NPS surveys.',active:true,installs:276}
+];
+function renderTenantPlugins(){
+  var q=(document.getElementById('tpc-search')||{}).value||'';
+  var cat=(document.getElementById('tpc-cat')||{}).value||'';
+  var list=TENANT_STD_PLUGINS.filter(function(p){
+    return (!q||p.name.toLowerCase().includes(q.toLowerCase()))&&(!cat||p.cat===cat);
+  });
+  var html=list.map(function(p){
+    var caps=p.caps.map(function(c){return '<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(14,165,233,.1);color:#38bdf8;border:1px solid rgba(14,165,233,.2);margin-right:3px">'+c+'</span>';}).join('');
+    var btn=p.active?
+      '<button class="btn btn-ghost btn-sm" onclick="toggleTenantPlugin(\''+p.id+'\')">⏸ Deactivate</button>':
+      '<button class="btn btn-primary btn-sm" onclick="toggleTenantPlugin(\''+p.id+'\')">⚡ Activate</button>';
+    var badge=p.active?'<span class="badge badge-member" style="background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.25)">Active</span>':'<span class="badge" style="background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.2)">Inactive</span>';
+    return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;margin-bottom:10px">'+
+      '<div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:'+p.bg+'">'+p.icon+'</div>'+
+      '<div style="flex:1"><div style="font-size:13px;font-weight:700;margin-bottom:2px">'+p.name+' <span style="font-size:10px;color:var(--txt3);font-weight:600">'+p.ver+'</span></div>'+
+      '<div style="font-size:11px;color:var(--txt3);margin-bottom:6px">'+p.cat+' · '+p.installs+' vendors · <span style="background:rgba(14,165,233,.1);color:#38bdf8;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;border:1px solid rgba(14,165,233,.2)">Platform Plugin</span></div>'+
+      '<div style="margin-bottom:6px">'+caps+'</div>'+
+      '<div style="font-size:11px;color:var(--txt3)">'+p.desc+'</div></div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">'+badge+btn+'</div></div>';
+  }).join('');
+  if(!html)html='<div style="text-align:center;padding:40px;color:var(--txt3)">No plugins match your search.</div>';
+  var el=document.getElementById('tenant-plugin-catalog');if(el)el.innerHTML=html;
+}
+function toggleTenantPlugin(id){
+  var p=TENANT_STD_PLUGINS.find(function(x){return x.id===id;});
+  if(p){p.active=!p.active;renderTenantPlugins();toast((p.active?'✅ ':'⏸ ')+p.name+' '+(p.active?'activated':'deactivated'));}
+}
+
+// ─── MODAL ───────────────────────────────────────────
+function openModal(title, body, footBtns, cls) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-foot').innerHTML = (footBtns||'')+'<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  var box = document.getElementById('modal-box');
+  box.className = 'modal-box'+(cls?' '+cls:'');
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+// ─── TOAST ───────────────────────────────────────────
+function toast(msg, dur) {
+  var c = document.getElementById('toast-container');
+  var t = document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){if(c.contains(t))c.removeChild(t)},300)},dur||3000);
+}
+
+// ─── INIT ────────────────────────────────────────────
+renderDashActivity();
+</script>
+</body>
+</html>
+
+</body></html>

@@ -1,0 +1,1418 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vendor Portal — Adan Pradan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2333;--bdr:#252c3f;--bdr2:#2e374f;
+  --t:#0ea5e9;--tl:#38bdf8;--g:#10b981;--gl:#34d399;--a:#f59e0b;--al:#fbbf24;
+  --r:#ef4444;--rl:#f87171;--v:#8b5cf6;--vl:#a78bfa;--p:#ec4899;--pl:#f472b6;
+  --sl:#64748b;--sll:#94a3b8;--w:#f1f5f9;--ink:#0f1117
+}
+html,body{height:100%;background:var(--bg);color:var(--w);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+  font-size:14px;line-height:1.5;overflow:hidden}
+.shell{display:grid;grid-template-columns:236px 1fr;grid-template-rows:52px 1fr;height:100vh}
+.topbar{grid-column:1/3;background:var(--card);border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-right:8px}
+.brand span{color:var(--tl)}
+.tb-sep{width:1px;height:20px;background:var(--bdr);margin:0 4px}
+.tb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.verified{background:rgba(16,185,129,.12);color:var(--gl);border:1px solid rgba(16,185,129,.25)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-stat{font-size:11px;color:var(--sl);display:flex;align-items:center;gap:5px}
+.tb-stat strong{color:var(--w);font-weight:700}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--v));
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.sidebar{background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.nav-section{padding:14px 10px 4px;font-size:9px;font-weight:800;color:var(--sl);text-transform:uppercase;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:8px;border:none;background:transparent;color:var(--sll);text-align:left;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;border-left:2px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:var(--card2);color:var(--w)}
+.nav-item.active{color:var(--w);font-weight:700;background:rgba(14,165,233,.08);border-left-color:var(--tl)}
+.nav-item.active.v{background:rgba(139,92,246,.08);border-left-color:var(--vl)}
+.nav-ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{flex:1}
+.nav-pill{font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;background:rgba(239,68,68,.15);color:var(--rl)}
+.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--bdr)}
+.help-btn{width:100%;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);color:var(--tl);padding:9px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px}
+.main{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent}
+.page{display:none;padding:24px 28px 48px;max-width:1060px;animation:fadein .18s ease}
+.page.wide{max-width:1260px}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.page-hdr{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--sll)}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-t{font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card.bordered-t{border-left:3px solid var(--tl)}
+.card.bordered-g{border-left:3px solid var(--gl)}
+.card.bordered-a{border-left:3px solid var(--al)}
+.card.bordered-r{border-left:3px solid var(--rl)}
+.card.bordered-v{border-left:3px solid var(--vl)}
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;border:1px solid transparent}
+.badge-g{background:rgba(16,185,129,.1);color:var(--gl);border-color:rgba(16,185,129,.25)}
+.badge-a{background:rgba(245,158,11,.1);color:var(--al);border-color:rgba(245,158,11,.25)}
+.badge-r{background:rgba(239,68,68,.1);color:var(--rl);border-color:rgba(239,68,68,.25)}
+.badge-t{background:rgba(14,165,233,.1);color:var(--tl);border-color:rgba(14,165,233,.25)}
+.badge-v{background:rgba(139,92,246,.1);color:var(--vl);border-color:rgba(139,92,246,.25)}
+.badge-sl{background:rgba(100,116,139,.1);color:var(--sll);border-color:rgba(100,116,139,.2)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sl);border-bottom:1px solid var(--bdr)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.cr{cursor:pointer}.tbl tr.cr:hover td{background:rgba(255,255,255,.02)}
+.action-btn{background:transparent;border:1px solid var(--bdr);color:var(--sll);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;font-weight:600}
+.action-btn:hover{border-color:var(--tl);color:var(--tl)}
+.btn{padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;border:none;transition:all .14s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--tl);color:var(--ink)}.btn-primary:hover{background:var(--t)}
+.btn-success{background:var(--gl);color:var(--ink)}
+.btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--sll)}.btn-ghost:hover{border-color:var(--bdr2);color:var(--w)}
+.btn-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--rl)}
+.btn-purple{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:var(--vl)}.btn-purple:hover{background:rgba(139,92,246,.25)}
+.btn-sm{padding:5px 12px;font-size:11px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.alert{padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:14px;border:1px solid transparent;display:flex;gap:10px;align-items:flex-start}
+.alert-ic{font-size:16px;flex-shrink:0;margin-top:-1px}
+.alert-t{background:rgba(14,165,233,.07);color:#7dd3fc;border-color:rgba(14,165,233,.2)}
+.alert-g{background:rgba(16,185,129,.07);color:#6ee7b7;border-color:rgba(16,185,129,.2)}
+.alert-a{background:rgba(245,158,11,.07);color:#fcd34d;border-color:rgba(245,158,11,.2)}
+.alert-v{background:rgba(139,92,246,.07);color:#c4b5fd;border-color:rgba(139,92,246,.2)}
+.alert-r{background:rgba(239,68,68,.06);color:#fca5a5;border-color:rgba(239,68,68,.2)}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:12px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--sl)}.detail-val{color:var(--w);font-weight:600;text-align:right}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--sll);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:var(--card2);border:1px solid var(--bdr);color:var(--w);padding:9px 12px;border-radius:8px;font-family:inherit;font-size:13px}
+.form-input:focus{outline:none;border-color:var(--tl)}
+.form-hint{font-size:11px;color:var(--sl);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--bdr2);border-radius:14px;width:100%}
+.modal-sm{max-width:480px}
+.modal-md{max-width:600px}
+.modal-lg{max-width:760px}
+.modal-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;color:var(--sl);font-size:20px;cursor:pointer}
+.modal-body{padding:18px 20px;max-height:72vh;overflow-y:auto}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--bdr);display:flex;gap:10px;justify-content:flex-end}
+.toast{position:fixed;bottom:22px;right:22px;padding:12px 18px;border-radius:10px;font-weight:700;font-size:12px;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;background:var(--gl);color:var(--ink);border:1px solid rgba(16,185,129,.4)}
+.toast.show{transform:translateY(0);opacity:1}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sep{height:1px;background:var(--bdr);margin:16px 0}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bdr);background:var(--card2);color:var(--sll);transition:all .14s;white-space:nowrap}
+.chip:hover{border-color:var(--bdr2);color:var(--w)}
+.chip.on{background:rgba(14,165,233,.12);border-color:var(--tl);color:var(--tl)}
+.progress-bar{height:6px;border-radius:4px;background:var(--bdr);overflow:hidden}
+.progress-fill{height:100%;border-radius:4px}
+.stars{color:var(--al);letter-spacing:1px}
+.mono{font-family:monospace}.fw7{font-weight:700}
+.col-g{color:var(--gl)}.col-a{color:var(--al)}.col-r{color:var(--rl)}.col-t{color:var(--tl)}.col-sl{color:var(--sl)}.col-v{color:var(--vl)}.col-w{color:var(--w)}
+.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}
+.var-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
+.tracking{display:flex;margin:14px 0 4px}
+.tstep{flex:1;text-align:center;position:relative}
+.tstep .tdot{width:24px;height:24px;border-radius:50%;background:var(--card2);border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;margin:0 auto 5px;color:var(--sl)}
+.tstep.done .tdot{background:var(--gl);border-color:var(--gl);color:var(--ink)}
+.tstep.active .tdot{background:var(--tl);border-color:var(--tl);color:var(--ink)}
+.tstep:not(:last-child)::after{content:'';position:absolute;top:12px;left:60%;width:80%;height:2px;background:var(--bdr);z-index:0}
+.tstep.done:not(:last-child)::after{background:var(--gl)}
+.tstep .tl{font-size:9px;color:var(--sl);font-weight:600}
+.tstep.done .tl,.tstep.active .tl{color:var(--w)}
+
+/* ── PLUGIN PICKER ── */
+.plugin-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.pp-card{border:2px solid var(--bdr);border-radius:10px;padding:14px;cursor:pointer;transition:all .14s;background:var(--card2)}
+.pp-card:hover{border-color:var(--bdr2)}
+.pp-card.selected{border-color:var(--tl);background:rgba(14,165,233,.06)}
+.pp-card.custom-selected{border-color:var(--vl);background:rgba(139,92,246,.06)}
+.pp-card-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pp-icon{font-size:18px}
+.pp-name{font-size:12px;font-weight:700;color:var(--w)}
+.pp-source{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
+.pp-source.std{background:rgba(16,185,129,.12);color:var(--gl)}
+.pp-source.custom{background:rgba(139,92,246,.12);color:var(--vl)}
+.pp-desc{font-size:11px;color:var(--sll);line-height:1.5}
+.pp-check{width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr);margin-left:auto;flex-shrink:0;transition:all .14s}
+.pp-card.selected .pp-check{background:var(--tl);border-color:var(--tl)}
+.pp-card.custom-selected .pp-check{background:var(--vl);border-color:var(--vl)}
+.pp-none{border-style:dashed;opacity:.7}
+
+/* ── MY PLUGINS PAGE ── */
+.my-plugin-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.my-plugin-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.my-plugin-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.my-plugin-icon.std{background:rgba(16,185,129,.1)}
+.my-plugin-icon.custom{background:rgba(139,92,246,.1)}
+.my-plugin-key{font-family:monospace;font-size:10px;color:var(--sl);margin-top:2px}
+.plug-status-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+
+/* ── PLUGIN CATALOG GRID ── */
+.catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.cat-card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:14px;cursor:pointer;transition:all .14s}
+.cat-card:hover{border-color:var(--bdr2);transform:translateY(-2px)}
+.cat-card.has-custom{border-color:rgba(139,92,246,.35)}
+.cat-card.has-std{border-color:rgba(16,185,129,.25)}
+.cat-icon{font-size:22px;margin-bottom:6px}
+.cat-name{font-size:12px;font-weight:700;color:var(--w)}
+.cat-tag{font-size:10px;color:var(--sll);margin-top:4px}
+@media(max-width:960px){.catalog-grid{grid-template-columns:1fr 1fr}.g4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">Adan<span>Pradan</span></div>
+  <div class="tb-sep"></div>
+  <span style="font-size:12px;color:var(--sl)">Vendor Portal</span>
+  <div class="tb-sep"></div>
+  <span class="tb-badge verified">✓ Verified Vendor</span>
+  <div class="tb-right">
+    <div class="tb-stat">📦 <strong id="hdr-neworders">—</strong> new orders</div>
+    <div class="tb-stat">📊 <strong class="col-g" id="hdr-sales">—</strong> today</div>
+    <div class="tb-sep"></div>
+    <div class="avatar" title="ABC Electronics">AE</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div style="padding:8px 8px 0">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" data-page="overview" onclick="nav(this,'overview')"><span class="nav-ic">🏠</span><span class="nav-label">Overview</span></button>
+    <button class="nav-item" data-page="analytics" onclick="nav(this,'analytics')"><span class="nav-ic">📈</span><span class="nav-label">Analytics</span></button>
+
+    <div class="nav-section">Catalog</div>
+    <button class="nav-item" data-page="products" onclick="nav(this,'products')"><span class="nav-ic">🛍️</span><span class="nav-label">Products</span></button>
+    <button class="nav-item" data-page="inventory" onclick="nav(this,'inventory')"><span class="nav-ic">📦</span><span class="nav-label">Inventory</span><span id="lowstock-pill" class="nav-pill" style="display:none"></span></button>
+
+    <div class="nav-section">Plugins</div>
+    <button class="nav-item" data-page="my-plugins" onclick="nav(this,'my-plugins')"><span class="nav-ic">🔌</span><span class="nav-label">My Plugins</span></button>
+    <button class="nav-item v" data-page="plugin-catalog" onclick="nav(this,'plugin-catalog')"><span class="nav-ic">🛒</span><span class="nav-label">Plugin Catalog</span></button>
+
+    <div class="nav-section">Orders & Fulfilment</div>
+    <button class="nav-item" data-page="orders" onclick="nav(this,'orders')"><span class="nav-ic">📋</span><span class="nav-label">Orders</span><span id="orders-pill" class="nav-pill" style="display:none"></span></button>
+    <button class="nav-item" data-page="fulfilment" onclick="nav(this,'fulfilment')"><span class="nav-ic">🚚</span><span class="nav-label">Fulfilment</span></button>
+    <button class="nav-item" data-page="returns" onclick="nav(this,'returns')"><span class="nav-ic">↩️</span><span class="nav-label">Returns & Refunds</span><span id="returns-pill" class="nav-pill" style="display:none"></span></button>
+
+    <div class="nav-section">Customers</div>
+    <button class="nav-item" data-page="customers" onclick="nav(this,'customers')"><span class="nav-ic">👤</span><span class="nav-label">Customers</span></button>
+    <button class="nav-item" data-page="reviews" onclick="nav(this,'reviews')"><span class="nav-ic">⭐</span><span class="nav-label">Reviews</span></button>
+
+    <div class="nav-section">Payments</div>
+    <button class="nav-item" data-page="payments" onclick="nav(this,'payments')"><span class="nav-ic">💳</span><span class="nav-label">Payments & Settlements</span></button>
+
+    <div class="nav-section">Account</div>
+    <button class="nav-item" data-page="settings" onclick="nav(this,'settings')"><span class="nav-ic">⚙️</span><span class="nav-label">Vendor Settings</span></button>
+  </div>
+  <div class="sidebar-foot">
+    <button class="help-btn" onclick="toast('Support request sent to vendor success team')">❓ Need help?</button>
+  </div>
+</div>
+
+<div class="main" id="mainScroll">
+
+<!-- OVERVIEW -->
+<div class="page on" id="page-overview">
+  <div class="page-hdr"><div class="page-title">Good evening, ABC Electronics</div><div class="page-sub">Here's what needs your attention today.</div></div>
+  <div class="g3" id="overview-stats" style="margin-bottom:16px"></div>
+  <div class="card bordered-a"><div class="card-t">⚠️ Orders requiring action</div>
+    <table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody id="overview-action-orders"></tbody></table>
+  </div>
+  <div class="card bordered-r"><div class="card-t">📦 Low stock</div><div id="overview-lowstock"></div></div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="page" id="page-analytics">
+  <div class="page-hdr"><div class="page-title">Analytics</div><div class="page-sub">Sales, orders, and product performance.</div></div>
+  <div class="card"><div class="card-t">📈 Monthly sales</div>
+    <div style="display:flex;align-items:flex-end;gap:10px;height:100px" id="an-bars"></div>
+    <div style="display:flex;gap:10px;margin-top:6px" id="an-labels"></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="card-t">🏆 Top products</div><div id="an-top-products"></div></div>
+    <div class="card"><div class="card-t">📋 Orders by status</div><div id="an-orders-status"></div></div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="page" id="page-products">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">Products</div><div class="page-sub">Your catalogue, approval status, and plugin assignment.</div></div>
+    <button class="btn btn-primary" onclick="openAddProductModal()">+ Add Product</button>
+  </div>
+  <div id="products-list"></div>
+</div>
+
+<!-- INVENTORY -->
+<div class="page" id="page-inventory">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">Inventory</div><div class="page-sub">Stock by SKU/variant. Reserved at checkout, released if payment fails.</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="openBulkStockModal()">📋 Bulk Adjust (VE-053)</button>
+  </div>
+  <div class="card"><table class="tbl"><thead><tr><th>Product</th><th>Variant / SKU</th><th>On Hand</th><th>Reserved</th><th>Available</th><th></th></tr></thead><tbody id="inventory-tbody"></tbody></table></div>
+</div>
+
+<!-- MY PLUGINS -->
+<div class="page" id="page-my-plugins">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">My Plugins</div><div class="page-sub">Plugins assigned to your products. Use a platform standard plugin or register your own.</div></div>
+    <button class="btn btn-purple" onclick="openRegisterPluginModal()">+ Register Custom Plugin</button>
+  </div>
+  <div class="alert alert-v"><span class="alert-ic">🔌</span><span>
+    <strong>How plugins work:</strong> Every product needs a plugin to handle fulfilment. You can use a <strong>Platform Standard Plugin</strong> (free, no setup, ready immediately) or register a <strong>Custom Plugin</strong> (your own endpoint + SBOM, goes through review). You can switch a product's plugin at any time — takes effect on the next order.
+  </span></div>
+  <div id="my-plugins-list"></div>
+</div>
+
+<!-- PLUGIN CATALOG -->
+<div class="page" id="page-plugin-catalog">
+  <div class="page-hdr"><div class="page-title">Plugin Catalog</div><div class="page-sub">Browse platform standard plugins and your custom plugins by category.</div></div>
+  <div class="alert alert-t"><span class="alert-ic">ℹ️</span><span>
+    <strong>Standard plugins</strong> are provided by the platform — zero setup required. <strong>Custom plugins</strong> are your own fulfilment endpoints — they go through an SBOM review before going live.
+  </span></div>
+  <div class="catalog-grid" id="catalog-grid"></div>
+</div>
+
+<!-- ORDERS -->
+<div class="page wide" id="page-orders">
+  <div class="page-hdr" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="page-title">Orders</div><div class="page-sub">Accept new orders, track them through fulfilment, to delivered.</div></div>
+    <input class="form-input" id="order-search" placeholder="🔍 Search order ID or customer…" style="width:240px;font-size:12px" oninput="renderOrders()">
+  </div>
+  <div class="chip-row" id="order-status-chips" style="margin-bottom:14px"></div>
+  <div id="orders-table-container"></div>
+</div>
+
+<!-- FULFILMENT -->
+<div class="page wide" id="page-fulfilment">
+  <div class="page-hdr"><div class="page-title">Fulfilment</div><div class="page-sub">Pack → Ship → Track → Deliver. Orders move left to right.</div></div>
+  <div class="g4" id="fulfilment-board"></div>
+</div>
+
+<!-- RETURNS -->
+<div class="page" id="page-returns">
+  <div class="page-hdr"><div class="page-title">Returns & Refunds</div><div class="page-sub">Approve to refund or replace, or reject with a reason.</div></div>
+  <div id="returns-list"></div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div class="page-hdr"><div class="page-title">Customers</div><div class="page-sub">Everyone who has bought from you.</div></div>
+  <div class="card"><table class="tbl"><thead><tr><th>Customer</th><th>Orders</th><th>Total spent</th><th>Last order</th><th></th></tr></thead><tbody id="customers-tbody"></tbody></table></div>
+</div>
+
+<!-- REVIEWS -->
+<div class="page" id="page-reviews">
+  <div class="page-hdr"><div class="page-title">Reviews</div><div class="page-sub">What customers are saying about your products.</div></div>
+  <div id="reviews-list"></div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="page" id="page-payments">
+  <div class="page-hdr"><div class="page-title">Payments & Settlements</div><div class="page-sub">Sales, platform commission, and payouts.</div></div>
+  <div class="g3" id="payments-stats" style="margin-bottom:16px"></div>
+  <div class="alert alert-t"><span class="alert-ic">ℹ️</span><span>Settlement happens after delivery + return window closes — not immediately on payment.</span></div>
+  <div class="card"><div class="card-t">📄 Settlement history</div>
+    <table class="tbl"><thead><tr><th>Period</th><th>Sales</th><th>Commission</th><th>Net settlement</th><th>Status</th></tr></thead><tbody id="settlements-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-hdr"><div class="page-title">Vendor Settings</div><div class="page-sub">Business profile, payout details, tax info, and shipping.</div></div>
+  <div class="card bordered-t"><div class="card-t">🏠 Business Profile</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Business name</label><input class="form-input" value="ABC Electronics Pvt Ltd"></div>
+    <div class="form-group"><label class="form-label">Contact email</label><input class="form-input" value="ops@abcelectronics.in"></div></div>
+    <div class="form-group"><label class="form-label">Business description</label><textarea class="form-input" rows="2">Consumer electronics and accessories, serving India since 2019.</textarea></div>
+    <button class="btn btn-ghost btn-sm" onclick="toast('Profile saved')">Save profile</button>
+  </div>
+  <div class="card bordered-g"><div class="card-t">🏦 Bank Account</div>
+    <div class="detail-row"><span class="detail-label">Account holder</span><span class="detail-val">ABC Electronics Pvt Ltd</span></div>
+    <div class="detail-row"><span class="detail-label">Account number</span><span class="detail-val mono">XXXXXXXX4821</span></div>
+    <div class="detail-row"><span class="detail-label">IFSC</span><span class="detail-val mono">HDFC0001234</span></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="toast('Bank update form would open')">Update bank details</button>
+  </div>
+  <div class="card bordered-a"><div class="card-t">📜 Tax Information</div>
+    <div class="detail-row"><span class="detail-label">GSTIN</span><span class="detail-val mono">27AAAAA0000A1Z5</span></div>
+    <div class="detail-row"><span class="detail-label">PAN</span><span class="detail-val mono">AAAAA0000A</span></div>
+    <div class="detail-row"><span class="detail-label">Verification</span><span class="detail-val"><span class="badge badge-g">✓ Verified</span></span></div>
+  </div>
+  <div class="card bordered-v"><div class="card-t">🚚 Shipping Configuration</div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Default courier</label>
+      <select class="form-input"><option>Delhivery</option><option>BlueDart Express</option><option>Ekart Logistics</option><option>Xpressbees</option></select></div>
+    <div class="form-group"><label class="form-label">Handling time</label><input class="form-input" value="1-2 business days"></div></div>
+    <button class="btn btn-ghost btn-sm" onclick="toast('Shipping config saved')">Save shipping config</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal modal-md" id="modal-inner" onclick="event.stopPropagation()">
+    <div class="modal-hdr"><div class="modal-title" id="modal-title"></div><button class="modal-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════
+
+// Platform standard plugins (mirrors what platform admin published)
+var STD_PLUGINS={
+  SHIP_PHYSICAL:{key:'platform.standard.ship_physical',label:'Ecommerce',icon:'📦',version:'1.2.0',
+    desc:'Manual pack/ship through the Fulfilment board. No automated courier integration — vendor enters tracking number.',
+    requirements:[['Primary image','Square 1:1, min 1000×1000px, JPG/PNG/WebP, max 5MB, plain background — required'],
+      ['Gallery images','Up to 8 additional, same spec'],['Variants','Size/colour/material, per-variant stock'],
+      ['Logistics','SKU, weight, package dimensions, ships-from pincode']]},
+  DELIVER_DIGITAL:{key:'platform.standard.deliver_digital',label:'Digital Products',icon:'💾',version:'1.1.0',
+    desc:'Generates a pre-signed, time-limited download URL on order confirmation and emails it to the buyer.',
+    requirements:[['Preview image','Square 1:1, min 1000×1000px — required'],
+      ['Deliverable file(s)','The actual file(s) the buyer receives — required'],
+      ['License type','Personal / Commercial / Extended use terms']]},
+  LICENSE_SOFTWARE:{key:null,label:'Software License',icon:'💻',version:null,desc:'No platform standard plugin available — register your own custom plugin for this category.',requirements:[]},
+  PROVISION_SOFTWARE:{key:null,label:'Software & SaaS',icon:'🧩',version:null,desc:'No platform standard plugin yet — custom plugin required.',requirements:[]},
+  PROVISION_CLOUD:{key:'platform.standard.provision_cloud',label:'Cloud Services',icon:'☁️',version:'1.0.0',
+    desc:'Creates a manual provisioning ticket. Suitable for low-volume vendors.',
+    requirements:[['Service icon','Square, min 512×512px — required'],
+      ['Technical specs','Regions, compute/storage specs, API docs link'],
+      ['SLA','Uptime commitment, data residency, support response time']]},
+  STREAM_LMS_COURSE:{key:'platform.standard.lms_course',label:'LMS & Courses',icon:'🎓',version:'1.0.1',
+    desc:'Enrols the buyer in the platform\'s own lightweight course viewer.',
+    requirements:[['Course thumbnail','16:9, min 1280×720px — required'],['Intro video URL','YouTube/Vimeo/CDN link'],
+      ['Curriculum','Lesson list: title, video URL, duration — required'],
+      ['Metadata','Skill level, language, total duration, certificate on/off']]},
+  DELIVER_MULTIMEDIA:{key:null,label:'Multimedia',icon:'🎬',version:null,desc:'No platform standard plugin yet — custom plugin required.',requirements:[]},
+  DISPATCH_SERVICE:{key:'platform.standard.dispatch_service',label:'Field Services',icon:'🔧',version:'0.9.0',
+    desc:'Creates a job ticket only — no technician-assignment automation yet.',
+    requirements:[['Provider photo','Square, min 500×500px — required'],
+      ['Service area','Radius or named area'],['Response time SLA','e.g. within 4 hours']]},
+  BOOK_APPOINTMENT:{key:'platform.standard.book_appointment',label:'Appointments',icon:'📅',version:'1.3.0',
+    desc:'Books a slot on the platform\'s shared calendar and sends a video-call link.',
+    requirements:[['Profile photo','Square, min 500×500px — required'],
+      ['Session duration','e.g. 45 minutes'],['Session format','Video call / In-person / Phone call']]}
+};
+
+// Vendor's custom plugins (registered by this vendor, go through review)
+var MY_CUSTOM_PLUGINS=[
+  {id:'cp1',key:'abc.electronics.ship_v2',label:'ABC Ship v2',category:'SHIP_PHYSICAL',icon:'📦',
+   version:'2.1.0',status:'approved',endpoint:'https://api.abcelectronics.in/fulfil/webhook',
+   webhook_url:'https://api.abcelectronics.in/fulfil/webhook',desc:'Our own WMS integration with BlueDart Express — real-time tracking updates pushed back to the platform.',
+   submitted:'10 Sep 2026',reviewed:'12 Sep 2026'},
+  {id:'cp2',key:'abc.electronics.license_srv',label:'ABC License Server',category:'LICENSE_SOFTWARE',icon:'💻',
+   version:'1.0.0',status:'pending_review',endpoint:'https://license.abcelectronics.in/webhook',
+   webhook_url:'https://license.abcelectronics.in/webhook',desc:'Issues software license keys from our KeyServer on purchase confirmation.',
+   submitted:'8 Oct 2026',reviewed:null},
+];
+
+// Which plugin is assigned to each product (product id → {type:'std'|'custom', ref:key})
+var PRODUCT_PLUGIN_ASSIGNMENTS={
+  p1:{type:'custom',ref:'cp1'},
+  p2:{type:'std',ref:'SHIP_PHYSICAL'},
+  p3:{type:'std',ref:'SHIP_PHYSICAL'},
+  p4:{type:'std',ref:'SHIP_PHYSICAL'},
+};
+
+var PRODUCTS=[
+  {id:'p1',name:'AirBeat Wireless Earbuds',category:'SHIP_PHYSICAL',approval:'approved',
+   variants:[{sku:'AB-EB-BLK',name:'Black',stock:42,reserved:5,price:'₹2,499'},{sku:'AB-EB-WHT',name:'White',stock:8,reserved:2,price:'₹2,499'}]},
+  {id:'p2',name:'FlexCharge 65W GaN Charger',category:'SHIP_PHYSICAL',approval:'approved',
+   variants:[{sku:'FC-65-STD',name:'Standard',stock:3,reserved:1,price:'₹1,799'}]},
+  {id:'p3',name:'NoteBook Pro Sleeve 14"',category:'SHIP_PHYSICAL',approval:'under_review',
+   variants:[{sku:'NB-SL-14-GRY',name:'Grey',stock:0,reserved:0,price:'₹899'}]},
+  {id:'p4',name:'ClickType Mechanical Keyboard',category:'SHIP_PHYSICAL',approval:'draft',
+   variants:[{sku:'CT-KB-BLU',name:'Blue switches',stock:15,reserved:0,price:'₹3,299'}]},
+];
+var LOW_STOCK=5;
+
+var ORDERS=[
+  {id:'ORD-10231',customer:'Rhea Kapoor',items:'AirBeat Earbuds (Black) ×1',amount:'₹2,499',date:'10 min ago',status:'New',sku:'AB-EB-BLK',qty:1,weight:0.22,dims:'15×10×5 cm',cod:false,address:{line1:'14 Linking Road, Bandra West',city:'Mumbai',pincode:'400050',phone:'+91 98200 11223'},trackingId:null,courier:null},
+  {id:'ORD-10229',customer:'Arjun Mehta',items:'FlexCharge 65W ×2',amount:'₹3,598',date:'1 hour ago',status:'New',sku:'FC-65-STD',qty:2,weight:0.60,dims:'20×12×8 cm',cod:true,address:{line1:'B-12 Connaught Place',city:'New Delhi',pincode:'110001',phone:'+91 98100 22334'},trackingId:null,courier:null},
+  {id:'ORD-10211',customer:'Kavya Shah',items:'AirBeat Earbuds (White) ×1',amount:'₹2,499',date:'3 hours ago',status:'Confirmed',sku:'AB-EB-WHT',qty:1,weight:0.22,dims:'15×10×5 cm',cod:false,address:{line1:'22 Anna Salai',city:'Chennai',pincode:'600002',phone:'+91 94440 55667'},trackingId:null,courier:null},
+  {id:'ORD-10198',customer:'Devika Rao',items:'ClickType Keyboard ×1',amount:'₹3,299',date:'yesterday',status:'Processing',sku:'CT-KB-BLU',qty:1,weight:0.95,dims:'44×15×4 cm',cod:false,address:{line1:'7 Park Street',city:'Kolkata',pincode:'700016',phone:'+91 98300 99887'},trackingId:null,courier:null},
+  {id:'ORD-10180',customer:'Sam Thomas',items:'AirBeat Earbuds (Black) ×1',amount:'₹2,499',date:'2 days ago',status:'Ready to Ship',sku:'AB-EB-BLK',qty:1,weight:0.22,dims:'15×10×5 cm',cod:false,address:{line1:'5 MG Road',city:'Pune',pincode:'411001',phone:'+91 98220 33445'},trackingId:null,courier:null},
+  {id:'ORD-10150',customer:'Nisha Patel',items:'FlexCharge 65W ×1',amount:'₹1,799',date:'4 days ago',status:'Shipped',sku:'FC-65-STD',qty:1,weight:0.30,dims:'20×12×8 cm',cod:false,address:{line1:'9 Residency Road',city:'Bengaluru',pincode:'560025',phone:'+91 99000 11223'},trackingId:'TRK884210557',courier:'Delhivery'},
+  {id:'ORD-10090',customer:'Meera Joshi',items:'AirBeat Earbuds (Black) ×2',amount:'₹4,998',date:'1 week ago',status:'Delivered',sku:'AB-EB-BLK',qty:2,weight:0.44,dims:'20×15×6 cm',cod:false,address:{line1:'18 Civil Lines',city:'Jaipur',pincode:'302006',phone:'+91 98290 44556'},trackingId:'TRK119944302',courier:'BlueDart Express'},
+];
+var ORDER_STATUSES=['New','Confirmed','Processing','Ready to Ship','Shipped','Delivered','Cancelled'];
+var FULFIL_STAGES=['Processing','Ready to Ship','Shipped','Delivered'];
+var FULFIL_NEXT={'Processing':'Ready to Ship','Ready to Ship':'Shipped','Shipped':'Delivered'};
+var COURIERS=['Delhivery','BlueDart Express','Ekart Logistics','Xpressbees','DTDC Express','India Post','Shadow Fax'];
+
+var RETURNS=[
+  {id:'RET-5501',orderId:'ORD-9980',customer:'Ishaan Gupta',product:'AirBeat Earbuds (White)',amount:'₹2,499',reason:'Item damaged or defective',status:'Requested',requested:'3 days ago'},
+  {id:'RET-5488',orderId:'ORD-9820',customer:'Tanya Singh',product:'FlexCharge 65W Charger',amount:'₹1,799',reason:'No longer needed',status:'Approved',requested:'1 week ago'},
+];
+var REVIEWS=[
+  {customer:'Rhea Kapoor',product:'AirBeat Wireless Earbuds',rating:5,date:'2 days ago',comment:'Battery life is excellent, pairs instantly every time.',reply:null},
+  {customer:'Sam Thomas',product:'ClickType Mechanical Keyboard',rating:4,date:'1 week ago',comment:'Great feel, a bit loud for open offices.',reply:'Thanks Sam! Silent-switch variant coming soon.'},
+  {customer:'Meera Joshi',product:'FlexCharge 65W Charger',rating:3,date:'2 weeks ago',comment:'Works fine but the cable is shorter than expected.',reply:null},
+];
+var SETTLEMENTS=[
+  {period:'Sep 2026',sales:'₹2,34,890',commission:'₹23,489',net:'₹2,11,401',status:'Paid'},
+  {period:'Aug 2026',sales:'₹1,98,220',commission:'₹19,822',net:'₹1,78,398',status:'Paid'},
+  {period:'Oct 2026 (pending)',sales:'₹61,450',commission:'₹6,145',net:'₹55,305',status:'Held — return window open'},
+];
+
+// ══════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════
+function toast(msg){var t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2800);}
+function openModal(title,body,footBtns,size){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  var foot=document.getElementById('modal-foot');
+  foot.innerHTML='<button class="btn btn-ghost" onclick="closeModal()">Close</button>';
+  if(footBtns) foot.innerHTML=footBtns+foot.innerHTML;
+  var inner=document.getElementById('modal-inner');
+  inner.className='modal '+(size||'modal-md');
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(e){ if(!e||e.target===document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('open'); }
+function nav(btn,page){
+  document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on')});
+  var pg=document.getElementById('page-'+page); if(pg) pg.classList.add('on');
+  document.getElementById('mainScroll').scrollTop=0;
+}
+function approvalBadge(s){
+  return s==='approved'?'<span class="badge badge-g">✓ Approved</span>':s==='under_review'?'<span class="badge badge-a">Under review</span>':'<span class="badge badge-sl">Draft</span>';
+}
+function pluginStatusBadge(s){
+  if(s==='approved') return '<span class="badge badge-g">✓ Approved</span>';
+  if(s==='pending_review') return '<span class="badge badge-a">⏳ Under review</span>';
+  if(s==='rejected') return '<span class="badge badge-r">Rejected</span>';
+  return '<span class="badge badge-sl">Draft</span>';
+}
+function orderStatusBadge(s){
+  var cls=s==='Delivered'?'badge-g':s==='Cancelled'?'badge-sl':s==='New'?'badge-a':'badge-t';
+  return '<span class="badge '+cls+'">'+(s==='Delivered'?'✓ ':'')+s+'</span>';
+}
+function allVariants(){var out=[];PRODUCTS.forEach(function(p){p.variants.forEach(function(v){out.push({product:p,v:v});});});return out;}
+function lowStockVariants(){return allVariants().filter(function(x){return x.v.stock<=LOW_STOCK;});}
+
+// Plugin label for a product
+function pluginLabelForProduct(pid){
+  var a=PRODUCT_PLUGIN_ASSIGNMENTS[pid];
+  if(!a) return '<span class="badge badge-r">⚠ No plugin</span>';
+  if(a.type==='std'){
+    var s=STD_PLUGINS[a.ref];
+    return '<span class="badge badge-g">📦 '+s.label+' (Standard)</span>';
+  }
+  var c=MY_CUSTOM_PLUGINS.find(function(x){return x.id===a.ref;});
+  if(!c) return '<span class="badge badge-r">⚠ Plugin missing</span>';
+  return '<span class="badge badge-v">🔌 '+c.label+' (Custom)</span>';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════════════════════
+function renderOverview(){
+  var newOrders=ORDERS.filter(function(o){return o.status==='New';});
+  var actionable=ORDERS.filter(function(o){return ['New','Confirmed','Processing','Ready to Ship'].indexOf(o.status)>-1;});
+  document.getElementById('hdr-neworders').textContent=newOrders.length;
+  document.getElementById('hdr-sales').textContent='₹'+(newOrders.length*2499).toLocaleString('en-IN');
+  document.getElementById('orders-pill').style.display=newOrders.length?'inline-flex':'none';
+  document.getElementById('orders-pill').textContent=newOrders.length;
+  document.getElementById('overview-stats').innerHTML=`
+    <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800">${actionable.length}</div><div class="fs11 col-sl" style="margin-top:4px">Orders needing action</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--gl)">₹2,34,890</div><div class="fs11 col-sl" style="margin-top:4px">This month's sales</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:800;color:var(--al)">${lowStockVariants().length}</div><div class="fs11 col-sl" style="margin-top:4px">Low-stock SKUs</div></div>`;
+  document.getElementById('overview-action-orders').innerHTML=actionable.slice(0,5).map(function(o){
+    return `<tr class="cr" onclick="nav(document.querySelector('[data-page=orders]'),'orders');setTimeout(function(){openOrderModal('${o.id}')},50)">
+      <td class="mono fs11">${o.id}</td><td class="fs12">${o.customer}</td><td class="fw7 col-g fs12">${o.amount}</td><td>${orderStatusBadge(o.status)}</td>
+      <td><button class="action-btn">Act</button></td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="col-sl fs12" style="text-align:center;padding:20px">Nothing needs action.</td></tr>';
+  var low=lowStockVariants();
+  document.getElementById('overview-lowstock').innerHTML=low.length?low.map(function(x){
+    return `<div class="detail-row"><span class="detail-label">${x.product.name} — ${x.v.name} <span class="mono fs11 col-sl">(${x.v.sku})</span></span><span class="detail-val col-r">${x.v.stock} left</span></div>`;
+  }).join(''):'<div class="fs12 col-sl">All stock levels healthy.</div>';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════════════════════════════
+function renderAnalytics(){
+  var months=['Apr','May','Jun','Jul','Aug','Sep'];
+  var vals=[142000,156000,171000,189000,198220,234890];
+  var max=Math.max.apply(null,vals);
+  document.getElementById('an-bars').innerHTML=vals.map(function(v,i){
+    var h=Math.round((v/max)*90);
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px"><div style="font-size:9px;color:var(--sl)">₹'+(v/1000).toFixed(0)+'k</div><div style="width:100%;height:'+h+'px;background:var(--tl);border-radius:4px 4px 0 0;opacity:'+(i===5?1:.55)+'"></div></div>';
+  }).join('');
+  document.getElementById('an-labels').innerHTML=months.map(function(m,i){
+    return '<div style="flex:1;text-align:center;font-size:10px;color:'+(i===5?'var(--w)':'var(--sl)')+'">'+m+'</div>';
+  }).join('');
+  document.getElementById('an-top-products').innerHTML=[{n:'AirBeat Earbuds',p:58,c:'var(--tl)'},{n:'FlexCharge 65W',p:27,c:'var(--gl)'},{n:'ClickType Keyboard',p:15,c:'var(--al)'}].map(function(t){
+    return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><span>'+t.n+'</span><span class="col-sl">'+t.p+'%</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+t.p+'%;background:'+t.c+'"></div></div></div>';
+  }).join('');
+  var counts={};ORDER_STATUSES.forEach(function(s){counts[s]=ORDERS.filter(function(o){return o.status===s;}).length;});
+  document.getElementById('an-orders-status').innerHTML=ORDER_STATUSES.map(function(s){
+    return '<div class="detail-row"><span class="detail-label">'+s+'</span><span class="detail-val">'+counts[s]+'</span></div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PRODUCTS
+// ══════════════════════════════════════════════════════════════════
+var productFilter='all';
+function renderProducts(){
+  // show filter chips (VE-044)
+  var chips=['all','approved','under_review','draft'].map(function(f){
+    var labels={all:'All',approved:'Approved',under_review:'Under Review',draft:'Draft'};
+    var n=f==='all'?PRODUCTS.length:PRODUCTS.filter(function(p){return p.approval===f;}).length;
+    return '<span class="chip'+(productFilter===f?' on':'')+'" onclick="productFilter=\''+f+'\';renderProducts()">'+labels[f]+' ('+n+')</span>';
+  }).join('');
+  var container=document.getElementById('products-list');
+  container.innerHTML='<div class="chip-row" style="margin-bottom:12px">'+chips+'</div>';
+  var list=productFilter==='all'?PRODUCTS:PRODUCTS.filter(function(p){return p.approval===productFilter;});
+  container.innerHTML+= list.map(function(p){
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div><strong class="fs13">${p.name}</strong><div class="fs11 col-sl">${STD_PLUGINS[p.category]?STD_PLUGINS[p.category].label:p.category} · ${p.variants.length} variant${p.variants.length>1?'s':''}</div></div>
+        ${approvalBadge(p.approval)}
+      </div>
+      <div class="detail-row" style="padding:6px 0"><span class="detail-label fs11">Fulfilment plugin</span><span>${pluginLabelForProduct(p.id)} <button class="action-btn" style="margin-left:6px" onclick="openPluginPickerForProduct('${p.id}')">Change</button></span></div>
+      <table class="tbl" style="margin-top:8px"><thead><tr><th>Variant</th><th>SKU</th><th>Price</th><th>Stock</th><th>Available</th></tr></thead><tbody>
+      ${p.variants.map(function(v){
+        var avail=v.stock-v.reserved;
+        return '<tr><td class="fs12">'+v.name+'</td><td class="mono fs11">'+v.sku+'</td><td class="fs12">'+v.price+'</td>'+
+          '<td class="fs12 '+(v.stock<=LOW_STOCK?'col-r fw7':'')+'">'+v.stock+(v.stock<=LOW_STOCK?' ⚠':'')+(v.stock===0?' <span class="badge badge-r">OOS</span>':'')+'</td>'+
+          '<td class="fs12 '+(avail<=0?'col-r':avail<=3?'col-a':'col-g')+'">'+avail+'</td></tr>';
+      }).join('')}
+      </tbody></table>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-sm" onclick="openEditProductModal('${p.id}')">✏️ Edit product</button>
+        ${p.approval==='draft'?`<button class="btn btn-primary btn-sm" onclick="submitProductForReview('${p.id}')">→ Submit for review</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddProductModal(){
+  var catOptions=Object.keys(STD_PLUGINS).map(function(k){
+    return '<option value="'+k+'">'+STD_PLUGINS[k].icon+' '+STD_PLUGINS[k].label+'</option>';
+  }).join('');
+  var body=`
+    <div class="form-group"><label class="form-label">Product name</label><input class="form-input" id="np-name" placeholder="e.g. AirBeat Wireless Earbuds"></div>
+    <div class="form-group"><label class="form-label">Category (sets fulfilment type)</label>
+      <select class="form-input" id="np-cat" onchange="onCatChange()">${catOptions}</select>
+      <div class="form-hint">This determines which plugins are available to handle your fulfilment.</div>
+    </div>
+    <div id="np-plugin-section"></div>
+    <div class="form-group"><label class="form-label">Variants (SKU, name, opening stock)</label>
+      <div id="np-variants"></div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addVariantRow()">+ Add variant</button>
+    </div>
+    <div class="alert alert-t"><span class="alert-ic">ℹ️</span><span>New products start as <strong>Draft</strong> — submitted for <strong>Under review</strong> before appearing in the marketplace.</span></div>`;
+  openModal('Add Product',body,'<button class="btn btn-primary" onclick="submitNewProduct()">Submit for review</button>','modal-lg');
+  document.getElementById('np-variants').innerHTML=''; addVariantRow();
+  onCatChange();
+}
+
+function openEditProductModal(pid){
+  var p=PRODUCTS.find(function(x){return x.id===pid});
+  var body=`
+    <div class="alert alert-a"><span class="alert-ic">ℹ️</span><span>Price/name changes on <strong>approved</strong> products trigger a re-review. Stock adjustments take effect immediately. (VE-038, VE-039)</span></div>
+    <div class="form-group"><label class="form-label">Product name</label><input class="form-input" id="ep-name" value="${p.name}"></div>
+    <div class="card-t" style="margin-bottom:8px">Variants & Pricing</div>
+    <table class="tbl" style="margin-bottom:8px"><thead><tr><th>Variant</th><th>SKU</th><th>Price (₹)</th><th>Stock</th></tr></thead><tbody>
+    ${p.variants.map(function(v,i){
+      return '<tr><td><input class="form-input" id="ev-name-'+i+'" value="'+v.name+'" style="font-size:12px"></td>'+
+        '<td><input class="form-input" id="ev-sku-'+i+'" value="'+v.sku+'" style="font-size:12px"></td>'+
+        '<td><input class="form-input" id="ev-price-'+i+'" value="'+v.price.replace('₹','').replace(',','')+'" type="number" style="font-size:12px"></td>'+
+        '<td><input class="form-input" id="ev-stock-'+i+'" value="'+v.stock+'" type="number" style="font-size:12px"></td></tr>';
+    }).join('')}
+    </tbody></table>`;
+  openModal('Edit — '+p.name,body,`<button class="btn btn-primary" onclick="saveEditProduct('${pid}')">Save changes</button>`,'modal-lg');
+}
+function saveEditProduct(pid){
+  var p=PRODUCTS.find(function(x){return x.id===pid});
+  var newName=document.getElementById('ep-name').value.trim();
+  var priceChanged=false;
+  p.variants.forEach(function(v,i){
+    var newPrice=parseInt(document.getElementById('ev-price-'+i).value,10);
+    if(newPrice!==parseInt(v.price.replace(/[₹,]/g,''),10)) priceChanged=true;
+    v.price='₹'+newPrice.toLocaleString('en-IN');
+    v.stock=Math.max(0,parseInt(document.getElementById('ev-stock-'+i).value,10)||v.stock);
+  });
+  if(newName!==p.name||priceChanged) p.approval='under_review';
+  p.name=newName;
+  closeModal();toast(p.name+' updated'+(priceChanged?' — sent for re-review':''));renderAll();
+}
+function submitProductForReview(pid){
+  var p=PRODUCTS.find(function(x){return x.id===pid});
+  p.approval='under_review';
+  toast(p.name+' submitted for review');renderProducts();
+}
+
+function onCatChange(){
+  var cat=document.getElementById('np-cat').value;
+  var s=STD_PLUGINS[cat];
+  var customs=MY_CUSTOM_PLUGINS.filter(function(c){return c.category===cat&&c.status==='approved';});
+  var html='<div class="form-group"><label class="form-label">Fulfilment Plugin</label>';
+  html+='<div class="plugin-picker" id="np-plugin-picker">';
+  // Standard plugin option
+  if(s.key){
+    html+=`<div class="pp-card selected" id="ppopt-std" onclick="selectPlugin('std','${cat}')">
+      <div class="pp-card-header"><span class="pp-icon">${s.icon}</span><div><div class="pp-name">${s.label} Standard</div><span class="pp-source std">Platform</span></div><div class="pp-check"></div></div>
+      <div class="pp-desc">${s.desc}</div>
+      <div style="font-size:10px;color:var(--sl);margin-top:6px">v${s.version} · Free · Instant</div>
+    </div>`;
+  } else {
+    html+=`<div class="pp-card pp-none" style="cursor:default">
+      <div class="pp-card-header"><span class="pp-icon">${s.icon}</span><div><div class="pp-name">No Standard Plugin</div></div></div>
+      <div class="pp-desc">Platform does not yet provide a standard plugin for this category. Register a custom plugin below.</div>
+    </div>`;
+  }
+  // Custom plugin option(s)
+  if(customs.length){
+    customs.forEach(function(c){
+      html+=`<div class="pp-card" id="ppopt-${c.id}" onclick="selectPlugin('custom','${c.id}')">
+        <div class="pp-card-header"><span class="pp-icon">${c.icon}</span><div><div class="pp-name">${c.label}</div><span class="pp-source custom">Custom</span></div><div class="pp-check"></div></div>
+        <div class="pp-desc">${c.desc}</div>
+        <div style="font-size:10px;color:var(--sl);margin-top:6px">v${c.version} · Your endpoint</div>
+      </div>`;
+    });
+  }
+  // Add custom option
+  html+=`<div class="pp-card pp-none" onclick="nav(document.querySelector('[data-page=my-plugins]'),'my-plugins');closeModal()">
+    <div class="pp-card-header"><span class="pp-icon">➕</span><div><div class="pp-name">Register Custom Plugin</div></div></div>
+    <div class="pp-desc">Have your own fulfilment endpoint? Register it as a custom plugin — it goes through a quick review before going live.</div>
+  </div>`;
+  html+='</div></div>';
+  // Requirements from standard plugin
+  if(s.key&&s.requirements.length){
+    html+=`<div class="alert alert-t" style="margin-top:4px"><span class="alert-ic">📋</span><span><strong>Required for ${s.label}:</strong> `;
+    html+=s.requirements.map(function(r){return r[0];}).join(', ')+'.</span></div>';
+  }
+  document.getElementById('np-plugin-section').innerHTML=html;
+  // track selection
+  window._np_plugin=s.key?{type:'std',ref:cat}:null;
+}
+
+var _np_plugin=null;
+function selectPlugin(type,ref){
+  window._np_plugin={type:type,ref:ref};
+  document.querySelectorAll('#np-plugin-picker .pp-card').forEach(function(c){c.classList.remove('selected','custom-selected');});
+  if(type==='std'){
+    var el=document.getElementById('ppopt-std');
+    if(el) el.classList.add('selected');
+  } else {
+    var el2=document.getElementById('ppopt-'+ref);
+    if(el2) el2.classList.add('custom-selected');
+  }
+}
+
+function addVariantRow(){
+  var cont=document.getElementById('np-variants');
+  var row=document.createElement('div'); row.className='var-row';
+  row.innerHTML='<input class="form-input" placeholder="Variant name" style="font-size:12px"><input class="form-input" placeholder="SKU" style="font-size:12px"><input class="form-input" placeholder="Stock" type="number" style="font-size:12px"><button type="button" class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">✕</button>';
+  cont.appendChild(row);
+}
+function submitNewProduct(){
+  var name=document.getElementById('np-name').value.trim();
+  if(!name){toast('Enter a product name');return;}
+  var cat=document.getElementById('np-cat').value;
+  var newId='p'+Date.now();
+  PRODUCTS.unshift({id:newId,name:name,category:cat,approval:'under_review',
+    variants:[{sku:'NEW-'+Math.floor(Math.random()*999),name:'Default',stock:0,reserved:0,price:'₹0'}]});
+  if(window._np_plugin) PRODUCT_PLUGIN_ASSIGNMENTS[newId]=window._np_plugin;
+  closeModal(); toast(name+' submitted for review'); renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PLUGIN PICKER (change plugin on existing product)
+// ══════════════════════════════════════════════════════════════════
+function openPluginPickerForProduct(pid){
+  var p=PRODUCTS.find(function(x){return x.id===pid;});
+  var cat=p.category; var s=STD_PLUGINS[cat];
+  var customs=MY_CUSTOM_PLUGINS.filter(function(c){return c.category===cat&&c.status==='approved';});
+  var current=PRODUCT_PLUGIN_ASSIGNMENTS[pid];
+
+  var html=`<div class="fs12 col-sl" style="margin-bottom:10px">Choose how <strong style="color:var(--w)">${p.name}</strong> fulfilment is handled. Takes effect on the next order.</div>
+  <div class="plugin-picker" id="change-picker">`;
+  if(s.key){
+    var isSel=current&&current.type==='std'&&current.ref===cat;
+    html+=`<div class="pp-card ${isSel?'selected':''}" id="chopt-std" onclick="selectChangePicker('std','${cat}')">
+      <div class="pp-card-header"><span class="pp-icon">${s.icon}</span><div><div class="pp-name">${s.label} Standard</div><span class="pp-source std">Platform · Free</span></div><div class="pp-check"></div></div>
+      <div class="pp-desc">${s.desc}</div>
+      <div style="font-size:10px;color:var(--sl);margin-top:6px">v${s.version}</div>
+    </div>`;
+  }
+  customs.forEach(function(c){
+    var isSel=current&&current.type==='custom'&&current.ref===c.id;
+    html+=`<div class="pp-card ${isSel?'custom-selected':''}" id="chopt-${c.id}" onclick="selectChangePicker('custom','${c.id}')">
+      <div class="pp-card-header"><span class="pp-icon">${c.icon}</span><div><div class="pp-name">${c.label}</div><span class="pp-source custom">Custom</span></div><div class="pp-check"></div></div>
+      <div class="pp-desc">${c.desc}</div>
+      <div style="font-size:10px;color:var(--sl);margin-top:6px">v${c.version} · ${c.endpoint.replace('https://','')}</div>
+    </div>`;
+  });
+  html+=`<div class="pp-card pp-none" onclick="openRegisterPluginModal()">
+    <div class="pp-card-header"><span class="pp-icon">➕</span><div><div class="pp-name">Register Custom Plugin</div></div></div>
+    <div class="pp-desc">Set up your own fulfilment endpoint for this category.</div>
+  </div>`;
+  html+='</div>';
+  openModal('Change plugin — '+p.name,html,`<button class="btn btn-primary" onclick="confirmChangePlugin('${pid}')">Save plugin assignment</button>`,'modal-lg');
+  window._change_pid=pid;
+  window._change_plugin=current?Object.assign({},current):null;
+}
+function selectChangePicker(type,ref){
+  window._change_plugin={type:type,ref:ref};
+  document.querySelectorAll('#change-picker .pp-card').forEach(function(c){c.classList.remove('selected','custom-selected');});
+  if(type==='std'){var el=document.getElementById('chopt-std');if(el)el.classList.add('selected');}
+  else{var el2=document.getElementById('chopt-'+ref);if(el2)el2.classList.add('custom-selected');}
+}
+function confirmChangePlugin(pid){
+  if(!window._change_plugin){toast('Select a plugin first');return;}
+  PRODUCT_PLUGIN_ASSIGNMENTS[pid]=window._change_plugin;
+  closeModal(); toast('Plugin assignment updated');renderProducts();renderMyPlugins();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════════════════════════════════════
+function renderInventory(){
+  var low=lowStockVariants();
+  document.getElementById('lowstock-pill').style.display=low.length?'inline-flex':'none';
+  document.getElementById('lowstock-pill').textContent=low.length;
+  document.getElementById('inventory-tbody').innerHTML=allVariants().map(function(x){
+    var avail=x.v.stock-x.v.reserved;
+    return `<tr><td class="fs12">${x.product.name}</td><td class="fs12">${x.v.name} <span class="mono fs11 col-sl">${x.v.sku}</span></td>
+      <td class="fw7 ${x.v.stock<=LOW_STOCK?'col-r':''}">${x.v.stock}${x.v.stock<=LOW_STOCK?' ⚠':''}</td><td class="col-sl">${x.v.reserved}</td>
+      <td class="fw7 ${avail<=0?'col-r':avail<=3?'col-a':'col-g'}">${avail}${avail===0?' <span class="badge badge-r" style="font-size:9px">OOS</span>':''}</td>
+      <td><button class="action-btn" onclick="openAdjustStockModal('${x.product.id}','${x.v.sku}')">Adjust</button></td></tr>`;
+  }).join('');
+}
+function openAdjustStockModal(pid,sku){
+  var p=PRODUCTS.find(function(x){return x.id===pid});var v=p.variants.find(function(x){return x.sku===sku});
+  openModal('Adjust stock — '+p.name+' ('+v.name+')',
+    `<div class="detail-row"><span class="detail-label">Current available</span><span class="detail-val">${v.stock}</span></div>
+    <div class="form-group" style="margin-top:14px"><label class="form-label">Adjust by</label><input class="form-input" id="adj-amt" type="number" placeholder="e.g. +50 or -10"></div>
+    <div class="form-group"><label class="form-label">Reason</label><input class="form-input" id="adj-reason" placeholder="e.g. Restock, damaged, recount"></div>`,
+    `<button class="btn btn-primary" onclick="confirmAdjust('${pid}','${sku}')">Apply</button>`,'modal-sm');
+}
+function confirmAdjust(pid,sku){
+  var amt=parseInt(document.getElementById('adj-amt').value,10);
+  if(isNaN(amt)){toast('Enter a valid number');return;}
+  var p=PRODUCTS.find(function(x){return x.id===pid});var v=p.variants.find(function(x){return x.sku===sku});
+  v.stock=Math.max(0,v.stock+amt);
+  closeModal();toast('Stock updated — '+v.sku+' now '+v.stock+' units (VE-053)');renderInventory();renderProducts();renderOverview();
+}
+function openBulkStockModal(){
+  var rows=allVariants().map(function(x,i){
+    return '<tr><td class="fs12">'+x.product.name+'</td><td class="mono fs11">'+x.v.sku+'</td>'+
+      '<td class="fw7 '+(x.v.stock<=LOW_STOCK?'col-r':'')+'">'+x.v.stock+'</td>'+
+      '<td><input class="form-input" id="bulk-'+i+'" type="number" placeholder="±qty" style="font-size:12px;padding:4px 8px;width:80px"></td></tr>';
+  }).join('');
+  openModal('Bulk Stock Adjustment (VE-053)',
+    '<div class="alert alert-a"><span class="alert-ic">⚠️</span><span>Enter positive or negative qty for each SKU you want to adjust. Leave blank to skip.</span></div>'+
+    '<table class="tbl"><thead><tr><th>Product</th><th>SKU</th><th>Current</th><th>Adjust by</th></tr></thead><tbody>'+rows+'</tbody></table>',
+    '<button class="btn btn-primary" onclick="confirmBulkAdjust()">Apply all</button>','modal-lg');
+  window._bulkVariants=allVariants();
+}
+function confirmBulkAdjust(){
+  var changed=0;
+  (window._bulkVariants||[]).forEach(function(x,i){
+    var el=document.getElementById('bulk-'+i);if(!el) return;
+    var amt=parseInt(el.value,10);if(isNaN(amt)||amt===0) return;
+    x.v.stock=Math.max(0,x.v.stock+amt);changed++;
+  });
+  closeModal();toast(changed+' SKU(s) updated');renderInventory();renderProducts();renderOverview();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MY PLUGINS
+// ══════════════════════════════════════════════════════════════════
+function renderMyPlugins(){
+  var used={};
+  Object.keys(PRODUCT_PLUGIN_ASSIGNMENTS).forEach(function(pid){
+    var a=PRODUCT_PLUGIN_ASSIGNMENTS[pid];
+    if(a.type==='custom'){used[a.ref]=(used[a.ref]||0)+1;}
+  });
+
+  // Group: standard plugins in use
+  var stdInUse=[];
+  Object.keys(STD_PLUGINS).forEach(function(cat){
+    var count=Object.keys(PRODUCT_PLUGIN_ASSIGNMENTS).filter(function(pid){
+      var a=PRODUCT_PLUGIN_ASSIGNMENTS[pid];return a&&a.type==='std'&&a.ref===cat;
+    }).length;
+    if(count>0) stdInUse.push({cat:cat,s:STD_PLUGINS[cat],count:count});
+  });
+
+  var html='';
+  if(stdInUse.length){
+    html+='<div class="card-t" style="margin-bottom:8px;font-size:11px;font-weight:700;color:var(--sll);text-transform:uppercase;letter-spacing:.08em">Platform Standard Plugins in use</div>';
+    stdInUse.forEach(function(item){
+      html+=`<div class="my-plugin-card">
+        <div class="my-plugin-header">
+          <div class="my-plugin-icon std">${item.s.icon}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700">${item.s.label} Standard</div>
+            <div class="my-plugin-key">${item.s.key}</div>
+          </div>
+          <span class="badge badge-g">✓ Active</span>
+        </div>
+        <div class="fs12 col-sl" style="margin-bottom:8px">${item.s.desc}</div>
+        <div class="plug-status-row">
+          <span class="badge badge-sl">v${item.s.version}</span>
+          <span class="badge badge-t">${item.count} product${item.count>1?'s':''} using this</span>
+          <span style="font-size:11px;color:var(--sl)">Managed by platform · zero maintenance</span>
+        </div>
+      </div>`;
+    });
+  }
+
+  html+='<div class="card-t" style="margin:16px 0 8px;font-size:11px;font-weight:700;color:var(--sll);text-transform:uppercase;letter-spacing:.08em">My Custom Plugins</div>';
+  if(MY_CUSTOM_PLUGINS.length){
+    MY_CUSTOM_PLUGINS.forEach(function(c){
+      var productCount=used[c.id]||0;
+      html+=`<div class="my-plugin-card">
+        <div class="my-plugin-header">
+          <div class="my-plugin-icon custom">${c.icon}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700">${c.label}</div>
+            <div class="my-plugin-key">${c.key}</div>
+          </div>
+          ${pluginStatusBadge(c.status)}
+        </div>
+        <div class="fs12 col-sl" style="margin-bottom:8px">${c.desc}</div>
+        <div class="plug-status-row">
+          <span class="badge badge-sl">v${c.version}</span>
+          <span class="badge badge-v">${STD_PLUGINS[c.category]?STD_PLUGINS[c.category].label:c.category}</span>
+          ${productCount?'<span class="badge badge-t">'+productCount+' product'+(productCount>1?'s':'')+' using this</span>':'<span class="badge badge-sl">Not assigned to any product</span>'}
+        </div>
+        <div class="detail-row" style="margin-top:8px"><span class="detail-label">Webhook endpoint</span><span class="detail-val mono fs11">${c.endpoint}</span></div>
+        <div class="detail-row"><span class="detail-label">Submitted</span><span class="detail-val">${c.submitted}</span></div>
+        ${c.reviewed?'<div class="detail-row"><span class="detail-label">Reviewed</span><span class="detail-val">'+c.reviewed+'</span></div>':''}
+        <div class="detail-row"><span class="detail-label">Webhook secret</span>
+          <span class="detail-val mono fs11" id="secret-${c.id}">••••••••••••••••</span>
+          <button class="action-btn" style="margin-left:8px" onclick="revealSecret('${c.id}')">👁 Reveal</button>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          ${c.status==='approved'?'<button class="btn btn-ghost btn-sm" onclick="toast(\'Edit goes to version bump & re-review\')">📝 Edit / new version</button>':''}
+          <button class="btn btn-ghost btn-sm" onclick="rotateSecret('${c.id}','${c.key}')">🔑 Rotate secret (VP-013)</button>
+          ${c.status==='approved'?'<button class="btn btn-ghost btn-sm" onclick="testWebhook(\''+c.id+'\',\''+c.webhook_url+'\')">⚡ Test webhook (VP-011)</button>':''}
+        </div>
+      </div>`;
+    });
+  } else {
+    html+='<div class="card" style="text-align:center;padding:32px"><div style="font-size:28px;margin-bottom:8px">🔌</div><div class="fs13 col-sl">No custom plugins registered yet.</div><button class="btn btn-purple" style="margin-top:12px" onclick="openRegisterPluginModal()">Register your first plugin</button></div>';
+  }
+  document.getElementById('my-plugins-list').innerHTML=html;
+}
+
+function revealSecret(id){
+  var el=document.getElementById('secret-'+id);
+  if(!el) return;
+  var fake='whs_'+Math.random().toString(36).substr(2,32);
+  el.textContent=el.textContent.includes('•')?fake:'••••••••••••••••';
+}
+function rotateSecret(id,key){
+  openModal('Rotate Webhook Secret (VP-013)',
+    '<div class="alert alert-r"><span class="alert-ic">⚠️</span><span>Rotating invalidates the current secret immediately. Update your server before rotating or events will fail HMAC verification.</span></div>'+
+    '<div class="alert alert-t"><span class="alert-ic">🔐</span><span>New secret will use HMAC-SHA256 signature on all payloads. Copy it immediately — it is shown only once.</span></div>',
+    '<button class="btn btn-danger" onclick="confirmRotate(\''+id+'\',\''+key+'\')">Rotate now</button>','modal-sm');
+}
+function confirmRotate(id,key){
+  var newSecret='whs_'+Math.random().toString(36).substr(2,32);
+  closeModal();
+  openModal('New webhook secret — copy now!',
+    '<div class="alert alert-g"><span class="alert-ic">✓</span><span>Secret rotated successfully for <strong>'+key+'</strong>. Copy and store this immediately — it will not be shown again.</span></div>'+
+    '<div style="background:var(--card2);border:1px solid var(--bdr2);border-radius:8px;padding:12px;font-family:monospace;font-size:13px;word-break:break-all;color:var(--al)">'+newSecret+'</div>'+
+    '<button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+newSecret+'\').then(function(){toast(\'Copied!\')})">📋 Copy to clipboard</button>',
+    '','modal-sm');
+}
+function testWebhook(id,url){
+  openModal('Test webhook — '+url,
+    '<div class="alert alert-v"><span class="alert-ic">⚡</span><span>Platform will send a test <code>order.created</code> event (HMAC-SHA256 signed) to your endpoint. (VP-011)</span></div>'+
+    '<div class="form-group"><label class="form-label">Event type</label><select class="form-input" id="wh-evt"><option>order.created</option><option>order.cancelled</option><option>return.requested</option><option>payment.failed</option></select></div>',
+    '<button class="btn btn-purple" onclick="sendTestWebhook(\''+url+'\')">Send test event</button>','modal-sm');
+}
+function sendTestWebhook(url){
+  var evt=document.getElementById('wh-evt').value;
+  var payload='{"event":"'+evt+'","order_id":"TEST-'+Math.floor(10000+Math.random()*90000)+'","timestamp":"'+new Date().toISOString()+'"}';
+  closeModal();
+  openModal('Webhook test result',
+    '<div class="alert alert-g"><span class="alert-ic">✓</span><span>Test event sent to <code>'+url+'</code></span></div>'+
+    '<div class="detail-row"><span class="detail-label">Response</span><span class="detail-val col-g">200 OK</span></div>'+
+    '<div class="detail-row"><span class="detail-label">Latency</span><span class="detail-val">'+Math.floor(80+Math.random()*120)+' ms</span></div>'+
+    '<div class="detail-row"><span class="detail-label">Payload sent</span><span class="detail-val mono fs11">'+evt+'</span></div>'+
+    '<div style="background:var(--card2);border-radius:6px;padding:10px;font-family:monospace;font-size:11px;margin-top:8px;color:var(--sll)">'+payload+'</div>',
+    '','modal-md');
+}
+
+function openRegisterPluginModal(){
+  var catOptions=Object.keys(STD_PLUGINS).map(function(k){
+    return '<option value="'+k+'">'+STD_PLUGINS[k].icon+' '+STD_PLUGINS[k].label+'</option>';
+  }).join('');
+  var body=`
+    <div class="alert alert-v"><span class="alert-ic">🔌</span><span>Your plugin will go through a quick SBOM / security review before it can be assigned to products. Approved in ~24–48h.</span></div>
+    <div class="form-group"><label class="form-label">Plugin name</label><input class="form-input" id="rp-name" placeholder="e.g. ABC Ship v2"></div>
+    <div class="form-group"><label class="form-label">Fulfilment category</label><select class="form-input" id="rp-cat">${catOptions}</select></div>
+    <div class="form-group"><label class="form-label">Webhook endpoint URL</label><input class="form-input" id="rp-endpoint" placeholder="https://yourserver.com/webhook/fairshare">
+      <div class="form-hint">Platform POSTs order events here (JSON, signed with HMAC-SHA256). Must be HTTPS.</div></div>
+    <div class="form-group"><label class="form-label">Initial version</label><input class="form-input" id="rp-version" value="1.0.0"></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" rows="2" id="rp-desc" placeholder="What does this plugin automate vs. keep manual?"></textarea></div>
+    <div class="form-group"><label class="form-label">SBOM file upload (VP-008)</label>
+      <input type="file" class="form-input" id="rp-sbom-file" accept=".json,.xml,.spdx,.csv" style="padding:6px">
+      <div class="form-hint">Upload SBOM (JSON/SPDX/XML) or a PDF documentation for security review. (VP-008)</div></div>
+    <div class="form-group"><label class="form-label">Documentation URL (optional)</label><input class="form-input" id="rp-sbom" placeholder="https://..."></div>`;
+  openModal('Register Custom Plugin',body,'<button class="btn btn-purple" onclick="submitRegisterPlugin()">Submit for review</button>','modal-md');
+}
+function submitRegisterPlugin(){
+  var name=document.getElementById('rp-name').value.trim();
+  var endpoint=document.getElementById('rp-endpoint').value.trim();
+  if(!name||!endpoint){toast('Name and endpoint are required');return;}
+  if(!endpoint.startsWith('https://')){toast('Endpoint must be HTTPS');return;}
+  var cat=document.getElementById('rp-cat').value;
+  var key='abc.custom.'+name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+  MY_CUSTOM_PLUGINS.push({
+    id:'cp'+Date.now(),key:key,label:name,category:cat,icon:STD_PLUGINS[cat].icon,
+    version:document.getElementById('rp-version').value.trim()||'1.0.0',
+    status:'pending_review',
+    endpoint:endpoint,webhook_url:endpoint,
+    desc:document.getElementById('rp-desc').value.trim()||'Custom plugin.',
+    submitted:'Today',reviewed:null
+  });
+  closeModal();toast(name+' submitted for review — live in 24–48h');renderMyPlugins();renderPluginCatalog();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PLUGIN CATALOG
+// ══════════════════════════════════════════════════════════════════
+function renderPluginCatalog(){
+  document.getElementById('catalog-grid').innerHTML=Object.keys(STD_PLUGINS).map(function(cat){
+    var s=STD_PLUGINS[cat];
+    var customs=MY_CUSTOM_PLUGINS.filter(function(c){return c.category===cat;});
+    var hasCustom=customs.length>0;
+    var cls=hasCustom?'has-custom':(s.key?'has-std':'');
+    return `<div class="cat-card ${cls}" onclick="openCatalogDetail('${cat}')">
+      <div class="cat-icon">${s.icon}</div>
+      <div class="cat-name">${s.label}</div>
+      <div class="cat-tag">
+        ${s.key?'<span class="badge badge-g" style="font-size:9px">✓ Standard available</span>':'<span class="badge badge-sl" style="font-size:9px">No standard</span>'}
+        ${hasCustom?'<span class="badge badge-v" style="font-size:9px;margin-left:4px">'+customs.length+' custom</span>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openCatalogDetail(cat){
+  var s=STD_PLUGINS[cat];
+  var customs=MY_CUSTOM_PLUGINS.filter(function(c){return c.category===cat;});
+  var body='';
+  if(s.key){
+    body+=`<div class="my-plugin-card" style="margin-bottom:12px">
+      <div class="my-plugin-header">
+        <div class="my-plugin-icon std">${s.icon}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">${s.label} Standard Plugin</div><div class="my-plugin-key">${s.key} · v${s.version}</div></div>
+        <span class="badge badge-g">Platform</span>
+      </div>
+      <div class="fs12 col-sl" style="margin-bottom:10px">${s.desc}</div>`;
+    if(s.requirements.length){
+      body+='<div class="card-t">📋 Vendor-facing requirements for this category</div><table class="tbl" style="margin-top:4px"><thead><tr><th>Field</th><th>Spec</th></tr></thead><tbody>';
+      body+=s.requirements.map(function(r){return '<tr><td class="fs12 fw7">'+r[0]+'</td><td class="fs12 col-sl">'+r[1]+'</td></tr>';}).join('');
+      body+='</tbody></table>';
+    }
+    body+='</div>';
+  } else {
+    body+='<div class="alert alert-a"><span class="alert-ic">⚠️</span><span>No platform standard plugin for <strong>'+s.label+'</strong> yet. You must register a custom plugin to sell in this category.</span></div>';
+  }
+  if(customs.length){
+    body+='<div style="margin-top:12px;font-size:11px;font-weight:700;color:var(--sll);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Your Custom Plugins</div>';
+    body+=customs.map(function(c){
+      return `<div class="my-plugin-card">
+        <div class="my-plugin-header">
+          <div class="my-plugin-icon custom">${c.icon}</div>
+          <div style="flex:1"><div style="font-size:12px;font-weight:700">${c.label}</div><div class="my-plugin-key">${c.key}</div></div>
+          ${pluginStatusBadge(c.status)}
+        </div>
+        <div class="fs12 col-sl">${c.desc}</div>
+      </div>`;
+    }).join('');
+  }
+  openModal(s.label+' — Plugin details',body,'<button class="btn btn-purple" onclick="openRegisterPluginModal()">+ Register custom plugin</button>','modal-lg');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ORDERS
+// ══════════════════════════════════════════════════════════════════
+var orderFilter='all';
+function renderOrderChips(){
+  var opts=[['all','All']].concat(ORDER_STATUSES.map(function(s){return [s,s];}));
+  document.getElementById('order-status-chips').innerHTML=opts.map(function(o){
+    var n=o[0]==='all'?ORDERS.length:ORDERS.filter(function(x){return x.status===o[0];}).length;
+    if(o[0]!=='all'&&n===0) return '';
+    return '<span class="chip'+(orderFilter===o[0]?' on':'')+'" onclick="orderFilter=\''+o[0]+'\';renderOrders()">'+o[1]+' ('+n+')</span>';
+  }).join('');
+}
+function renderOrders(){
+  renderOrderChips();
+  var q=(document.getElementById('order-search')||{value:''}).value.trim().toLowerCase();
+  var base=orderFilter==='all'?ORDERS:ORDERS.filter(function(o){return o.status===orderFilter;});
+  var list=q?base.filter(function(o){return o.id.toLowerCase().includes(q)||o.customer.toLowerCase().includes(q);}):base;
+  var cont=document.getElementById('orders-table-container');
+  if(!list.length){cont.innerHTML='<div class="card" style="text-align:center;padding:32px;color:var(--sl)">📋 No orders here.</div>';return;}
+  cont.innerHTML='<div class="card"><table class="tbl"><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>'+
+    list.map(function(o){
+      return `<tr class="cr" onclick="openOrderModal('${o.id}')">
+        <td class="mono fs11">${o.id}</td><td class="fs12">${o.customer}</td><td class="fs11 col-sl">${o.items}</td>
+        <td class="fw7 col-g fs12">${o.amount}</td><td class="fs11 col-sl">${o.date}</td><td>${orderStatusBadge(o.status)}</td>
+        <td><button class="action-btn" onclick="event.stopPropagation();openOrderModal('${o.id}')">Open</button></td></tr>`;
+    }).join('')+'</tbody></table></div>';
+}
+function orderTimeline(o){
+  var steps=['New','Confirmed','Processing','Ready to Ship','Shipped','Delivered'];
+  if(['Cancelled'].indexOf(o.status)>-1) return '';
+  var idx=steps.indexOf(o.status);
+  return '<div class="tracking">'+steps.map(function(l,i){
+    var cls=i<idx?'done':i===idx?'active':'';
+    return '<div class="tstep '+cls+'"><div class="tdot">'+(i<idx?'✓':(i+1))+'</div><div class="tl">'+l+'</div></div>';
+  }).join('')+'</div>';
+}
+function inventoryPanelForOrder(o){
+  if(o.status!=='New') return '';
+  // find variant by SKU across all products
+  var found=null;
+  PRODUCTS.forEach(function(p){(p.variants||[]).forEach(function(v){if(v.sku===o.sku) found=v;});});
+  if(!found) return '';
+  var avail=found.stock-found.reserved;
+  var canFulfil=avail>=o.qty;
+  var pct=Math.round(found.stock>0?(found.reserved/found.stock*100):0);
+  var barFree=Math.round(found.stock>0?(avail/found.stock*100):0);
+  var statusColor=canFulfil?(avail<=3?'var(--al)':'var(--gl)'):'var(--rl)';
+  var statusIcon=canFulfil?(avail<=3?'⚠':'✓'):'✕';
+  var statusMsg=canFulfil?(avail<=3?'Low stock — fulfil soon':'Sufficient stock'):'Insufficient stock — cannot accept';
+  return `<div class="sep"></div>
+  <div class="card-t" style="margin-bottom:8px">📦 Inventory check before accepting</div>
+  <div style="background:var(--card2);border:1px solid var(--bdr2);border-radius:10px;padding:12px 14px;margin-bottom:4px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="fs12">SKU: <span class="mono col-sl">${found.sku}</span> — ${found.name}</span>
+      <span style="font-size:12px;font-weight:700;color:${statusColor}">${statusIcon} ${statusMsg}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="text-align:center;padding:8px;background:var(--card);border-radius:8px;border:1px solid var(--bdr)">
+        <div style="font-size:18px;font-weight:800;color:var(--w)">${found.stock}</div>
+        <div class="fs10 col-sl" style="margin-top:2px">Total stock</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:var(--card);border-radius:8px;border:1px solid var(--bdr)">
+        <div style="font-size:18px;font-weight:800;color:var(--al)">${found.reserved}</div>
+        <div class="fs10 col-sl" style="margin-top:2px">Reserved</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:var(--card);border-radius:8px;border:1px solid ${canFulfil?'var(--bdr)':'rgba(239,68,68,.3)'}">
+        <div style="font-size:18px;font-weight:800;color:${avail>0?'var(--gl)':'var(--rl)'}">${avail}</div>
+        <div class="fs10 col-sl" style="margin-top:2px">Available</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:${canFulfil?'rgba(16,185,129,.08)':'rgba(239,68,68,.08)'};border-radius:8px;border:1px solid ${canFulfil?'rgba(16,185,129,.25)':'rgba(239,68,68,.3)'}">
+        <div style="font-size:18px;font-weight:800;color:${canFulfil?'var(--gl)':'var(--rl)'}">${o.qty}</div>
+        <div class="fs10 col-sl" style="margin-top:2px">Ordered</div>
+      </div>
+    </div>
+    <div style="height:6px;background:var(--bdr);border-radius:3px;overflow:hidden">
+      <div style="display:flex;height:100%">
+        <div style="width:${pct}%;background:var(--al);transition:width .4s"></div>
+        <div style="width:${barFree}%;background:var(--gl);transition:width .4s"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:5px">
+      <span class="fs10 col-sl">🟡 Reserved ${pct}%</span>
+      <span class="fs10 col-sl">🟢 Free ${barFree}%</span>
+      ${!canFulfil?'<span class="fs10" style="color:var(--rl);margin-left:auto;font-weight:700">Need '+o.qty+', have '+avail+'</span>':''}
+    </div>
+  </div>`;
+}
+function openOrderModal(id){
+  var o=ORDERS.find(function(x){return x.id===id}); if(!o) return;
+  var body=`<div class="detail-row"><span class="detail-label">Customer</span><span class="detail-val">${o.customer}</span></div>
+    <div class="detail-row"><span class="detail-label">Items</span><span class="detail-val">${o.items}</span></div>
+    <div class="detail-row"><span class="detail-label">Amount</span><span class="detail-val">${o.amount}</span></div>
+    ${o.cod?'<div class="detail-row"><span class="detail-label">Payment</span><span class="detail-val" style="color:var(--al);font-weight:700">💵 Cash on Delivery</span></div>':''}
+    ${orderTimeline(o)}
+    ${inventoryPanelForOrder(o)}
+    <div class="sep"></div><div class="card-t" style="margin-bottom:6px">📍 Ship to</div>
+    <p class="fs12" style="color:var(--sll);line-height:1.7">${o.address.line1}, ${o.address.city} ${o.address.pincode}<br>📞 ${o.address.phone}</p>
+    ${o.trackingId?'<div class="alert alert-t" style="margin-top:10px"><span class="alert-ic">🚚</span><span>Tracking <strong>'+o.trackingId+'</strong> via '+o.courier+(o.estDelivery?' &nbsp;·&nbsp; Est. delivery <strong>'+o.estDelivery+'</strong>':'')+'</span></div>':''}`;
+  openModal(id,body,'','modal-sm');
+  document.getElementById('modal-foot').insertAdjacentHTML('afterbegin',orderActionBtns(o));
+}
+function canAcceptOrder(o){
+  var found=null;
+  PRODUCTS.forEach(function(p){(p.variants||[]).forEach(function(v){if(v.sku===o.sku) found=v;});});
+  if(!found) return true; // unknown SKU — allow
+  return (found.stock-found.reserved)>=o.qty;
+}
+function orderActionBtns(o){
+  if(o.status==='New'){
+    var ok=canAcceptOrder(o);
+    return `<button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕ Reject</button>`+
+      (ok?`<button class="btn btn-success" onclick="advanceOrder('${o.id}','Confirmed')">✓ Accept</button>`
+         :`<button class="btn btn-success" disabled title="Insufficient stock" style="opacity:.4;cursor:not-allowed">✕ Cannot accept — low stock</button>`);
+  }
+  if(o.status==='Confirmed') return `<button class="btn btn-primary" onclick="advanceOrder('${o.id}','Processing')">Start processing</button>`;
+  if(o.status==='Processing') return `<button class="btn btn-primary" onclick="advanceOrder('${o.id}','Ready to Ship')">📦 Mark packed</button>`;
+  if(o.status==='Ready to Ship') return `<button class="btn btn-primary" onclick="openShipModal('${o.id}')">🚚 Ship now</button>`;
+  if(o.status==='Shipped') return o.cod
+    ? `<button class="btn btn-success" onclick="openCodConfirmModal('${o.id}')">💵 Confirm COD + Delivered (VE-028)</button>`
+    : `<button class="btn btn-success" onclick="advanceOrder('${o.id}','Delivered')">✓ Mark delivered</button>`;
+  if(o.status==='Delivered') return '<span class="fs11 col-sl">Return window open — settlement pending.</span>';
+  return '';
+}
+function openCodConfirmModal(id){
+  var o=ORDERS.find(function(x){return x.id===id}); if(!o) return;
+  openModal('💵 Confirm COD Collection — '+id,
+    `<div class="alert alert-a"><span class="alert-ic">💵</span><span><strong>Cash on Delivery order.</strong> Confirm that you or your delivery partner collected the cash from the customer before marking as delivered. (VE-028)</span></div>
+    <div style="background:var(--card2);border:1px solid var(--bdr2);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div class="detail-row"><span class="detail-label fs11">Order</span><span class="detail-val fw7">${id}</span></div>
+      <div class="detail-row"><span class="detail-label fs11">Customer</span><span class="detail-val">${o.customer}</span></div>
+      <div class="detail-row"><span class="detail-label fs11">Items</span><span class="detail-val">${o.items}</span></div>
+      <div class="detail-row"><span class="detail-label fs11">COD Amount to Collect</span><span class="detail-val fw7 col-a">${o.amount}</span></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cash collected by</label>
+      <select class="form-input" id="cod-collector">
+        <option>Vendor delivery staff</option><option>Courier partner</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Collected at (optional)</label>
+      <input class="form-input" type="datetime-local" id="cod-time" value="${new Date().toISOString().slice(0,16)}"/>
+    </div>`,
+    `<button class="btn btn-success" onclick="confirmCod('${id}')">✅ Confirm Cash Collected + Mark Delivered</button>`,'modal-md');
+}
+function confirmCod(id){
+  var o=ORDERS.find(function(x){return x.id===id}); if(!o) return;
+  var collector=document.getElementById('cod-collector').value;
+  o.status='Delivered'; o.codCollectedBy=collector; o.codCollectedAt=new Date().toISOString();
+  closeModal();toast('💵 COD confirmed — '+id+' marked Delivered');renderOrders();renderOverview();renderFulfilment();
+}
+function advanceOrder(id,status){
+  var o=ORDERS.find(function(x){return x.id===id}); o.status=status;
+  toast(id+' → '+status);renderOrders();renderOverview();renderFulfilment();openOrderModal(id);
+}
+function rejectOrder(id){
+  var o=ORDERS.find(function(x){return x.id===id});
+  openModal('Reject Order — '+id,
+    `<div class="alert alert-r"><span class="alert-ic">⚠️</span><span>Rejecting will cancel this order. The customer will be notified and a refund initiated. Inventory reserved for this order will be released. (VE-021)</span></div>
+    <div class="form-group"><label class="form-label">Rejection reason <span style="color:var(--rl)">*</span></label>
+      <select class="form-input" id="rej-reason-sel" onchange="document.getElementById('rej-reason-other').style.display=this.value==='Other'?'block':'none'">
+        <option>Item out of stock</option><option>Cannot fulfil in time</option><option>Pricing error</option><option>Address unserviceable</option><option>Suspected fraud</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group" id="rej-reason-other" style="display:none"><label class="form-label">Specify reason</label><textarea class="form-input" rows="2" id="rej-reason-text" placeholder="Describe the reason..."></textarea></div>`,
+    `<button class="btn btn-danger" onclick="confirmRejectOrder('${id}')">Confirm Rejection</button>`,'modal-sm');
+}
+function confirmRejectOrder(id){
+  var o=ORDERS.find(function(x){return x.id===id});
+  var reason=document.getElementById('rej-reason-sel').value;
+  if(reason==='Other') reason=document.getElementById('rej-reason-text').value.trim()||'Other';
+  o.status='Cancelled'; o.rejectReason=reason;
+  // Release reserved inventory
+  PRODUCTS.forEach(function(p){p.variants.forEach(function(v){if(v.sku===o.sku&&v.reserved>=o.qty){v.reserved-=o.qty;}});});
+  closeModal();toast(id+' rejected — inventory released');renderOrders();renderOverview();renderInventory();
+}
+function estDelivery(courier){
+  var days={Delhivery:3,BlueDart:2,'Ekart Logistics':4,'DTDC Express':3,'India Post':7,'Amazon Logistics':2,'Xpressbees':3,'Shadow Fax':2};
+  var d=new Date(); d.setDate(d.getDate()+(days[courier]||3));
+  return d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+}
+function openShipModal(id){
+  var o=ORDERS.find(function(x){return x.id===id}); if(!o) return;
+  var trackNum='TRK'+Math.floor(100000000+Math.random()*899999999);
+  var defaultCourier=COURIERS[0];
+  openModal('🚚 Ship '+id,
+    `<div style="background:var(--card2);border:1px solid var(--bdr2);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div class="detail-row" style="margin-bottom:4px"><span class="detail-label fs11">Order</span><span class="detail-val fw7">${id}</span></div>
+      <div class="detail-row" style="margin-bottom:4px"><span class="detail-label fs11">Customer</span><span class="detail-val">${o.customer}</span></div>
+      <div class="detail-row" style="margin-bottom:4px"><span class="detail-label fs11">Items</span><span class="detail-val">${o.items}</span></div>
+      <div class="detail-row" style="margin-bottom:4px"><span class="detail-label fs11">Ship to</span><span class="detail-val fs11 col-sl" style="text-align:right">${o.address.line1}, ${o.address.city} ${o.address.pincode}</span></div>
+      ${o.cod?'<div class="detail-row"><span class="detail-label fs11">Payment</span><span class="detail-val" style="color:var(--al);font-weight:700;font-size:11px">💵 COD — collect '+o.amount+'</span></div>':''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Package weight (kg)</label><input class="form-input" id="ship-weight" type="number" step="0.01" value="${o.weight||0.5}"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Dimensions (L×W×H cm)</label><input class="form-input" id="ship-dims" value="${o.dims||'20×15×10 cm'}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Courier partner</label>
+      <select class="form-input" id="ship-courier" onchange="document.getElementById('est-delivery').textContent=estDelivery(this.value)">${COURIERS.map(function(c){return '<option>'+c+'</option>';}).join('')}</select>
+    </div>
+    <div class="form-group"><label class="form-label">Tracking number</label>
+      <input class="form-input" id="ship-tracking" value="${trackNum}">
+    </div>
+    <div style="background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+      <span class="fs12 col-sl">📅 Estimated delivery</span>
+      <span class="fs12 fw7" id="est-delivery">${estDelivery(defaultCourier)}</span>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="openOrderModal('${id}')">Back</button><button class="btn btn-primary" onclick="confirmShip('${id}')">✓ Confirm shipment</button>`,'modal-sm');
+}
+function confirmShip(id){
+  var o=ORDERS.find(function(x){return x.id===id});
+  o.courier=document.getElementById('ship-courier').value;
+  o.trackingId=document.getElementById('ship-tracking').value.trim();
+  o.weight=parseFloat(document.getElementById('ship-weight').value)||o.weight;
+  o.dims=document.getElementById('ship-dims').value.trim();
+  o.estDelivery=document.getElementById('est-delivery').textContent;
+  o.status='Shipped';
+  toast(id+' shipped via '+o.courier);renderOrders();renderFulfilment();openOrderModal(id);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FULFILMENT BOARD
+// ══════════════════════════════════════════════════════════════════
+function renderFulfilment(){
+  document.getElementById('fulfilment-board').innerHTML=FULFIL_STAGES.map(function(stage){
+    var list=ORDERS.filter(function(o){return o.status===stage;});
+    return `<div class="card">
+      <div class="card-t" style="justify-content:space-between">${stage} <span class="badge badge-sl">${list.length}</span></div>
+      ${list.length?list.map(function(o){
+        var nxt=FULFIL_NEXT[stage];
+        return `<div style="padding:9px 0;border-bottom:1px solid var(--bdr)">
+          <div class="fs12 fw7">${o.id}</div><div class="fs11 col-sl">${o.customer}</div>
+          ${nxt?'<button class="action-btn" style="margin-top:6px" onclick="'+(stage==='Ready to Ship'?'openShipModal(\''+o.id+'\')':'advanceOrder(\''+o.id+'\',\''+nxt+'\')')+'">'+(stage==='Ready to Ship'?'Ship':'→ '+nxt)+'</button>':''}
+        </div>`;
+      }).join(''):'<div class="fs11 col-sl" style="padding:10px 0">Nothing here.</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RETURNS
+// ══════════════════════════════════════════════════════════════════
+function renderReturns(){
+  var pending=RETURNS.filter(function(r){return r.status==='Requested';}).length;
+  document.getElementById('returns-pill').style.display=pending?'inline-flex':'none';
+  document.getElementById('returns-pill').textContent=pending;
+  function returnBadge(s){return s==='Refunded'?'<span class="badge badge-g">Refunded</span>':s==='Approved'?'<span class="badge badge-t">Approved</span>':s==='Rejected'?'<span class="badge badge-r">Rejected</span>':'<span class="badge badge-a">Requested</span>';}
+  document.getElementById('returns-list').innerHTML=RETURNS.map(function(r,i){
+    var actions=r.status==='Requested'?'<button class="btn btn-success btn-sm" onclick="decideReturn('+i+',\'approve\')">✓ Approve & refund</button><button class="btn btn-danger btn-sm" onclick="decideReturn('+i+',\'reject\')">✕ Reject</button>':
+      r.status==='Approved'?'<button class="btn btn-primary btn-sm" onclick="decideReturn('+i+',\'refund\')">💰 Mark refund processed</button>':'';
+    return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div><strong class="fs13">${r.product}</strong><div class="fs11 col-sl">${r.id} · ${r.orderId} · ${r.customer} · ${r.amount}</div></div>${returnBadge(r.status)}</div>
+      <div class="fs12 col-sl" style="margin-bottom:8px">Reason: ${r.reason} · requested ${r.requested}</div>
+      <div class="btn-row" style="margin-top:0">${actions}</div></div>`;
+  }).join('');
+}
+function decideReturn(i,action){
+  if(action==='approve'){RETURNS[i].status='Approved';toast(RETURNS[i].id+' approved — refund initiated');renderReturns();}
+  else if(action==='refund'){RETURNS[i].status='Refunded';toast(RETURNS[i].id+' — refund marked processed');renderReturns();}
+  else if(action==='reject'){
+    openModal('Reject Return — '+RETURNS[i].id,
+      '<div class="alert alert-r"><span class="alert-ic">⚠️</span><span>The customer will be notified of the rejection. (VE-065)</span></div>'+
+      '<div class="form-group"><label class="form-label">Rejection reason <span style="color:var(--rl)">*</span></label>'+
+      '<select class="form-input" id="ret-rej-sel"><option>Outside return window</option><option>Item appears used/opened</option><option>Missing accessories/packaging</option><option>Policy exclusion (consumable)</option><option>Other</option></select></div>'+
+      '<div class="form-group"><label class="form-label">Additional details (optional)</label><textarea class="form-input" rows="2" id="ret-rej-detail" placeholder="Explain to the customer..."></textarea></div>',
+      '<button class="btn btn-danger" onclick="confirmReturnRejection('+i+')">Confirm rejection</button>','modal-sm');
+  }
+}
+function confirmReturnRejection(i){
+  var reason=document.getElementById('ret-rej-sel').value;
+  RETURNS[i].status='Rejected'; RETURNS[i].rejectReason=reason;
+  closeModal();toast(RETURNS[i].id+' rejected: '+reason);renderReturns();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CUSTOMERS & REVIEWS
+// ══════════════════════════════════════════════════════════════════
+function renderCustomers(){
+  var byC={};
+  ORDERS.forEach(function(o){
+    if(!byC[o.customer]) byC[o.customer]={orders:0,spent:0,last:o.date};
+    byC[o.customer].orders++;byC[o.customer].spent+=parseInt(o.amount.replace(/[₹,]/g,''),10)||0;
+  });
+  document.getElementById('customers-tbody').innerHTML=Object.keys(byC).map(function(name){
+    var c=byC[name];
+    return `<tr><td class="fs12">${name}</td><td>${c.orders}</td><td class="fw7 col-g">₹${c.spent.toLocaleString('en-IN')}</td><td class="fs11 col-sl">${c.last}</td>
+      <td><button class="action-btn" onclick="toast('Order history for '+name)">View</button></td></tr>`;
+  }).join('');
+}
+function renderReviews(){
+  document.getElementById('reviews-list').innerHTML=REVIEWS.map(function(r,i){
+    return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <div><strong class="fs13">${r.customer}</strong><div class="fs11 col-sl">${r.product} · ${r.date}</div></div>
+      <span class="stars">${'★'.repeat(r.rating)}<span style="color:var(--bdr)">${'★'.repeat(5-r.rating)}</span></span></div>
+      <p class="fs12" style="color:var(--sll);margin-bottom:8px">${r.comment}</p>
+      ${r.reply?'<div class="alert alert-t"><span class="alert-ic">💬</span><span><strong>Your reply:</strong> '+r.reply+'</span></div>':
+        '<button class="btn btn-ghost btn-sm" onclick="openReplyModal('+i+')">💬 Reply</button>'}
+    </div>`;
+  }).join('');
+}
+function openReplyModal(i){
+  openModal('Reply to '+REVIEWS[i].customer,'<textarea class="form-input" rows="3" id="reply-text" placeholder="Thank them, or address their concern..."></textarea>',
+    '<button class="btn btn-primary" onclick="submitReply('+i+')">Post reply</button>','modal-sm');
+}
+function submitReply(i){
+  var txt=document.getElementById('reply-text').value.trim();if(!txt){toast('Write a reply first');return;}
+  REVIEWS[i].reply=txt;closeModal();toast('Reply posted');renderReviews();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PAYMENTS
+// ══════════════════════════════════════════════════════════════════
+function renderPayments(){
+  document.getElementById('payments-stats').innerHTML=`
+    <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--gl)">₹2,34,890</div><div class="fs11 col-sl" style="margin-top:4px">This month's sales</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--al)">₹23,489</div><div class="fs11 col-sl" style="margin-top:4px">Platform commission (10%)</div></div>
+    <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--tl)">₹55,305</div><div class="fs11 col-sl" style="margin-top:4px">Pending settlement</div></div>`;
+  document.getElementById('settlements-tbody').innerHTML=SETTLEMENTS.map(function(s,i){
+    return `<tr class="cr" onclick="openSettlementDrilldown(${i})"><td class="fs12">${s.period}</td><td class="fs12">${s.sales}</td><td class="fs12 col-r">-${s.commission}</td><td class="fw7 col-g">${s.net}</td>
+      <td>${s.status==='Paid'?'<span class="badge badge-g">Paid</span>':'<span class="badge badge-a">'+s.status+'</span>'}
+      <button class="action-btn" style="margin-left:8px" onclick="event.stopPropagation();openSettlementDrilldown(${i})">📄 Orders (VE-072)</button></td></tr>`;
+  }).join('');
+}
+
+function openSettlementDrilldown(i){
+  var s=SETTLEMENTS[i];
+  // Demo order breakdown for the settlement period (VE-072)
+  var demoOrders=[
+    {id:'ORD-10090',customer:'Priya Sharma',amount:'₹12,499',commission:'₹1,249.90',net:'₹11,249.10',deliveredOn:'28 '+s.period.split(' ')[0]+' '+s.period.split(' ')[1],status:'Settled'},
+    {id:'ORD-10077',customer:'Amit Verma',amount:'₹5,999',commission:'₹599.90',net:'₹5,399.10',deliveredOn:'22 '+s.period.split(' ')[0]+' '+s.period.split(' ')[1],status:'Settled'},
+    {id:'ORD-10062',customer:'Neha Gupta',amount:'₹2,499',commission:'₹249.90',net:'₹2,249.10',deliveredOn:'18 '+s.period.split(' ')[0]+' '+s.period.split(' ')[1],status:'Settled'},
+    {id:'ORD-10051',customer:'Ravi Patel',amount:'₹8,990',commission:'₹899',net:'₹8,091',deliveredOn:'12 '+s.period.split(' ')[0]+' '+s.period.split(' ')[1],status:'Settled'},
+  ];
+  openModal('📄 Settlement Breakdown — '+s.period,
+    `<div class="alert alert-g"><span class="alert-ic">✅</span><span>Settlement <strong>${s.net}</strong> transferred on 7 ${s.period.split(' ')[0]==='Sep'?'Oct':s.period.split(' ')[0]} ${s.period.split(' ')[1]} via NEFT. UTR: NEFT${Math.floor(1e12+Math.random()*9e11)}</span></div>
+    <div class="g3" style="margin-bottom:14px">
+      <div style="background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center"><div class="fs12 col-sl">Total Sales</div><div style="font-size:18px;font-weight:800;color:var(--gl);margin-top:2px">${s.sales}</div></div>
+      <div style="background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center"><div class="fs12 col-sl">Commission (10%)</div><div style="font-size:18px;font-weight:800;color:var(--rl);margin-top:2px">-${s.commission}</div></div>
+      <div style="background:var(--card2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center"><div class="fs12 col-sl">Net Settlement</div><div style="font-size:18px;font-weight:800;color:var(--tl);margin-top:2px">${s.net}</div></div>
+    </div>
+    <div class="card-t" style="margin-bottom:8px">📦 Settled Orders</div>
+    <table class="tbl"><thead><tr><th>Order ID</th><th>Customer</th><th>Sale Amt</th><th>Commission</th><th>Net</th><th>Delivered</th></tr></thead>
+    <tbody>${demoOrders.map(function(o){return `<tr><td class="fw7 col-t">${o.id}</td><td>${o.customer}</td><td>${o.amount}</td><td class="col-r">-${o.commission}</td><td class="fw7 col-g">${o.net}</td><td class="col-sl">${o.deliveredOn}</td></tr>`;}).join('')}</tbody></table>
+    <div class="form-hint" style="margin-top:10px">Test VE-072: ✅ Order-level breakdown visible in settlement drill-down.</div>`,
+    null,'modal-lg');
+}
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+function renderAll(){
+  renderOverview();renderAnalytics();renderProducts();renderInventory();
+  renderMyPlugins();renderPluginCatalog();
+  renderOrders();renderFulfilment();renderReturns();
+  renderCustomers();renderReviews();renderPayments();
+}
+window.onload=renderAll;
+</script>
+</body>
+</html>
+
+</body></html>

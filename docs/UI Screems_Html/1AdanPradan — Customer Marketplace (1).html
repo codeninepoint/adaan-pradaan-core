@@ -1,0 +1,1557 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AdanPradan — Customer Marketplace</title>
+<style>
+:root{--bg:#0f1117;--card:#181c27;--card2:#1e2236;--border:#2a2f45;--text:#e2e8f0;--muted:#8892a4;--tl:#00c9a7;--gl:#22c55e;--rl:#ef4444;--vl:#a855f7;--ol:#f97316;--yl:#eab308;--bl:#3b82f6;--radius:10px;--shadow:0 4px 24px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;font-family:inherit;font-size:13px}
+input,select,textarea{font-family:inherit;font-size:13px;background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 12px;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--tl)}
+select option{background:#1e2236}
+
+/* NAV */
+.nav{background:#12162099;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;padding:0 24px;height:56px}
+.nav-logo{font-size:18px;font-weight:700;color:var(--tl);letter-spacing:-.5px;white-space:nowrap}
+.nav-logo span{color:var(--text)}
+.nav-search{flex:1;max-width:480px;position:relative}
+.nav-search input{padding-left:36px;border-radius:20px;background:#1a1f2e}
+.nav-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5}
+.nav-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.nav-btn{background:none;color:var(--muted);padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:6px;transition:all .2s;position:relative}
+.nav-btn:hover{background:var(--card2);color:var(--text)}
+.nav-btn.active{color:var(--tl)}
+.badge{position:absolute;top:2px;right:2px;background:var(--rl);color:#fff;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.btn{padding:9px 18px;border-radius:8px;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:7px}
+.btn-tl{background:var(--tl);color:#0a1a16}
+.btn-tl:hover{filter:brightness(1.1)}
+.btn-gl{background:var(--gl);color:#0a1f0f}
+.btn-gl:hover{filter:brightness(1.1)}
+.btn-rl{background:var(--rl);color:#fff}
+.btn-rl:hover{filter:brightness(1.1)}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--tl);color:var(--tl)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+
+/* VIEWS */
+.view{display:none;padding:24px}
+.view.active{display:block}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f1117 0%,#1a1040 50%,#0f1a1f 100%);border-radius:16px;padding:48px 40px;margin-bottom:28px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,#00c9a720 0%,transparent 70%)}
+.hero-title{font-size:32px;font-weight:800;line-height:1.2;margin-bottom:10px}
+.hero-title em{font-style:normal;color:var(--tl)}
+.hero-sub{color:var(--muted);margin-bottom:24px;font-size:15px}
+.hero-search{display:flex;gap:10px;max-width:540px}
+.hero-search input{border-radius:10px;padding:12px 16px;background:#1a1f2e;font-size:15px}
+.hero-search button{white-space:nowrap;padding:12px 22px;border-radius:10px;font-size:15px}
+
+/* CATEGORIES */
+.cats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.cat-chip{padding:7px 16px;border-radius:20px;background:var(--card2);border:1px solid var(--border);color:var(--muted);transition:all .2s;cursor:pointer;font-size:13px}
+.cat-chip:hover,.cat-chip.active{background:var(--tl)22;border-color:var(--tl);color:var(--tl)}
+
+/* LAYOUT */
+.shop-layout{display:grid;grid-template-columns:220px 1fr;gap:20px}
+.filters-panel{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);height:fit-content;position:sticky;top:70px}
+.filter-section{margin-bottom:20px}
+.filter-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px}
+.filter-option{display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;color:var(--muted);transition:color .2s}
+.filter-option:hover,.filter-option.selected{color:var(--text)}
+.filter-option input[type=checkbox]{width:auto;accent-color:var(--tl)}
+.price-range{display:flex;gap:8px;align-items:center}
+.price-range input{flex:1}
+
+/* PRODUCT GRID */
+.products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.products-count{color:var(--muted);font-size:13px}
+.sort-select{width:auto;padding:6px 10px;border-radius:8px}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.product-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;transition:all .25s;cursor:pointer;position:relative}
+.product-card:hover{border-color:var(--tl)55;transform:translateY(-2px);box-shadow:var(--shadow)}
+.product-img{height:160px;background:linear-gradient(135deg,#1e2236,#252d45);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative}
+.product-badge{position:absolute;top:8px;left:8px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.badge-oos{background:#ef444422;color:var(--rl);border:1px solid var(--rl)44}
+.badge-hot{background:#f9731622;color:var(--ol);border:1px solid var(--ol)44}
+.badge-new{background:#22c55e22;color:var(--gl);border:1px solid var(--gl)44}
+.wish-btn{position:absolute;top:8px;right:8px;background:#0f111799;border:1px solid var(--border);color:var(--muted);padding:5px 8px;border-radius:6px;line-height:1;transition:all .2s;cursor:pointer}
+.wish-btn:hover,.wish-btn.active{color:var(--rl);border-color:var(--rl)55;background:#ef444411}
+.product-info{padding:14px}
+.product-name{font-weight:600;margin-bottom:4px;font-size:13.5px;line-height:1.3}
+.product-vendor{font-size:11px;color:var(--tl);margin-bottom:8px}
+.product-price{font-size:17px;font-weight:700;color:var(--gl)}
+.product-rating{display:flex;align-items:center;gap:5px;margin-top:6px;font-size:12px;color:var(--yl)}
+.product-actions{display:flex;gap:8px;padding:0 14px 14px}
+
+/* MODAL OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:#000000cc;z-index:200;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--card);border-radius:14px;border:1px solid var(--border);width:100%;max-width:860px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.7)}
+.modal-sm{max-width:520px}
+.modal-lg{max-width:1000px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:1}
+.modal-title{font-size:17px;font-weight:700}
+.close-btn{background:none;color:var(--muted);font-size:20px;padding:4px 8px;border-radius:6px}
+.close-btn:hover{background:var(--card2);color:var(--text)}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* PRODUCT DETAIL */
+.pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.pd-image{background:linear-gradient(135deg,#1e2236,#252d45);border-radius:10px;height:280px;display:flex;align-items:center;justify-content:center;font-size:72px}
+.pd-vendor-card{background:var(--card2);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.pd-variants{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.variant-chip{padding:7px 14px;border-radius:6px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;font-size:12px}
+.variant-chip.active{border-color:var(--tl);color:var(--tl);background:var(--tl)11}
+.variant-chip.oos{opacity:.5;cursor:not-allowed;text-decoration:line-through}
+.pd-price{font-size:26px;font-weight:800;color:var(--gl);margin-bottom:4px}
+.pd-avail{font-size:12px;margin-bottom:16px}
+.pd-qty{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.qty-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:6px;font-size:16px;display:flex;align-items:center;justify-content:center}
+.qty-val{font-size:16px;font-weight:600;min-width:28px;text-align:center}
+.fulfillment-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;background:var(--vl)22;color:var(--vl);border:1px solid var(--vl)44;font-size:11px;font-weight:600;margin-bottom:16px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:9px 16px;border-radius:8px 8px 0 0;color:var(--muted);transition:all .2s;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--tl);border-bottom-color:var(--tl)}
+.tab:hover:not(.active){color:var(--text)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* CART */
+.cart-vendor-group{background:var(--card2);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
+.cart-vendor-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-weight:600}
+.cart-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border)55}
+.cart-item:last-child{border-bottom:none}
+.cart-item-img{width:52px;height:52px;border-radius:8px;background:linear-gradient(135deg,#1e2236,#252d45);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.cart-item-info{flex:1}
+.cart-item-name{font-weight:600;margin-bottom:3px}
+.cart-item-meta{font-size:12px;color:var(--muted)}
+.cart-item-price{font-weight:700;font-size:15px;color:var(--gl);text-align:right}
+.cart-qty{display:flex;align-items:center;gap:6px}
+.cart-qty button{background:var(--card);border:1px solid var(--border);color:var(--text);width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.price-breakdown{background:var(--card2);border-radius:10px;border:1px solid var(--border);padding:16px;margin-top:16px}
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px}
+.price-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:12px;font-size:16px;font-weight:700}
+.price-row .label{color:var(--muted)}
+.price-row.discount .val{color:var(--gl)}
+.coupon-row{display:flex;gap:8px;margin:12px 0}
+.coupon-row input{flex:1}
+
+/* ORDER HISTORY */
+.order-card{background:var(--card2);border-radius:10px;border:1px solid var(--border);padding:16px;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.order-card:hover{border-color:var(--tl)55}
+.order-meta{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.order-id{font-weight:700;color:var(--tl)}
+.status-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.s-new{background:#3b82f622;color:var(--bl)}
+.s-confirmed{background:#a855f722;color:var(--vl)}
+.s-processing{background:#f9731622;color:var(--ol)}
+.s-shipped{background:#00c9a722;color:var(--tl)}
+.s-delivered{background:#22c55e22;color:var(--gl)}
+.s-rejected{background:#ef444422;color:var(--rl)}
+.s-cancelled{background:#8892a422;color:var(--muted)}
+.s-pending{background:#eab30822;color:var(--yl)}
+.s-return{background:#a855f722;color:var(--vl)}
+.s-refunded{background:#22c55e22;color:var(--gl)}
+.suborder-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border-radius:8px;margin-bottom:8px}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-step{position:relative;padding-bottom:20px}
+.tl-step::before{content:'';position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--border);border:2px solid var(--bg)}
+.tl-step.done::before{background:var(--gl);border-color:var(--gl)}
+.tl-step.active-step::before{background:var(--tl);border-color:var(--tl);box-shadow:0 0 0 3px var(--tl)33}
+.tl-label{font-weight:600;font-size:13px}
+.tl-time{font-size:11px;color:var(--muted)}
+
+/* ALERTS */
+.alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:flex-start;gap:10px}
+.alert-info{background:#3b82f611;border:1px solid #3b82f633;color:#93c5fd}
+.alert-warn{background:#f9731611;border:1px solid #f9731633;color:#fdba74}
+.alert-danger{background:#ef444411;border:1px solid #ef444433;color:#fca5a5}
+.alert-success{background:#22c55e11;border:1px solid #22c55e33;color:#86efac}
+
+/* MISC */
+.section-title{font-size:16px;font-weight:700;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.label-sm{font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;letter-spacing:.4px}
+.form-group{margin-bottom:14px}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideUp .3s ease;min-width:280px}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast.success{border-color:var(--gl)66;background:#0f1f1499}
+.toast.error{border-color:var(--rl)66;background:#1f0f0f99}
+.toast.warn{border-color:var(--ol)66}
+.stars{color:var(--yl)}
+.review-card{background:var(--card2);border-radius:8px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
+
+/* SIDEBAR CART */
+.side-cart{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--card);border-left:1px solid var(--border);z-index:150;transform:translateX(100%);transition:transform .3s;display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.5)}
+.side-cart.open{transform:translateX(0)}
+.side-cart-hdr{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.side-cart-body{flex:1;overflow-y:auto;padding:16px}
+.side-cart-footer{padding:16px;border-top:1px solid var(--border)}
+
+/* WISHLIST */
+.wishlist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+
+/* SCENARIO TOOLBAR */
+.scenario-bar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.scenario-bar-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-right:4px}
+.scenario-btn{padding:5px 12px;border-radius:6px;background:var(--card2);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.scenario-btn:hover{border-color:var(--vl);color:var(--vl)}
+
+/* RESPONSIVE */
+@media(max-width:700px){.shop-layout{grid-template-columns:1fr}.filters-panel{display:none}.pd-grid{grid-template-columns:1fr}.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- SCENARIO TOOLBAR -->
+<div class="scenario-bar">
+  <span class="scenario-bar-label">🧪 Demo Scenarios:</span>
+  <button class="scenario-btn" onclick="runScenario(1)">① Two-Vendor Cart</button>
+  <button class="scenario-btn" onclick="runScenario(2)">② Vendor A Accepts / B Rejects</button>
+  <button class="scenario-btn" onclick="runScenario(3)">③ A Delivered / B Delayed</button>
+  <button class="scenario-btn" onclick="runScenario(4)">④ Partial Refund</button>
+  <button class="scenario-btn" onclick="runScenario(5)">⑤ Cancel While Pending</button>
+  <button class="scenario-btn" onclick="runScenario(6)" style="border-color:#ef444455;color:var(--rl)">⑥ Tenant Isolation</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">Adan<span>Pradan</span></div>
+  <div class="nav-search">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="globalSearch" placeholder="Search products, vendors…" oninput="liveSearch(this.value)" onkeydown="if(event.key==='Enter')doSearch()">
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="showView('catalog')">🏪 Shop</button>
+    <button class="nav-btn" onclick="showView('wishlist')">♡ Wishlist <span id="wishBadge" class="badge" style="display:none">0</span></button>
+    <button class="nav-btn" onclick="toggleCart()">🛒 Cart <span id="cartBadge" class="badge">0</span></button>
+    <button class="nav-btn" onclick="showView('orders')">📦 Orders</button>
+    <button class="nav-btn" onclick="showView('profile')">👤 Rhea</button>
+  </div>
+</nav>
+
+<!-- VIEWS -->
+<div id="view-catalog" class="view active">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-title">Discover <em>amazing products</em><br>from top vendors</div>
+    <div class="hero-sub">Thousands of products · Secure payments · Fast delivery to your door</div>
+    <div class="hero-search">
+      <input type="text" id="heroSearch" placeholder="What are you looking for?" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="btn btn-tl" onclick="doSearch()">🔍 Search</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--muted)">📍 Delivering to:</span>
+      <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:6px 12px">
+        <span id="pin-display" style="font-size:13px;font-weight:700;color:var(--tl)">400050 · Bandra West, Mumbai</span>
+        <button onclick="openChangePincode()" style="background:none;border:none;color:var(--muted);font-size:11px;padding:0 0 0 8px;cursor:pointer">Change →</button>
+      </div>
+      <span style="font-size:11px;color:var(--muted)">Only products available at your pincode are shown.</span>
+    </div>
+  </div>
+  <!-- CATEGORIES -->
+  <div class="cats" id="categoryChips"></div>
+  <!-- SHOP LAYOUT -->
+  <div class="shop-layout">
+    <!-- FILTERS -->
+    <div class="filters-panel">
+      <div class="filter-section">
+        <div class="filter-title">Price Range</div>
+        <div class="price-range">
+          <input type="number" id="priceMin" placeholder="Min" style="width:90px" oninput="applyFilters()">
+          <span style="color:var(--muted)">—</span>
+          <input type="number" id="priceMax" placeholder="Max" style="width:90px" oninput="applyFilters()">
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">Vendor</div>
+        <div id="vendorFilters"></div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">📍 Your Pincode</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="text" id="filterPincode" placeholder="e.g. 400001" style="flex:1;font-size:12px;padding:6px 8px" oninput="applyFilters()"/>
+        </div>
+        <label class="filter-option" style="font-size:11px"><input type="checkbox" id="filterPincodeOn" onchange="applyFilters()"> Filter by delivery pincode</label>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Shows only products delivered to this pincode.</div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">Availability</div>
+        <label class="filter-option"><input type="checkbox" id="filterInStock" onchange="applyFilters()"> In Stock Only</label>
+      </div>
+      <div class="filter-section">
+        <div class="filter-title">Fulfillment</div>
+        <div id="typeFilters"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="clearFilters()">Clear Filters</button>
+    </div>
+    <!-- PRODUCTS -->
+    <div>
+      <div class="products-header">
+        <div class="products-count" id="productsCount"></div>
+        <select class="sort-select" onchange="applyFilters()">
+          <option value="relevance">Relevance</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="rating">Top Rated</option>
+          <option value="newest">Newest</option>
+        </select>
+      </div>
+      <div class="products-grid" id="productsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WISHLIST VIEW -->
+<div id="view-wishlist" class="view">
+  <div class="section-title">♡ My Wishlist</div>
+  <div class="wishlist-grid" id="wishlistGrid"></div>
+  <div id="wishlistEmpty" class="empty-state" style="display:none"><div class="icon">♡</div><div>Your wishlist is empty</div></div>
+</div>
+
+<!-- ORDERS VIEW -->
+<div id="view-orders" class="view">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div class="section-title" style="margin:0">📦 My Orders</div>
+    <button class="btn btn-ghost btn-sm" onclick="showView('catalog')">+ Shop More</button>
+  </div>
+  <div id="ordersList"></div>
+</div>
+
+<!-- PROFILE VIEW -->
+<div id="view-profile" class="view">
+  <div class="section-title">👤 My Profile — Rhea Kapoor</div>
+
+  <!-- Account identity card -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
+    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--tl),var(--vl));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#0a1a16;flex-shrink:0">RK</div>
+    <div style="flex:1">
+      <div style="font-size:16px;font-weight:800;margin-bottom:2px">Rhea Kapoor</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="background:rgba(14,165,233,.12);color:#38bdf8;border:1px solid rgba(14,165,233,.3);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">👤 User Account</span>
+        <span style="background:rgba(34,197,94,.12);color:var(--gl);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700">Customer</span>
+        <span style="font-size:11px;color:var(--muted)">Tenant: Individual</span>
+        <span style="font-size:11px;color:var(--muted)">Member since Mar 2024</span>
+      </div>
+    </div>
+    <div style="text-align:right;font-size:11px;color:var(--muted)">
+      <div>Last login: Today, 10:22 AM</div>
+      <div>Mumbai · Chrome</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px">
+      <div class="filter-title" style="margin-bottom:14px">Personal Info</div>
+      <div class="form-group"><div class="label-sm">Full Name</div><input value="Rhea Kapoor" readonly></div>
+      <div class="form-group"><div class="label-sm">Email</div><input value="rhea.kapoor@email.com" readonly></div>
+      <div class="form-group"><div class="label-sm">Phone</div><input value="+91 98200 11223"></div>
+      <div class="form-group"><div class="label-sm">Delivery pincode</div>
+        <div style="display:flex;gap:8px">
+          <input id="profile-pincode" value="400050" style="flex:1"/>
+          <button class="btn btn-ghost btn-sm" onclick="saveDeliveryPincode()">Update</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Products not available at this pincode are hidden from the catalog.</div>
+      </div>
+      <div class="alert alert-info">🔒 Email and account identity fields require OTP verification to change.</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px">
+      <div class="filter-title" style="margin-bottom:14px">Saved Addresses</div>
+      <div id="savedAddresses"></div>
+      <button class="btn btn-ghost btn-sm" onclick="openAddAddressModal()">+ Add Address</button>
+    </div>
+  </div>
+
+  <!-- Become a Vendor CTA -->
+  <div style="background:linear-gradient(135deg,rgba(251,191,36,.07),rgba(251,191,36,.02));border:1px solid rgba(251,191,36,.2);border-radius:12px;padding:20px 24px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:14px;font-weight:800;color:#fbbf24;margin-bottom:4px">⚡ Start selling on AdanPradan</div>
+      <div style="font-size:12px;color:var(--muted);max-width:480px">Become a Vendor and reach customers across India. List products, set pincodes, and use Platform Plugins for payments and GST — all in one place.</div>
+    </div>
+    <button class="btn" style="background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);color:#fbbf24;white-space:nowrap" onclick="showVendorSignup()">⚡ Become a Vendor →</button>
+  </div>
+
+  <!-- Security section -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-top:14px">
+    <div class="filter-title" style="margin-bottom:12px">🔐 Security</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="alert('Change password: OTP sent to rhea.kapoor@email.com')">🔒 Change password</button>
+      <button class="btn btn-ghost btn-sm" onclick="alert('MFA: Authenticator app setup')">📱 Enable 2FA</button>
+      <button class="btn btn-ghost btn-sm" onclick="alert('Active sessions: Today Mumbai Chrome, Yesterday Mumbai App')">🖥 Active sessions</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDE CART -->
+<div class="side-cart" id="sideCart">
+  <div class="side-cart-hdr">
+    <div style="font-weight:700;font-size:16px">🛒 Cart (<span id="cartItemCount">0</span> items)</div>
+    <button class="close-btn" onclick="toggleCart()">×</button>
+  </div>
+  <div class="side-cart-body" id="sideCartBody"></div>
+  <div class="side-cart-footer">
+    <div class="price-breakdown" style="margin:0 0 12px">
+      <div class="price-row"><span class="label">Subtotal</span><span id="cartSubtotal">₹0</span></div>
+      <div class="price-row"><span class="label">Tax (18% GST)</span><span id="cartTax">₹0</span></div>
+      <div class="price-row"><span class="label">Shipping</span><span id="cartShipping">₹0</span></div>
+      <div class="price-row total"><span>Total</span><span id="cartTotal">₹0</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">⚠ Final amounts are server-authoritative (CU-055/056)</div>
+    </div>
+    <button class="btn btn-tl" style="width:100%" onclick="startCheckout()">Proceed to Checkout →</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Product Detail Modal -->
+<div class="overlay" id="pdModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="pdModalTitle">Product Detail</div>
+      <button class="close-btn" onclick="closeModal('pdModal')">×</button>
+    </div>
+    <div class="modal-body" id="pdModalBody"></div>
+  </div>
+</div>
+
+<!-- Checkout Modal -->
+<div class="overlay" id="checkoutModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">🛒 Checkout</div>
+      <button class="close-btn" onclick="closeModal('checkoutModal')">×</button>
+    </div>
+    <div class="modal-body" id="checkoutBody"></div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="overlay" id="orderDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="orderDetailTitle">Order Detail</div>
+      <button class="close-btn" onclick="closeModal('orderDetailModal')">×</button>
+    </div>
+    <div class="modal-body" id="orderDetailBody"></div>
+    <div class="modal-footer" id="orderDetailFooter"></div>
+  </div>
+</div>
+
+<!-- Return/Refund Modal -->
+<div class="overlay" id="returnModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">📬 Return Request</div>
+      <button class="close-btn" onclick="closeModal('returnModal')">×</button>
+    </div>
+    <div class="modal-body" id="returnBody"></div>
+  </div>
+</div>
+
+<!-- Tenant Isolation Modal -->
+<div class="overlay" id="tenantModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--rl)">🚫 Access Denied</div>
+      <button class="close-btn" onclick="closeModal('tenantModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger">
+        <div>
+          <b>HTTP 403 Forbidden</b><br>
+          You do not have permission to view this order. This order belongs to a different customer account.<br><br>
+          <code style="font-size:11px;background:#ffffff11;padding:4px 8px;border-radius:4px">GET /api/orders/ORD-99999<br>Authorization: Bearer &lt;rhea_jwt&gt;<br><br>Response: 403 Forbidden<br>{"error":"access_denied","message":"Order does not belong to authenticated customer","code":"TENANT_ISOLATION_VIOLATION"}</code>
+          <br><br>
+          <b>Test CU-082 (P0): ✅ PASS</b> — Tenant isolation enforced. Customer Rhea Kapoor cannot view order ORD-99999 belonging to Amit Sharma.
+        </div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%" onclick="closeModal('tenantModal')">Back to My Orders</button>
+    </div>
+  </div>
+</div>
+
+<!-- Support Ticket Modal -->
+<div class="overlay" id="supportModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">🎫 Raise Support Ticket</div>
+      <button class="close-btn" onclick="closeModal('supportModal')">×</button>
+    </div>
+    <div class="modal-body" id="supportBody"></div>
+  </div>
+</div>
+
+<div id="toastContainer"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+var STATE = {
+  user: {id:'cust-001', name:'Rhea Kapoor', email:'rhea.kapoor@email.com'},
+  cart: [],
+  wishlist: [],
+  shortlist: [],
+  orders: [],
+  addresses: [
+    {id:'addr-1', label:'Home', line1:'14 Linking Road, Bandra West', city:'Mumbai', pincode:'400050', phone:'+91 98200 11223', default:true},
+    {id:'addr-2', label:'Office', line1:'2nd Floor, Nirlon Knowledge Park, Goregaon East', city:'Mumbai', pincode:'400063', phone:'+91 98200 11223', default:false}
+  ],
+  selectedAddress: 'addr-1',
+  couponCode: '',
+  couponDiscount: 0,
+  filterCategory: 'All',
+  filterVendors: [],
+  filterTypes: [],
+  filterInStock: false,
+  searchQuery: '',
+  sortBy: 'relevance'
+};
+
+var VENDORS = [
+  {id:'v1', name:'TechNova Electronics', rating:4.7, badge:'🔵', color:'#3b82f6'},
+  {id:'v2', name:'GadgetHub Pro', rating:4.5, badge:'🟣', color:'#a855f7'}
+];
+
+var CATEGORIES = ['All','Electronics','Laptops','Peripherals','Audio','Smart Home','Accessories'];
+
+var PRODUCTS = [
+  {id:'p1',name:'AirBeat Pro Earbuds',category:'Electronics',type:'SHIP_PHYSICAL',emoji:'🎧',vendorId:'v1',rating:4.6,reviews:312,badge:'hot',
+   variants:[
+     {sku:'AB-EB-BLK',label:'Black',price:2499,stock:42,reserved:5},
+     {sku:'AB-EB-WHT',label:'White',price:2499,stock:8,reserved:2},
+     {sku:'AB-EB-RED',label:'Red',price:2699,stock:0,reserved:0}
+   ],
+   description:'Premium wireless earbuds with ANC, 30hr battery, IPX5 waterproof. Dual driver 10mm dynamic + balanced armature.'},
+  {id:'p2',name:'FlexCharge 65W GaN',category:'Accessories',type:'SHIP_PHYSICAL',emoji:'⚡',vendorId:'v1',rating:4.4,reviews:89,badge:'new',
+   variants:[{sku:'FC-65-STD',label:'Standard',price:1799,stock:3,reserved:1}],
+   description:'Ultra-compact 65W GaN charger. 3-port (2×USB-C, 1×USB-A). Charges laptop + phone + earbuds simultaneously.'},
+  {id:'p3',name:'NB SlimNote 14',category:'Laptops',type:'SHIP_PHYSICAL',emoji:'💻',vendorId:'v2',rating:4.2,reviews:47,badge:null,
+   variants:[
+     {sku:'NB-SL-14-GRY',label:'Grey / 8GB',price:54999,stock:0,reserved:0},
+     {sku:'NB-SL-14-BLU',label:'Navy / 16GB',price:62999,stock:5,reserved:2}
+   ],
+   description:'Thin & light 14" laptop. 12th Gen i5, IPS 1920×1200, 72Wh battery, Thunderbolt 4, backlit KB.'},
+  {id:'p4',name:'ClickType Mechanical KB',category:'Peripherals',type:'SHIP_PHYSICAL',emoji:'⌨',vendorId:'v2',rating:4.8,reviews:201,badge:'hot',
+   variants:[
+     {sku:'CT-KB-BLU',label:'Blue switches',price:3299,stock:15,reserved:0},
+     {sku:'CT-KB-RED',label:'Red switches',price:3299,stock:8,reserved:1}
+   ],
+   description:'TKL layout, per-key RGB, aluminium top case, hot-swappable PCB. Compatible with Windows & Mac.'},
+  {id:'p5',name:'SmartHub 4K Display',category:'Electronics',type:'SHIP_PHYSICAL',emoji:'🖥',vendorId:'v1',rating:4.3,reviews:65,badge:null,
+   variants:[{sku:'SH-4K-27',label:'27"',price:28999,stock:7,reserved:1}],
+   description:'27" IPS 4K 60Hz. USB-C 96W PD, HDMI 2.1, DP 1.4, built-in 2×5W speakers.'},
+  {id:'p6',name:'ProStation USB-C Hub',category:'Accessories',type:'SHIP_PHYSICAL',emoji:'🔌',vendorId:'v2',rating:4.1,reviews:33,badge:'new',
+   variants:[{sku:'PS-HUB-7P',label:'7-in-1',price:2199,stock:22,reserved:3}],
+   description:'7-in-1 hub: 4K HDMI, 100W PD, 2×USB 3.2, SD/microSD, Gigabit Ethernet.'},
+  {id:'p7',name:'CloudDrive Pro License',category:'Software',type:'DELIVER_DIGITAL',emoji:'☁',vendorId:'v1',rating:4.5,reviews:148,badge:null,
+   variants:[{sku:'CDP-1Y',label:'1 Year',price:1499,stock:999,reserved:0}],
+   description:'2TB secure cloud storage. End-to-end encrypted. License key delivered instantly via email.'},
+  {id:'p8',name:'FitBand Ultra',category:'Smart Home',type:'SHIP_PHYSICAL',emoji:'⌚',vendorId:'v2',rating:4.6,reviews:276,badge:'hot',
+   variants:[
+     {sku:'FB-S',label:'Small',price:4499,stock:18,reserved:2},
+     {sku:'FB-L',label:'Large',price:4499,stock:12,reserved:1}
+   ],
+   description:'AMOLED display, GPS, SpO2, 14-day battery, swim-proof 5ATM, Bluetooth 5.2.'}
+];
+
+// Pre-built orders for demo
+var DEMO_ORDERS = [
+  {
+    id:'ORD-20001',
+    date:'14 Oct 2026, 10:23 AM',
+    status:'Processing',
+    parentTotal:6598,
+    couponDiscount:0,
+    tax:1188,
+    shipping:99,
+    payable:7885,
+    paymentStatus:'Paid',
+    paymentRef:'PAY-TXN-88821',
+    address:{line1:'14 Linking Road, Bandra West',city:'Mumbai',pincode:'400050'},
+    suborders:[
+      {id:'SUB-20001-A',vendorId:'v1',vendor:'TechNova Electronics',status:'Processing',items:[
+        {name:'AirBeat Pro Earbuds',variant:'Black',sku:'AB-EB-BLK',qty:1,unitPrice:2499,emoji:'🎧'}
+      ],tracking:null,carrier:null},
+      {id:'SUB-20001-B',vendorId:'v2',vendor:'GadgetHub Pro',status:'Confirmed',items:[
+        {name:'ClickType Mechanical KB',variant:'Blue switches',sku:'CT-KB-BLU',qty:1,unitPrice:3299,emoji:'⌨'},
+        {name:'ProStation USB-C Hub',variant:'7-in-1',sku:'PS-HUB-7P',qty:1,unitPrice:800,emoji:'🔌'}
+      ],tracking:null,carrier:null}
+    ]
+  },
+  {
+    id:'ORD-19887',
+    date:'7 Oct 2026, 3:11 PM',
+    status:'Partial',
+    parentTotal:4298,
+    couponDiscount:0,
+    tax:774,
+    shipping:0,
+    payable:5072,
+    paymentStatus:'Paid',
+    paymentRef:'PAY-TXN-77441',
+    address:{line1:'14 Linking Road, Bandra West',city:'Mumbai',pincode:'400050'},
+    suborders:[
+      {id:'SUB-19887-A',vendorId:'v1',vendor:'TechNova Electronics',status:'Delivered',deliveredOn:'10 Oct 2026',items:[
+        {name:'FlexCharge 65W GaN',variant:'Standard',sku:'FC-65-STD',qty:1,unitPrice:1799,emoji:'⚡'},
+        {name:'CloudDrive Pro License',variant:'1 Year',sku:'CDP-1Y',qty:1,unitPrice:1499,emoji:'☁'}
+      ],tracking:'DL4492881001',carrier:'Delhivery'},
+      {id:'SUB-19887-B',vendorId:'v2',vendor:'GadgetHub Pro',status:'Delayed',delayNote:'Warehouse stock reconciliation — estimated dispatch 16 Oct',items:[
+        {name:'FitBand Ultra',variant:'Small',sku:'FB-S',qty:1,unitPrice:4499,emoji:'⌚'}
+      ],tracking:null,carrier:null}
+    ]
+  },
+  {
+    id:'ORD-19543',
+    date:'1 Oct 2026, 9:00 AM',
+    status:'Delivered',
+    parentTotal:3299,
+    couponDiscount:330,
+    tax:534,
+    shipping:0,
+    payable:3503,
+    paymentStatus:'Paid',
+    paymentRef:'PAY-TXN-66102',
+    address:{line1:'14 Linking Road, Bandra West',city:'Mumbai',pincode:'400050'},
+    suborders:[
+      {id:'SUB-19543-A',vendorId:'v2',vendor:'GadgetHub Pro',status:'Delivered',deliveredOn:'4 Oct 2026',returnEligible:true,items:[
+        {name:'ClickType Mechanical KB',variant:'Red switches',sku:'CT-KB-RED',qty:1,unitPrice:3299,emoji:'⌨',returnStatus:null}
+      ],tracking:'BD990221',carrier:'BlueDart'}
+    ]
+  }
+];
+
+STATE.orders = DEMO_ORDERS;
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN')}
+function vendorById(id){return VENDORS.find(v=>v.id===id)}
+function productById(id){return PRODUCTS.find(p=>p.id===id)}
+function getAvailable(v){return v.stock - v.reserved}
+function isAvailable(v){return getAvailable(v) > 0}
+
+function toast(msg, type='success'){
+  var t=document.createElement('div');
+  t.className='toast '+(type);
+  t.innerHTML=(type==='success'?'✅':type==='error'?'❌':type==='warn'?'⚠️':'ℹ️')+' '+msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(name==='wishlist') renderWishlist();
+  if(name==='orders') renderOrders();
+  if(name==='profile') renderProfile();
+}
+
+// ============================================================
+// CATALOG
+// ============================================================
+function initCatalog(){
+  // Category chips
+  var cc=document.getElementById('categoryChips');
+  CATEGORIES.forEach(cat=>{
+    var c=document.createElement('div');
+    c.className='cat-chip'+(cat==='All'?' active':'');
+    c.textContent=cat;
+    c.onclick=()=>{
+      document.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      STATE.filterCategory=cat;
+      applyFilters();
+    };
+    cc.appendChild(c);
+  });
+
+  // Vendor filters
+  var vf=document.getElementById('vendorFilters');
+  VENDORS.forEach(v=>{
+    vf.innerHTML+=`<label class="filter-option"><input type="checkbox" value="${v.id}" onchange="toggleVendorFilter('${v.id}',this.checked)"> ${v.badge} ${v.name}</label>`;
+  });
+
+  // Type filters
+  var types=[...new Set(PRODUCTS.map(p=>p.type))];
+  var tf=document.getElementById('typeFilters');
+  types.forEach(t=>{
+    tf.innerHTML+=`<label class="filter-option"><input type="checkbox" value="${t}" onchange="toggleTypeFilter('${t}',this.checked)"> ${fmtType(t)}</label>`;
+  });
+
+  renderProducts();
+}
+
+function fmtType(t){
+  var m={SHIP_PHYSICAL:'📦 Physical',DELIVER_DIGITAL:'📧 Digital',LICENSE_SOFTWARE:'🔑 License',PROVISION_SOFTWARE:'💿 Software',STREAM_LMS_COURSE:'🎓 Course'};
+  return m[t]||t;
+}
+
+function toggleVendorFilter(id,checked){
+  if(checked) STATE.filterVendors.push(id);
+  else STATE.filterVendors=STATE.filterVendors.filter(v=>v!==id);
+  applyFilters();
+}
+function toggleTypeFilter(t,checked){
+  if(checked) STATE.filterTypes.push(t);
+  else STATE.filterTypes=STATE.filterTypes.filter(x=>x!==t);
+  applyFilters();
+}
+
+function liveSearch(q){STATE.searchQuery=q; applyFilters();}
+function doSearch(){
+  var q=document.getElementById('heroSearch').value||document.getElementById('globalSearch').value;
+  STATE.searchQuery=q;
+  showView('catalog');
+  applyFilters();
+}
+
+function applyFilters(){
+  var q=STATE.searchQuery.toLowerCase().trim();
+  var minP=parseFloat(document.getElementById('priceMin').value)||0;
+  var maxP=parseFloat(document.getElementById('priceMax').value)||Infinity;
+  var inStock=document.getElementById('filterInStock').checked;
+  var sort=document.querySelector('.sort-select').value;
+
+  var pinFilter=document.getElementById('filterPincodeOn')&&document.getElementById('filterPincodeOn').checked;
+  var pinVal=(document.getElementById('filterPincode')||{}).value||'';
+
+  var filtered=PRODUCTS.filter(p=>{
+    if(STATE.filterCategory!=='All' && p.category!==STATE.filterCategory) return false;
+    if(STATE.filterVendors.length && !STATE.filterVendors.includes(p.vendorId)) return false;
+    if(STATE.filterTypes.length && !STATE.filterTypes.includes(p.type)) return false;
+    if(q && !p.name.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q)) return false;
+    var minVariantPrice=Math.min(...p.variants.map(v=>v.price));
+    if(minVariantPrice < minP || minVariantPrice > maxP) return false;
+    if(inStock && !p.variants.some(v=>getAvailable(v)>0)) return false;
+    // Pincode filter: if enabled and product has pincodes, check inclusion
+    if(pinFilter && pinVal && p.pincodes && p.pincodes.length && !p.pincodes.includes(pinVal)) return false;
+    return true;
+  });
+
+  // Sort
+  if(sort==='price-asc') filtered.sort((a,b)=>Math.min(...a.variants.map(v=>v.price))-Math.min(...b.variants.map(v=>v.price)));
+  else if(sort==='price-desc') filtered.sort((a,b)=>Math.min(...b.variants.map(v=>v.price))-Math.min(...a.variants.map(v=>v.price)));
+  else if(sort==='rating') filtered.sort((a,b)=>b.rating-a.rating);
+  else if(sort==='newest') filtered.reverse();
+
+  renderProductsFiltered(filtered);
+}
+
+function clearFilters(){
+  STATE.filterCategory='All';STATE.filterVendors=[];STATE.filterTypes=[];STATE.searchQuery='';
+  document.getElementById('priceMin').value='';document.getElementById('priceMax').value='';
+  document.getElementById('filterInStock').checked=false;
+  document.querySelectorAll('.cat-chip').forEach((c,i)=>{c.classList.toggle('active',i===0)});
+  document.querySelectorAll('#vendorFilters input,#typeFilters input').forEach(cb=>cb.checked=false);
+  renderProducts();
+}
+
+function renderProducts(){renderProductsFiltered(PRODUCTS);}
+
+function renderProductsFiltered(list){
+  var g=document.getElementById('productsGrid');
+  document.getElementById('productsCount').textContent=list.length+' products found';
+  if(!list.length){
+    g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><div>No products match your filters</div></div>';
+    return;
+  }
+  g.innerHTML=list.map(p=>{
+    var vendor=vendorById(p.vendorId);
+    var defaultVariant=p.variants.find(v=>getAvailable(v)>0)||p.variants[0];
+    var minPrice=Math.min(...p.variants.map(v=>v.price));
+    var inWish=STATE.wishlist.some(w=>w.productId===p.id);
+    var oos=!p.variants.some(v=>getAvailable(v)>0);
+    var avgRating=p.rating;
+    return `<div class="product-card" onclick="openProductDetail('${p.id}')">
+      <div class="product-img">
+        ${p.emoji}
+        ${p.badge==='hot'?'<span class="product-badge badge-hot">🔥 Hot</span>':p.badge==='new'?'<span class="product-badge badge-new">New</span>':''}
+        ${oos?'<span class="product-badge badge-oos" style="left:auto;right:8px;top:8px">Out of Stock</span>':''}
+        <button class="wish-btn${inWish?' active':''}" onclick="event.stopPropagation();toggleWishlist('${p.id}')">${inWish?'♥':'♡'}</button>
+      </div>
+      <div class="product-info">
+        <div class="product-vendor">${vendor.badge} ${vendor.name}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">from ${fmt(minPrice)}</div>
+        <div class="product-rating">★ ${avgRating} <span style="color:var(--muted)">(${p.reviews})</span> · <span style="color:var(--muted);font-size:11px">${fmtType(p.type)}</span></div>
+      </div>
+      <div class="product-actions">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="event.stopPropagation();openProductDetail('${p.id}')">View</button>
+        ${!oos?`<button class="btn btn-tl btn-sm" onclick="event.stopPropagation();quickAddToCart('${p.id}')">+ Cart</button>`:`<button class="btn btn-ghost btn-sm" disabled style="opacity:.4">OOS</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// PRODUCT DETAIL
+// ============================================================
+var pdState = {productId:null, variantSku:null, qty:1};
+
+function openProductDetail(pid){
+  var p=productById(pid);
+  if(!p){toast('Product not found','error');return;}
+  // Test CU-011: Draft/rejected product not exposed — not in PRODUCTS list
+  pdState.productId=pid;
+  var defaultV=p.variants.find(v=>getAvailable(v)>0)||p.variants[0];
+  pdState.variantSku=defaultV.sku;
+  pdState.qty=1;
+  document.getElementById('pdModalTitle').textContent=p.name;
+  renderPdModal(p);
+  openModal('pdModal');
+}
+
+function renderPdModal(p){
+  var vendor=vendorById(p.vendorId);
+  var v=p.variants.find(x=>x.sku===pdState.variantSku)||p.variants[0];
+  var avail=getAvailable(v);
+  var inWish=STATE.wishlist.some(w=>w.productId===p.id);
+
+  document.getElementById('pdModalBody').innerHTML=`
+    <div class="pd-grid">
+      <div>
+        <div class="pd-image">${p.emoji}</div>
+        <div class="tabs" style="margin-top:16px">
+          <div class="tab active" onclick="switchPdTab(this,'desc')">Description</div>
+          <div class="tab" onclick="switchPdTab(this,'reviews')">Reviews (${p.reviews})</div>
+          <div class="tab" onclick="switchPdTab(this,'shipping')">Shipping</div>
+        </div>
+        <div class="tab-content active" id="pd-desc">${p.description}</div>
+        <div class="tab-content" id="pd-reviews">${renderReviews(p)}</div>
+        <div class="tab-content" id="pd-shipping">
+          <p style="color:var(--muted);font-size:13px">Fulfilled by <b style="color:var(--text)">${vendor.name}</b> via ${fmtType(p.type)}.<br>Estimated delivery: 2–5 business days after dispatch.</p>
+        </div>
+      </div>
+      <div>
+        <div class="pd-vendor-card">
+          <div style="font-size:24px">${vendor.badge}</div>
+          <div><div style="font-weight:700">${vendor.name}</div><div style="font-size:12px;color:var(--muted)">★ ${vendor.rating} · Verified Seller</div></div>
+        </div>
+        <div class="fulfillment-badge">${fmtType(p.type)}</div>
+        <div class="label-sm" style="margin-bottom:8px">Select Variant</div>
+        <div class="pd-variants">
+          ${p.variants.map(vr=>{
+            var a=getAvailable(vr);
+            return `<div class="variant-chip${vr.sku===pdState.variantSku?' active':''}${a===0?' oos':''}" onclick="${a>0?`selectVariant('${vr.sku}')`:''}" title="${a===0?'Out of stock':''}">
+              ${vr.label}${a===0?' (OOS)':''}<br><small style="color:var(--tl)">${fmt(vr.price)}</small>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="pd-price">${fmt(v.price)}</div>
+        <div class="pd-avail" style="color:${avail>5?'var(--gl)':avail>0?'var(--yl)':'var(--rl)'}">
+          ${avail>5?'✓ In Stock':avail>0?`⚠ Only ${avail} left`:avail===0 && v.stock>0?'Reserved — temporarily unavailable':'✗ Out of Stock'}
+        </div>
+        ${avail>0?`
+        <div class="pd-qty">
+          <button class="qty-btn" onclick="changePdQty(-1)">−</button>
+          <span class="qty-val" id="pdQtyVal">${pdState.qty}</span>
+          <button class="qty-btn" onclick="changePdQty(1)">+</button>
+          <span style="color:var(--muted);font-size:12px">max ${Math.min(avail,10)}</span>
+        </div>
+        <button class="btn btn-tl" style="width:100%;margin-bottom:10px" onclick="addToCartFromDetail()">🛒 Add to Cart</button>
+        `:`<div class="alert alert-warn" style="margin-bottom:10px">⚠ This variant is out of stock. Select another variant or add to wishlist to be notified.</div>`}
+        <button class="btn btn-ghost" style="width:100%" onclick="toggleWishlist('${p.id}');renderPdModal(productById('${p.id}'))">
+          ${inWish?'♥ In Wishlist':'♡ Add to Wishlist'}
+        </button>
+        <div style="margin-top:14px;font-size:12px;color:var(--muted)">
+          SKU: <code>${v.sku}</code> · Stock: ${v.stock} · Reserved: ${v.reserved}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderReviews(p){
+  var samples=[
+    {user:'Amit S.',stars:5,text:'Excellent product! Arrived on time, packaging was perfect.',date:'5 Oct 2026',verified:true},
+    {user:'Priya M.',stars:4,text:'Great value for money. Minor issue with pairing on first use but resolved quickly.',date:'28 Sep 2026',verified:true},
+    {user:'Kiran B.',stars:5,text:'Top notch quality. Would recommend to everyone.',date:'21 Sep 2026',verified:true}
+  ];
+  return samples.map(r=>`
+    <div class="review-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="font-weight:600">${r.user}</div>
+        ${r.verified?'<span class="pill" style="background:var(--gl)22;color:var(--gl);border:1px solid var(--gl)44">✓ Verified Purchase</span>':''}
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">${r.date}</span>
+      </div>
+      <div class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+      <div style="margin-top:6px;font-size:13px;color:var(--muted)">${r.text}</div>
+    </div>`).join('');
+}
+
+function switchPdTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#pdModalBody .tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pd-'+id).classList.add('active');
+}
+
+function selectVariant(sku){pdState.variantSku=sku;pdState.qty=1;renderPdModal(productById(pdState.productId));}
+function changePdQty(delta){
+  var p=productById(pdState.productId);
+  var v=p.variants.find(x=>x.sku===pdState.variantSku);
+  var avail=Math.min(getAvailable(v),10);
+  pdState.qty=Math.max(1,Math.min(avail,pdState.qty+delta));
+  var el=document.getElementById('pdQtyVal');
+  if(el) el.textContent=pdState.qty;
+}
+
+// ============================================================
+// CART
+// ============================================================
+function quickAddToCart(pid){
+  var p=productById(pid);
+  var v=p.variants.find(x=>getAvailable(x)>0);
+  if(!v){toast('Out of stock','error');return;}
+  addToCart(pid,v.sku,1);
+}
+
+function addToCartFromDetail(){
+  addToCart(pdState.productId, pdState.variantSku, pdState.qty);
+  closeModal('pdModal');
+}
+
+function addToCart(pid, sku, qty){
+  var p=productById(pid);
+  var v=p.variants.find(x=>x.sku===sku);
+  if(!v || getAvailable(v)<qty){toast('Insufficient stock (CU-045)','error');return;}
+  var existing=STATE.cart.find(i=>i.productId===pid && i.sku===sku);
+  if(existing){
+    var newQty=existing.qty+qty;
+    if(getAvailable(v)<newQty){toast('Cannot add more — stock limit reached','warn');return;}
+    existing.qty=newQty;
+  } else {
+    STATE.cart.push({productId:pid, sku:sku, qty:qty, unitPrice:v.price, addedAt:Date.now()});
+  }
+  updateCartBadge();
+  renderSideCart();
+  toast(`${p.name} added to cart`);
+}
+
+function removeFromCart(pid,sku){
+  STATE.cart=STATE.cart.filter(i=>!(i.productId===pid && i.sku===sku));
+  updateCartBadge();
+  renderSideCart();
+}
+
+function changeCartQty(pid,sku,delta){
+  var item=STATE.cart.find(i=>i.productId===pid && i.sku===sku);
+  if(!item) return;
+  var p=productById(pid);
+  var v=p.variants.find(x=>x.sku===sku);
+  var newQty=item.qty+delta;
+  if(newQty<1){removeFromCart(pid,sku);return;}
+  if(getAvailable(v)<newQty){toast('Cannot increase — stock limit (CU-045)','warn');return;}
+  item.qty=newQty;
+  updateCartBadge();
+  renderSideCart();
+}
+
+function updateCartBadge(){
+  var n=STATE.cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('cartBadge').textContent=n;
+  document.getElementById('cartItemCount').textContent=n;
+}
+
+function toggleCart(){
+  document.getElementById('sideCart').classList.toggle('open');
+  renderSideCart();
+}
+
+function renderSideCart(){
+  var body=document.getElementById('sideCartBody');
+  if(!STATE.cart.length){
+    body.innerHTML='<div class="empty-state"><div class="icon">🛒</div><div>Your cart is empty</div><button class="btn btn-tl btn-sm" style="margin-top:12px" onclick="toggleCart();showView(\'catalog\')">Browse Products</button></div>';
+    setCartTotals(0,0,0,0);
+    return;
+  }
+
+  // Group by vendor
+  var groups={};
+  STATE.cart.forEach(item=>{
+    var p=productById(item.productId);
+    if(!groups[p.vendorId]) groups[p.vendorId]={vendorId:p.vendorId,items:[]};
+    groups[p.vendorId].items.push({...item, product:p, variant:p.variants.find(v=>v.sku===item.sku)});
+  });
+
+  body.innerHTML=Object.values(groups).map(g=>{
+    var vendor=vendorById(g.vendorId);
+    return `<div class="cart-vendor-group">
+      <div class="cart-vendor-hdr">${vendor.badge} ${vendor.name} <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:auto">Suborder</span></div>
+      ${g.items.map(item=>`
+        <div class="cart-item">
+          <div class="cart-item-img">${item.product.emoji}</div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.product.name}</div>
+            <div class="cart-item-meta">${item.variant.label} · ${item.sku}</div>
+            <div class="cart-qty" style="margin-top:6px">
+              <button onclick="changeCartQty('${item.productId}','${item.sku}',-1)">−</button>
+              <span>${item.qty}</span>
+              <button onclick="changeCartQty('${item.productId}','${item.sku}',1)">+</button>
+              <button onclick="removeFromCart('${item.productId}','${item.sku}')" style="background:none;border:none;color:var(--rl);padding:0 6px;cursor:pointer">🗑</button>
+            </div>
+          </div>
+          <div class="cart-item-price">${fmt(item.unitPrice*item.qty)}</div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  // Totals
+  var subtotal=STATE.cart.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  var tax=Math.round(subtotal*.18);
+  var shipping=subtotal>999?0:99;
+  var total=subtotal+tax+shipping-STATE.couponDiscount;
+  setCartTotals(subtotal,tax,shipping,total);
+}
+
+function setCartTotals(sub,tax,ship,total){
+  document.getElementById('cartSubtotal').textContent=fmt(sub);
+  document.getElementById('cartTax').textContent=fmt(tax);
+  document.getElementById('cartShipping').textContent=ship===0?'FREE':fmt(ship);
+  document.getElementById('cartTotal').textContent=fmt(total);
+}
+
+// ============================================================
+// WISHLIST
+// ============================================================
+function toggleWishlist(pid){
+  var idx=STATE.wishlist.findIndex(w=>w.productId===pid);
+  if(idx>=0){
+    STATE.wishlist.splice(idx,1);
+    toast('Removed from wishlist');
+  } else {
+    STATE.wishlist.push({productId:pid, addedAt:Date.now()});
+    toast('Added to wishlist ♥');
+  }
+  updateWishBadge();
+  // Re-render product cards to update heart icons
+  applyFilters();
+}
+
+function updateWishBadge(){
+  var b=document.getElementById('wishBadge');
+  b.textContent=STATE.wishlist.length;
+  b.style.display=STATE.wishlist.length?'flex':'none';
+}
+
+function renderWishlist(){
+  var grid=document.getElementById('wishlistGrid');
+  var empty=document.getElementById('wishlistEmpty');
+  if(!STATE.wishlist.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=STATE.wishlist.map(w=>{
+    var p=productById(w.productId);
+    if(!p) return `<div class="product-card"><div class="product-info"><div style="color:var(--muted)">Product discontinued (CU-037)</div></div></div>`;
+    var v=p.variants.find(x=>getAvailable(x)>0);
+    var vendor=vendorById(p.vendorId);
+    return `<div class="product-card">
+      <div class="product-img">${p.emoji}</div>
+      <div class="product-info">
+        <div class="product-vendor">${vendor.badge} ${vendor.name}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">${fmt(Math.min(...p.variants.map(x=>x.price)))}</div>
+      </div>
+      <div class="product-actions">
+        <button class="btn btn-tl btn-sm" style="flex:1" onclick="${v?`quickAddToCart('${p.id}');toggleWishlist('${p.id}')`:''}"; ${!v?'disabled':''}>
+          ${v?'→ Cart':'OOS'}
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleWishlist('${p.id}');renderWishlist()">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// CHECKOUT
+// ============================================================
+function startCheckout(){
+  if(!STATE.cart.length){toast('Cart is empty (CU-064)','warn');return;}
+  toggleCart();
+  renderCheckout();
+  openModal('checkoutModal');
+}
+
+function renderCheckout(){
+  var subtotal=STATE.cart.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  var tax=Math.round(subtotal*.18);
+  var shipping=subtotal>999?0:99;
+  var discount=STATE.couponDiscount;
+  var total=subtotal+tax+shipping-discount;
+
+  // Group by vendor
+  var groups={};
+  STATE.cart.forEach(item=>{
+    var p=productById(item.productId);
+    if(!groups[p.vendorId]) groups[p.vendorId]={vendorId:p.vendorId,items:[]};
+    groups[p.vendorId].items.push({...item,product:p,variant:p.variants.find(v=>v.sku===item.sku)});
+  });
+
+  document.getElementById('checkoutBody').innerHTML=`
+    <div class="grid2" style="gap:24px">
+      <div>
+        <div class="section-title">📍 Delivery Address</div>
+        ${STATE.addresses.map(a=>`
+          <div onclick="STATE.selectedAddress='${a.id}';renderCheckout()" style="background:var(--card2);border:1px solid ${STATE.selectedAddress===a.id?'var(--tl)':'var(--border)'};border-radius:8px;padding:12px;margin-bottom:10px;cursor:pointer">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <b>${a.label}</b> ${a.default?'<span class="pill" style="background:var(--tl)22;color:var(--tl)">Default</span>':''}
+              ${STATE.selectedAddress===a.id?'<span style="margin-left:auto;color:var(--tl)">✓ Selected</span>':''}
+            </div>
+            <div style="color:var(--muted);font-size:12px">${a.line1}, ${a.city} — ${a.pincode}</div>
+          </div>`).join('')}
+        <button class="btn btn-ghost btn-sm" onclick="openAddAddressModal()">+ Add New Address</button>
+
+        <hr class="divider">
+        <div class="section-title">🛒 Order Summary</div>
+        ${Object.values(groups).map(g=>{
+          var vendor=vendorById(g.vendorId);
+          return `<div class="cart-vendor-group">
+            <div class="cart-vendor-hdr">${vendor.badge} ${vendor.name}</div>
+            ${g.items.map(i=>`
+              <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)55;font-size:13px">
+                <span>${i.product.emoji} ${i.product.name} × ${i.qty}</span>
+                <span style="font-weight:600">${fmt(i.unitPrice*i.qty)}</span>
+              </div>`).join('')}
+          </div>`;
+        }).join('')}
+
+        <hr class="divider">
+        <div class="section-title">🏷 Coupon Code</div>
+        <div class="coupon-row">
+          <input type="text" id="couponInput" placeholder="Enter coupon code" value="${STATE.couponCode}">
+          <button class="btn btn-ghost" onclick="applyCoupon()">Apply</button>
+          ${STATE.couponDiscount?`<button class="btn btn-rl btn-sm" onclick="removeCoupon()">✕</button>`:''}
+        </div>
+        ${STATE.couponDiscount?`<div class="alert alert-success">✅ Coupon WELCOME10 applied! Saving ${fmt(STATE.couponDiscount)}</div>`:''}
+      </div>
+
+      <div>
+        <div class="section-title">💳 Payment</div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+          <div style="margin-bottom:12px;font-weight:600">Select Payment Method</div>
+          ${['UPI / PhonePe / GPay','Credit / Debit Card','Net Banking','Cash on Delivery','EMI (3/6/12 months)'].map((m,i)=>`
+            <label style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer;${i===0?'background:var(--tl)11;border:1px solid var(--tl)33;':''};margin-bottom:6px">
+              <input type="radio" name="payMethod" ${i===0?'checked':''} style="width:auto;accent-color:var(--tl)">
+              <span style="font-size:13px">${m}</span>
+            </label>`).join('')}
+        </div>
+
+        <div class="price-breakdown">
+          <div class="filter-title" style="margin-bottom:12px">Price Breakdown</div>
+          <div class="price-row"><span class="label">Subtotal (${STATE.cart.reduce((s,i)=>s+i.qty,0)} items)</span><span>${fmt(subtotal)}</span></div>
+          ${discount?`<div class="price-row discount"><span class="label">Coupon Discount</span><span class="val">− ${fmt(discount)}</span></div>`:''}
+          <div class="price-row"><span class="label">GST (18%)</span><span>${fmt(tax)}</span></div>
+          <div class="price-row"><span class="label">Shipping</span><span>${shipping===0?'<span style="color:var(--gl)">FREE</span>':fmt(shipping)}</span></div>
+          <div class="price-row total"><span>Total Payable</span><span style="color:var(--tl)">${fmt(total)}</span></div>
+          <div style="font-size:10px;color:var(--muted);margin-top:8px">⚠ Final amount confirmed server-side at order creation. Browser-computed price is indicative only. (CU-055, CU-056)</div>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:12px;font-size:12px">
+          🔄 Idempotency key sent with payment request — double-submit prevented (CU-067).<br>
+          📦 ${Object.keys(groups).length} vendor suborder(s) will be created.
+        </div>
+
+        <button class="btn btn-gl" style="width:100%;margin-top:16px;font-size:15px;padding:13px" onclick="placeOrder(${total})">
+          🔒 Pay ${fmt(total)} Securely
+        </button>
+        <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">
+          Powered by Razorpay sandbox · SSL encrypted
+        </div>
+      </div>
+    </div>`;
+}
+
+function applyCoupon(){
+  var code=document.getElementById('couponInput').value.trim().toUpperCase();
+  var valid={WELCOME10:10,SAVE200:null,TECH15:15};
+  if(!code){toast('Enter a coupon code','warn');return;}
+  if(code==='EXPIRED99'){toast('Coupon expired (CU-051)','error');return;}
+  if(!valid[code]){toast('Invalid coupon code (CU-051)','error');return;}
+  var subtotal=STATE.cart.reduce((s,i)=>s+i.unitPrice*i.qty,0);
+  STATE.couponCode=code;
+  if(code==='SAVE200') STATE.couponDiscount=200;
+  else STATE.couponDiscount=Math.round(subtotal*(valid[code]/100));
+  toast(`Coupon applied! Saving ${fmt(STATE.couponDiscount)}}`,'success');
+  renderCheckout();
+}
+function removeCoupon(){STATE.couponCode='';STATE.couponDiscount=0;renderCheckout();}
+
+function placeOrder(total){
+  // Simulate payment gateway + order creation
+  closeModal('checkoutModal');
+  // Show pending state
+  var groups={};
+  STATE.cart.forEach(item=>{
+    var p=productById(item.productId);
+    if(!groups[p.vendorId]) groups[p.vendorId]={vendorId:p.vendorId,items:[]};
+    groups[p.vendorId].items.push({...item,product:p,variant:p.variants.find(v=>v.sku===item.sku)});
+  });
+
+  var newOrderId='ORD-'+Math.floor(20100+Math.random()*900);
+  var newOrder={
+    id:newOrderId,
+    date:new Date().toLocaleString('en-IN'),
+    status:'Confirmed',
+    parentTotal:STATE.cart.reduce((s,i)=>s+i.unitPrice*i.qty,0),
+    couponDiscount:STATE.couponDiscount,
+    tax:Math.round(STATE.cart.reduce((s,i)=>s+i.unitPrice*i.qty,0)*.18),
+    shipping:STATE.cart.reduce((s,i)=>s+i.unitPrice*i.qty,0)>999?0:99,
+    payable:total,
+    paymentStatus:'Paid',
+    paymentRef:'PAY-TXN-'+Math.floor(10000+Math.random()*90000),
+    address:STATE.addresses.find(a=>a.id===STATE.selectedAddress),
+    suborders:Object.values(groups).map((g,idx)=>({
+      id:`${newOrderId}-${String.fromCharCode(65+idx)}`,
+      vendorId:g.vendorId,
+      vendor:vendorById(g.vendorId).name,
+      status:'Confirmed',
+      items:g.items.map(i=>({name:i.product.name,variant:i.variant.label,sku:i.sku,qty:i.qty,unitPrice:i.unitPrice,emoji:i.product.emoji})),
+      tracking:null,carrier:null
+    }))
+  };
+
+  STATE.orders.unshift(newOrder);
+  STATE.cart=[];
+  STATE.couponCode='';
+  STATE.couponDiscount=0;
+  updateCartBadge();
+  toast(`Order ${newOrderId} placed successfully! 🎉`);
+  showView('orders');
+  setTimeout(()=>openOrderDetail(newOrderId),500);
+}
+
+// ============================================================
+// ORDERS
+// ============================================================
+function renderOrders(){
+  var el=document.getElementById('ordersList');
+  if(!STATE.orders.length){el.innerHTML='<div class="empty-state"><div class="icon">📦</div><div>No orders yet</div></div>';return;}
+  el.innerHTML=STATE.orders.map(o=>{
+    var statusClass=getStatusClass(o.status);
+    return `<div class="order-card" onclick="openOrderDetail('${o.id}')">
+      <div class="order-meta">
+        <span class="order-id">${o.id}</span>
+        <span class="status-chip ${statusClass}">${o.status}</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--muted)">${o.date}</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${o.suborders.map(s=>`<span class="pill" style="background:var(--card);border:1px solid var(--border)">${vendorById(s.vendorId).badge} ${s.vendor}: <b style="color:${getStatusColor(s.status)}">${s.status}</b></span>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <span style="color:var(--muted);font-size:12px">${o.suborders.reduce((s,x)=>s+x.items.length,0)} item(s)</span>
+        <span style="font-weight:700;color:var(--tl)">${fmt(o.payable)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getStatusClass(s){
+  var m={New:'s-new',Confirmed:'s-confirmed',Processing:'s-processing',Shipped:'s-shipped',Delivered:'s-delivered',Rejected:'s-rejected',Cancelled:'s-cancelled',Pending:'s-pending',Partial:'s-processing',Delayed:'s-pending',Return:'s-return',Refunded:'s-refunded'};
+  return m[s]||'s-new';
+}
+function getStatusColor(s){
+  var m={New:'var(--bl)',Confirmed:'var(--vl)',Processing:'var(--ol)',Shipped:'var(--tl)',Delivered:'var(--gl)',Rejected:'var(--rl)',Cancelled:'var(--muted)',Delayed:'var(--yl)'};
+  return m[s]||'var(--text)';
+}
+
+function openOrderDetail(oid){
+  var o=STATE.orders.find(x=>x.id===oid);
+  if(!o){toast('Order not found','error');return;}
+  document.getElementById('orderDetailTitle').textContent='Order '+o.id;
+  renderOrderDetail(o);
+  openModal('orderDetailModal');
+}
+
+function renderOrderDetail(o){
+  var canCancel=!['Shipped','Delivered','Cancelled','Rejected'].includes(o.status);
+  var hasDelivered=o.suborders.some(s=>s.status==='Delivered');
+  var body=document.getElementById('orderDetailBody');
+
+  body.innerHTML=`
+    <div class="grid2" style="gap:20px">
+      <div>
+        <div class="section-title">Order Info</div>
+        <div style="background:var(--card2);border-radius:8px;border:1px solid var(--border);padding:14px;margin-bottom:14px">
+          <div class="price-row"><span class="label">Order ID</span><span style="color:var(--tl);font-weight:700">${o.id}</span></div>
+          <div class="price-row"><span class="label">Date</span><span>${o.date}</span></div>
+          <div class="price-row"><span class="label">Status</span><span class="status-chip ${getStatusClass(o.status)}">${o.status}</span></div>
+          <div class="price-row"><span class="label">Payment</span><span class="pill" style="background:var(--gl)22;color:var(--gl)">✓ ${o.paymentStatus}</span></div>
+          <div class="price-row"><span class="label">Ref</span><span style="font-size:12px;color:var(--muted)">${o.paymentRef}</span></div>
+          <div class="price-row"><span class="label">Address</span><span style="font-size:12px">${o.address.line1}, ${o.address.city}</span></div>
+        </div>
+
+        <div class="section-title">Price Breakdown</div>
+        <div class="price-breakdown" style="margin-top:0">
+          <div class="price-row"><span class="label">Subtotal</span><span>${fmt(o.parentTotal)}</span></div>
+          ${o.couponDiscount?`<div class="price-row discount"><span class="label">Coupon Discount</span><span class="val">− ${fmt(o.couponDiscount)}</span></div>`:''}
+          <div class="price-row"><span class="label">GST (18%)</span><span>${fmt(o.tax)}</span></div>
+          <div class="price-row"><span class="label">Shipping</span><span>${o.shipping===0?'FREE':fmt(o.shipping)}</span></div>
+          <div class="price-row total"><span>Total Paid</span><span style="color:var(--tl)">${fmt(o.payable)}</span></div>
+        </div>
+
+        <div class="section-title" style="margin-top:16px">Order Timeline</div>
+        <div class="timeline">
+          <div class="tl-step done"><div class="tl-label">Order Placed</div><div class="tl-time">${o.date}</div></div>
+          <div class="tl-step done"><div class="tl-label">Payment Confirmed</div><div class="tl-time">${o.paymentRef}</div></div>
+          ${o.suborders.some(s=>['Processing','Confirmed'].includes(s.status))?'<div class="tl-step active-step"><div class="tl-label">Vendor Processing</div><div class="tl-time">In progress</div></div>':''}
+          ${o.suborders.some(s=>s.status==='Shipped')?'<div class="tl-step active-step"><div class="tl-label">Dispatched</div></div>':''}
+          ${o.suborders.some(s=>s.status==='Delivered')?'<div class="tl-step done"><div class="tl-label">Delivered</div></div>':''}
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Vendor Suborders (CU-081)</div>
+        ${o.suborders.map(s=>`
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div>
+                <div style="font-weight:700">${vendorById(s.vendorId).badge} ${s.vendor}</div>
+                <div style="font-size:11px;color:var(--muted)">${s.id}</div>
+              </div>
+              <span class="status-chip ${getStatusClass(s.status)}">${s.status}</span>
+            </div>
+            ${s.items.map(i=>`
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border)55">
+                <span style="font-size:20px">${i.emoji}</span>
+                <div style="flex:1"><div style="font-weight:600;font-size:13px">${i.name}</div><div style="font-size:11px;color:var(--muted)">${i.variant} · ×${i.qty}</div></div>
+                <div style="font-weight:700">${fmt(i.unitPrice*i.qty)}</div>
+              </div>
+              ${i.returnStatus?`<div class="alert alert-warn" style="margin-top:6px;font-size:11px">Return: ${i.returnStatus}</div>`:''}
+            `).join('')}
+            ${s.tracking?`
+              <div class="alert alert-info" style="margin-top:8px;font-size:12px">
+                📦 ${s.carrier} · <b>${s.tracking}</b>
+                ${s.deliveredOn?`<br>✅ Delivered on ${s.deliveredOn}`:''}
+              </div>`:''}
+            ${s.status==='Delayed'?`<div class="alert alert-warn" style="margin-top:8px;font-size:12px">⏳ ${s.delayNote||'Delivery delayed. Support notified.'}</div>`:''}
+            ${s.status==='Rejected'?`<div class="alert alert-danger" style="margin-top:8px;font-size:12px">❌ This vendor cannot fulfill. Refund initiated.</div>`:''}
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              ${s.status==='Delivered' && s.returnEligible?`<button class="btn btn-ghost btn-sm" onclick="openReturnModal('${o.id}','${s.id}')">↩ Return Item</button>`:''}
+              ${s.status==='Delayed'?`<button class="btn btn-ghost btn-sm" onclick="openSupportModal('${o.id}')">🎫 Escalate</button>`:''}
+            </div>
+          </div>`).join('')}
+
+        ${canCancel?`
+          <div class="alert alert-warn">
+            ⚠ Cancellation available before fulfillment. After dispatch, return process applies. (CU-091, CU-092)
+          </div>
+          <button class="btn btn-rl btn-sm" style="width:100%" onclick="cancelOrder('${o.id}')">Cancel Order</button>
+        `:''}
+        ${hasDelivered?`<button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="viewInvoice('${o.id}')">🧾 View Invoice (CU-109)</button>`:''}
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="openSupportModal('${o.id}')">🎫 Support Ticket (CU-117)</button>
+      </div>
+    </div>`;
+
+  document.getElementById('orderDetailFooter').innerHTML='';
+}
+
+function cancelOrder(oid){
+  var o=STATE.orders.find(x=>x.id===oid);
+  if(!o) return;
+  if(['Shipped','Delivered'].includes(o.status)){toast('Order already dispatched — please initiate return (CU-092)','warn');return;}
+  o.status='Cancelled';
+  o.suborders.forEach(s=>{s.status='Cancelled';});
+  toast(`Order ${oid} cancelled. Refund will be initiated within 3–5 business days.`);
+  renderOrderDetail(o);
+  renderOrders();
+}
+
+function openReturnModal(oid,sid){
+  var o=STATE.orders.find(x=>x.id===oid);
+  var s=o.suborders.find(x=>x.id===sid);
+  document.getElementById('returnBody').innerHTML=`
+    <div class="alert alert-info">📅 Return window: 7 days from delivery. Eligible until ${s.deliveredOn?new Date(s.deliveredOn+' 2026').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'check delivery date'}. (CU-095)</div>
+    <div class="form-group">
+      <div class="label-sm">Select Items to Return</div>
+      ${s.items.map((i,idx)=>`<label style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--card2);border-radius:6px;margin-bottom:6px">
+        <input type="checkbox" id="returnItem${idx}" checked style="width:auto;accent-color:var(--tl)">
+        ${i.emoji} ${i.name} (${i.variant}) · ${fmt(i.unitPrice)}
+      </label>`).join('')}
+    </div>
+    <div class="form-group">
+      <div class="label-sm">Reason</div>
+      <select><option>Defective / Not working</option><option>Wrong item received</option><option>Not as described</option><option>Changed my mind</option><option>Better price elsewhere</option></select>
+    </div>
+    <div class="form-group">
+      <div class="label-sm">Additional Details</div>
+      <textarea rows="3" placeholder="Describe the issue…"></textarea>
+    </div>
+    <div class="alert alert-info" style="font-size:12px">Refund will be processed to original payment method (${o.paymentRef}) within 5–7 days. (CU-102, CU-103)</div>
+    <button class="btn btn-tl" style="width:100%" onclick="submitReturn('${oid}','${sid}')">Submit Return Request</button>`;
+  closeModal('orderDetailModal');
+  openModal('returnModal');
+}
+
+function submitReturn(oid,sid){
+  var o=STATE.orders.find(x=>x.id===oid);
+  var s=o.suborders.find(x=>x.id===sid);
+  s.returnEligible=false;
+  s.status='Return';
+  s.items.forEach(i=>i.returnStatus='Return Requested · Pending pickup');
+  toast('Return request submitted (CU-095). Pickup arranged within 2 days.');
+  closeModal('returnModal');
+  showView('orders');
+}
+
+function viewInvoice(oid){
+  var o=STATE.orders.find(x=>x.id===oid);
+  toast(`Invoice ${oid} — download ready (CU-109, CU-110)`);
+  // In real implementation: trigger PDF download
+}
+
+function openSupportModal(oid){
+  document.getElementById('supportBody').innerHTML=`
+    <div class="alert alert-info" style="font-size:12px">Ticket will be linked to Order ${oid} and authenticated customer ${STATE.user.name}. (CU-117)</div>
+    <div class="form-group">
+      <div class="label-sm">Issue Type</div>
+      <select><option>Delivery Issue</option><option>Wrong Item</option><option>Refund Status</option><option>Payment Issue</option><option>Other</option></select>
+    </div>
+    <div class="form-group">
+      <div class="label-sm">Description</div>
+      <textarea rows="4" placeholder="Describe your issue…"></textarea>
+    </div>
+    <button class="btn btn-tl" style="width:100%" onclick="submitSupport()">Submit Ticket</button>`;
+  openModal('supportModal');
+}
+function submitSupport(){toast('Support ticket created and linked to your account (CU-117)');closeModal('supportModal');}
+
+// ============================================================
+// PROFILE / ADDRESSES
+// ============================================================
+function renderProfile(){
+  var el=document.getElementById('savedAddresses');
+  el.innerHTML=STATE.addresses.map(a=>`
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="font-weight:600;margin-bottom:4px">${a.label} ${a.default?'<span class="pill" style="background:var(--tl)22;color:var(--tl)">Default</span>':''}</div>
+      <div style="font-size:12px;color:var(--muted)">${a.line1}<br>${a.city} — ${a.pincode}</div>
+    </div>`).join('');
+}
+
+function openAddAddressModal(){
+  toast('Address form would appear here (CU-058)');
+}
+
+// ============================================================
+// SCENARIOS
+// ============================================================
+function runScenario(n){
+  if(n===1){
+    // Two-vendor cart
+    STATE.cart=[];
+    addToCart('p1','AB-EB-BLK',1); // TechNova
+    addToCart('p4','CT-KB-BLU',1); // GadgetHub
+    toggleCart();
+    toast('Scenario ① loaded: AirBeat (TechNova) + ClickType KB (GadgetHub) in cart. See two vendor suborders. (E2E-002, CU-041)','success');
+  }
+  else if(n===2){
+    // Vendor A accepts, B rejects
+    var o=JSON.parse(JSON.stringify(STATE.orders.find(x=>x.id==='ORD-20001')));
+    if(o){
+      o.id='ORD-SC2-'+Date.now().toString().slice(-4);
+      o.suborders[0].status='Confirmed';
+      o.suborders[1].status='Rejected';
+      o.suborders[1].rejectedReason='Vendor GadgetHub cannot fulfill: warehouse stock discrepancy';
+      o.status='Partial';
+      STATE.orders.unshift(o);
+      showView('orders');
+      setTimeout(()=>openOrderDetail(o.id),300);
+      toast('Scenario ②: Suborder A Confirmed, Suborder B Rejected. Partial refund for B will be initiated. (E2E-007, CU-078)','success');
+    }
+  }
+  else if(n===3){
+    // One delivered, one delayed
+    showView('orders');
+    setTimeout(()=>openOrderDetail('ORD-19887'),300);
+    toast('Scenario ③: ORD-19887 — TechNova suborder Delivered, GadgetHub suborder Delayed. (E2E-008, CU-087)','success');
+  }
+  else if(n===4){
+    // Partial refund
+    showView('orders');
+    setTimeout(()=>{
+      openOrderDetail('ORD-19543');
+      setTimeout(()=>openReturnModal('ORD-19543','SUB-19543-A'),600);
+    },300);
+    toast('Scenario ④: Partial return/refund flow for one item from ORD-19543. (E2E-009, CU-097, CU-103)','success');
+  }
+  else if(n===5){
+    // Cancel while pending
+    var po={
+      id:'ORD-PEND-'+Date.now().toString().slice(-4),
+      date:new Date().toLocaleString('en-IN'),
+      status:'Pending',
+      parentTotal:2499,couponDiscount:0,tax:450,shipping:99,payable:3048,
+      paymentStatus:'Pending — Gateway Processing',
+      paymentRef:'PAY-TXN-PENDING',
+      address:STATE.addresses[0],
+      suborders:[{id:'SUB-PEND-A',vendorId:'v1',vendor:'TechNova Electronics',status:'Pending',items:[{name:'AirBeat Pro Earbuds',variant:'Black',sku:'AB-EB-BLK',qty:1,unitPrice:2499,emoji:'🎧'}],tracking:null,carrier:null}]
+    };
+    STATE.orders.unshift(po);
+    showView('orders');
+    setTimeout(()=>{
+      openOrderDetail(po.id);
+      toast('Scenario ⑤: Order in payment-pending state. Cancel will reconcile with gateway. (CU-075)','warn');
+    },300);
+  }
+  else if(n===6){
+    // Tenant isolation
+    openModal('tenantModal');
+  }
+}
+
+// ============================================================
+// PINCODE & VENDOR CTA
+// ============================================================
+function openChangePincode(){
+  var p=prompt('Enter your delivery pincode:','400050');
+  if(p&&p.trim()){
+    var el=document.getElementById('pin-display');
+    if(el)el.textContent=p.trim()+' · Mumbai';
+    document.getElementById('filterPincode').value=p.trim();
+    toast('📍 Delivery pincode updated to '+p.trim());
+  }
+}
+function saveDeliveryPincode(){
+  var p=(document.getElementById('profile-pincode')||{}).value||'';
+  if(p){
+    var el=document.getElementById('pin-display');
+    if(el)el.textContent=p+' · Mumbai';
+    toast('📍 Delivery pincode saved: '+p);
+  }
+}
+function showVendorSignup(){
+  alert('⚡ Become a Vendor!\n\nTo start selling on AdanPradan:\n1. Your account will be upgraded from Individual to Vendor tenant\n2. Complete KYC: GST + PAN + Bank account\n3. Platform Admin reviews within 2–5 days\n4. Once approved, list products and set delivery pincodes\n\nClick OK to start the application.');
+  showView('profile');
+  toast('Vendor signup: redirecting to upgrade page…');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+initCatalog();
+applyFilters();
+updateWishBadge();
+</script>
+</body>
+</html>
+
+</body></html>

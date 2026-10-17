@@ -1,0 +1,729 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FairShare · Fulfillment Lifecycle (Phase 3)</title>
+<style>
+:root {
+  --bg:#07101f;--bg-mid:#0c1a2e;--bg-light:#0f2040;--border:#1a2e4a;
+  --text:#c8d8ee;--text-dim:#6b85a3;--text-bright:#e8f2ff;
+  --accent-teal:#0d9488;--accent-teal-light:#2dd4bf;
+  --accent-green:#10b981;--accent-amber:#f59e0b;--accent-red:#ef4444;
+  --accent-purple:#7c3aed;--accent-coral:#f97316;--accent-sky:#0ea5e9;
+  --dom-identity:#0ea5e9;--dom-tenant:#2dd4bf;--dom-authz:#ef4444;
+  --dom-vendor:#f97316;--dom-market:#a855f7;--dom-govern:#f59e0b;
+  --dom-billing:#10b981;--dom-system:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.6}
+a{color:var(--accent-teal-light);text-decoration:none}
+/* header */
+.site-header{background:var(--bg-mid);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100}
+.logo{font-size:1.25rem;font-weight:700;color:var(--text-bright)}
+.logo span{color:var(--accent-teal-light)}
+.phase-badge{background:var(--accent-coral);color:#fff;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.header-sub{color:var(--text-dim);font-size:.85rem;margin-left:auto}
+/* layout */
+.container{max-width:1400px;margin:0 auto;padding:2rem}
+/* hero */
+.hero{background:linear-gradient(135deg,#0c1a2e 0%,#0f2040 50%,#0c2444 100%);border:1px solid var(--border);border-radius:1rem;padding:2.5rem;margin-bottom:2rem}
+.hero h1{font-size:2rem;color:var(--text-bright);margin-bottom:.5rem}
+.hero p{color:var(--text-dim);max-width:70ch}
+.hero-meta{display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap}
+.meta-chip{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:.5rem;padding:.4rem .9rem;font-size:.78rem;color:var(--text-dim)}
+.meta-chip strong{color:var(--text)}
+/* phase notice */
+.phase-notice{background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.3);border-radius:.75rem;padding:1rem 1.5rem;margin-bottom:2rem;display:flex;gap:1rem;align-items:flex-start}
+.phase-notice .icon{font-size:1.5rem;flex-shrink:0}
+.phase-notice p{font-size:.88rem;color:var(--text)}
+.phase-notice strong{color:var(--accent-coral)}
+/* sync diagram */
+.sync-section{margin-bottom:2.5rem}
+.section-title{font-size:1.1rem;font-weight:700;color:var(--text-bright);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.sync-diagram{background:var(--bg-mid);border:1px solid var(--border);border-radius:.75rem;overflow:hidden}
+.sync-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-bottom:1px solid var(--border)}
+.sync-actor{padding:1rem;text-align:center;border-right:1px solid var(--border)}
+.sync-actor:last-child{border-right:none}
+.sync-actor-icon{font-size:1.5rem;margin-bottom:.4rem}
+.sync-actor-name{font-size:.8rem;font-weight:700;color:var(--text-bright)}
+.sync-actor-role{font-size:.7rem;color:var(--text-dim)}
+.sync-events{padding:1.5rem;display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.sync-col{display:flex;flex-direction:column;gap:.75rem;align-items:center}
+.sync-event{background:var(--bg-light);border:1px solid var(--border);border-radius:.5rem;padding:.4rem .7rem;font-size:.72rem;color:var(--text);text-align:center;width:100%;position:relative}
+.sync-event.origin{border-color:var(--accent-teal);background:rgba(13,148,136,.12)}
+.sync-event.receives{border-color:var(--accent-purple);background:rgba(168,85,247,.08)}
+.sync-event.outbox{border-color:var(--accent-amber);background:rgba(245,158,11,.08)}
+.sync-arrow{color:var(--text-dim);font-size:.7rem;text-align:center}
+/* order status flow */
+.status-flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-bottom:2rem}
+.status-node{background:var(--bg-mid);border:1px solid var(--border);border-radius:.5rem;padding:.5rem 1rem;font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap}
+.status-node.exists{border-color:var(--accent-green);color:var(--accent-green)}
+.status-node.new{border-color:var(--accent-teal);color:var(--accent-teal-light)}
+.status-node.error{border-color:var(--accent-red);color:var(--accent-red)}
+.status-arrow{color:var(--text-dim);padding:0 .5rem;font-size:1rem}
+.status-legend{display:flex;gap:1rem;margin-bottom:1rem;font-size:.78rem}
+.legend-item{display:flex;align-items:center;gap:.4rem;color:var(--text-dim)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+/* journey cards */
+.journey-grid{display:grid;gap:1.5rem}
+.journey-card{background:var(--bg-mid);border:1px solid var(--border);border-radius:.75rem;overflow:hidden}
+.journey-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:1rem;cursor:pointer;user-select:none}
+.journey-num{background:var(--accent-teal);color:#fff;font-size:.7rem;font-weight:700;padding:.25rem .6rem;border-radius:.4rem;white-space:nowrap;flex-shrink:0}
+.journey-num.phase3{background:var(--accent-coral)}
+.journey-title-block{flex:1}
+.journey-title{font-size:1rem;font-weight:700;color:var(--text-bright)}
+.journey-meta{display:flex;gap:.75rem;margin-top:.35rem;flex-wrap:wrap}
+.jm-tag{font-size:.7rem;padding:.15rem .5rem;border-radius:.3rem;font-weight:600}
+.jm-actor{background:rgba(14,165,233,.12);color:var(--dom-identity);border:1px solid rgba(14,165,233,.2)}
+.jm-domain{background:rgba(168,85,247,.12);color:var(--dom-market);border:1px solid rgba(168,85,247,.2)}
+.jm-table{background:rgba(16,185,129,.08);color:var(--dom-billing);border:1px solid rgba(16,185,129,.2)}
+.jm-status{font-size:.7rem;padding:.15rem .6rem;border-radius:999px;font-weight:700;margin-left:auto}
+.jm-new{background:rgba(249,115,22,.15);color:var(--accent-coral);border:1px solid rgba(249,115,22,.3)}
+.jm-done{background:rgba(16,185,129,.12);color:var(--accent-green);border:1px solid rgba(16,185,129,.3)}
+.jm-partial{background:rgba(245,158,11,.12);color:var(--accent-amber);border:1px solid rgba(245,158,11,.3)}
+.journey-chevron{color:var(--text-dim);font-size:1.2rem;flex-shrink:0;transition:transform .2s}
+.journey-card.open .journey-chevron{transform:rotate(180deg)}
+/* tabs */
+.journey-body{display:none}
+.journey-card.open .journey-body{display:block}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--bg)}
+.tab-btn{padding:.75rem 1.25rem;font-size:.82rem;font-weight:600;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:color .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent-teal-light);border-bottom-color:var(--accent-teal-light)}
+.tab-panel{display:none;padding:1.5rem}
+.tab-panel.active{display:block}
+/* steps */
+.step-list{display:flex;flex-direction:column;gap:.75rem}
+.step{display:grid;grid-template-columns:2rem 1fr;gap:1rem;align-items:start}
+.step-num{width:2rem;height:2rem;border-radius:50%;background:var(--bg-light);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--text-dim);flex-shrink:0}
+.step-content{}
+.step-title{font-weight:600;color:var(--text-bright);font-size:.88rem}
+.step-desc{font-size:.82rem;color:var(--text-dim);margin-top:.25rem}
+.step-tags{display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap}
+.stag{font-size:.68rem;padding:.1rem .45rem;border-radius:.3rem;font-weight:600}
+.stag-domain{background:rgba(168,85,247,.12);color:var(--dom-market);border:1px solid rgba(168,85,247,.25)}
+.stag-db{background:rgba(16,185,129,.08);color:var(--dom-billing);border:1px solid rgba(16,185,129,.2)}
+.stag-event{background:rgba(245,158,11,.1);color:var(--accent-amber);border:1px solid rgba(245,158,11,.25)}
+.stag-ext{background:rgba(124,58,237,.1);color:#a78bfa;border:1px solid rgba(124,58,237,.25)}
+/* state table */
+.state-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.state-table th{background:var(--bg);color:var(--text-dim);font-weight:600;padding:.6rem .9rem;text-align:left;border-bottom:1px solid var(--border)}
+.state-table td{padding:.6rem .9rem;border-bottom:1px solid rgba(26,46,74,.5);vertical-align:top}
+.state-table tr:last-child td{border-bottom:none}
+.state-table .field{color:var(--text-bright);font-family:monospace;font-size:.78rem}
+.state-table .before{color:var(--text-dim)}
+.state-table .after{color:var(--accent-teal-light)}
+.state-table .domain-label{font-size:.68rem;padding:.1rem .4rem;border-radius:.3rem;font-weight:600;background:rgba(168,85,247,.12);color:var(--dom-market);border:1px solid rgba(168,85,247,.2)}
+/* api blocks */
+.api-block{background:var(--bg);border:1px solid var(--border);border-radius:.5rem;padding:1rem;margin-bottom:1rem;font-size:.82rem}
+.api-method{display:inline-block;padding:.2rem .6rem;border-radius:.3rem;font-weight:700;font-size:.75rem;margin-right:.5rem}
+.method-post{background:rgba(16,185,129,.15);color:var(--accent-green);border:1px solid rgba(16,185,129,.3)}
+.method-get{background:rgba(14,165,233,.12);color:var(--accent-sky);border:1px solid rgba(14,165,233,.25)}
+.method-patch{background:rgba(245,158,11,.12);color:var(--accent-amber);border:1px solid rgba(245,158,11,.25)}
+.api-path{font-family:monospace;color:var(--text-bright)}
+.api-desc{color:var(--text-dim);margin-top:.5rem;font-size:.8rem}
+.api-body{background:rgba(0,0,0,.3);border-radius:.4rem;padding:.75rem;margin-top:.5rem;font-family:monospace;font-size:.75rem;color:#94a3b8;white-space:pre}
+.api-note{color:var(--accent-amber);font-size:.75rem;margin-top:.4rem}
+/* ddd plan */
+.ddd-section{margin-bottom:1.25rem}
+.ddd-section h4{font-size:.85rem;font-weight:700;color:var(--text-bright);margin-bottom:.5rem;padding-bottom:.3rem;border-bottom:1px solid var(--border)}
+.ddd-list{list-style:none;display:flex;flex-direction:column;gap:.3rem}
+.ddd-list li{font-size:.82rem;color:var(--text-dim);padding-left:1rem;position:relative}
+.ddd-list li::before{content:'▸';position:absolute;left:0;color:var(--accent-teal)}
+.ddd-list li strong{color:var(--text)}
+code{font-family:monospace;font-size:.85em;background:rgba(255,255,255,.06);padding:.1rem .3rem;border-radius:.25rem;color:#94a3b8}
+/* tables section */
+.tables-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:2rem}
+.table-card{background:var(--bg-mid);border:1px solid var(--border);border-radius:.65rem;padding:1rem}
+.table-card-title{font-size:.85rem;font-weight:700;color:var(--text-bright);font-family:monospace;margin-bottom:.75rem}
+.table-card-title span{color:var(--text-dim);font-weight:400}
+.field-row{display:flex;align-items:baseline;gap:.5rem;font-size:.78rem;padding:.25rem 0;border-bottom:1px solid rgba(26,46,74,.4)}
+.field-row:last-child{border-bottom:none}
+.field-name{color:var(--accent-teal-light);font-family:monospace;flex:1}
+.field-type{color:var(--text-dim);font-size:.7rem}
+.field-new{color:var(--accent-coral);font-size:.65rem;font-weight:700;margin-left:auto}
+/* responsive */
+@media(max-width:768px){
+  .sync-grid,.sync-events{grid-template-columns:1fr}
+  .status-flow{flex-direction:column;align-items:flex-start}
+  .status-arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">Fair<span>Share</span></div>
+  <span class="phase-badge">Phase 3 · Not Built</span>
+  <div class="header-sub">Fulfillment Lifecycle · Journeys J53–J62</div>
+</header>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Order Fulfillment & Delivery Lifecycle</h1>
+    <p>Complete end-to-end design for <strong>what happens after a buyer places an order</strong> — from vendor notification through inventory reservation, packing, shipment, real-time tracking, and final delivery confirmation — and <em>how every party stays in sync</em> via outbox events.</p>
+    <div class="hero-meta">
+      <div class="meta-chip"><strong>Phase</strong> 3 — Not yet implemented</div>
+      <div class="meta-chip"><strong>Builds on</strong> J48 (Buyer Checkout) which exists</div>
+      <div class="meta-chip"><strong>New journeys</strong> J53 – J62</div>
+      <div class="meta-chip"><strong>New tables</strong> inventory, inventory_reservations, shipments, tracking_events</div>
+      <div class="meta-chip"><strong>Fulfillment type</strong> SHIP_PHYSICAL (primary scope)</div>
+    </div>
+  </div>
+
+  <!-- NOTICE -->
+  <div class="phase-notice">
+    <div class="icon">⚠️</div>
+    <div>
+      <p><strong>What exists today (J48):</strong> A buyer can checkout and POST /marketplace/orders to create an order with <code>status = "placed"</code> and <code>tracking: null</code>. <strong>Nothing moves after that.</strong> There is no vendor notification, no inventory check, no shipment, no tracking update. The journeys below are the design for Phase 3.</p>
+    </div>
+  </div>
+
+  <!-- ORDER STATUS FLOW -->
+  <div class="sync-section">
+    <div class="section-title">Order Status Lifecycle</div>
+    <div class="status-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-green)"></div>Already in code</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-teal)"></div>New (Phase 3)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-red)"></div>Terminal / error path</div>
+    </div>
+    <div class="status-flow">
+      <div class="status-node exists">placed</div>
+      <div class="status-arrow">→</div>
+      <div class="status-node new">accepted</div>
+      <div class="status-arrow">→</div>
+      <div class="status-node new">preparing</div>
+      <div class="status-arrow">→</div>
+      <div class="status-node new">packed</div>
+      <div class="status-arrow">→</div>
+      <div class="status-node new">dispatched</div>
+      <div class="status-arrow">→</div>
+      <div class="status-node new">out_for_delivery</div>
+      <div class="status-arrow">→</div>
+      <div class="status-node new">delivered</div>
+      <br style="width:100%">
+      <div class="status-arrow" style="margin-left:8rem">↘</div>
+      <div class="status-node error">rejected</div>
+      &nbsp;&nbsp;
+      <div class="status-node error">failed_delivery</div>
+      &nbsp;&nbsp;
+      <div class="status-node error">return_to_origin</div>
+      &nbsp;&nbsp;
+      <div class="status-node new">cancelled</div>
+    </div>
+    <p style="font-size:.8rem;color:var(--text-dim);margin-top:.5rem">Status is stored in <code>marketplace.orders.status</code>. Each transition fires an outbox event consumed by vendor portal, buyer UI, and billing.</p>
+  </div>
+
+  <!-- SYNC DIAGRAM -->
+  <div class="sync-section">
+    <div class="section-title">How All Parties Stay in Sync — Outbox Event Flow</div>
+    <div class="sync-diagram">
+      <div class="sync-grid">
+        <div class="sync-actor"><div class="sync-actor-icon">🛍️</div><div class="sync-actor-name">Buyer UI</div><div class="sync-actor-role">Next.js storefront</div></div>
+        <div class="sync-actor"><div class="sync-actor-icon">🏪</div><div class="sync-actor-name">Vendor Portal</div><div class="sync-actor-role">vendor dashboard</div></div>
+        <div class="sync-actor"><div class="sync-actor-icon">🔌</div><div class="sync-actor-name">Vendor Plugin</div><div class="sync-actor-role">plugin adapter</div></div>
+        <div class="sync-actor"><div class="sync-actor-icon">📦</div><div class="sync-actor-name">Order Domain</div><div class="sync-actor-role">marketplace.orders</div></div>
+        <div class="sync-actor"><div class="sync-actor-icon">🏬</div><div class="sync-actor-name">Marketplace</div><div class="sync-actor-role">platform core</div></div>
+      </div>
+      <div class="sync-events">
+        <!-- Buyer places order -->
+        <div class="sync-col">
+          <div class="sync-event origin">POST /marketplace/orders<br><small>buyer checkout</small></div>
+          <div class="sync-event receives">WebSocket / poll<br>status: accepted</div>
+          <div class="sync-event receives">tracking URL shown</div>
+          <div class="sync-event receives">delivered notification</div>
+        </div>
+        <!-- Vendor portal -->
+        <div class="sync-col">
+          <div class="sync-event receives">order.placed event<br>→ new order in queue</div>
+          <div class="sync-event origin">PATCH accept/reject</div>
+          <div class="sync-event origin">PATCH dispatched<br>+ tracking number</div>
+          <div class="sync-event outbox">outbox: order.dispatched</div>
+        </div>
+        <!-- Vendor Plugin -->
+        <div class="sync-col">
+          <div class="sync-event receives">webhook: order.placed<br>(plugin adapter)</div>
+          <div class="sync-event receives">inventory.check call</div>
+          <div class="sync-event origin">POST /inventory/adjust<br>(stock deducted)</div>
+          <div class="sync-event outbox">outbox: inventory.reserved</div>
+        </div>
+        <!-- Order Domain -->
+        <div class="sync-col">
+          <div class="sync-event outbox">INSERT orders<br>+ outbox: order.placed</div>
+          <div class="sync-event outbox">UPDATE status=accepted<br>+ outbox: order.accepted</div>
+          <div class="sync-event outbox">INSERT shipments<br>+ outbox: order.dispatched</div>
+          <div class="sync-event outbox">UPDATE status=delivered<br>+ outbox: order.delivered</div>
+        </div>
+        <!-- Marketplace -->
+        <div class="sync-col">
+          <div class="sync-event receives">validates cart → creates order</div>
+          <div class="sync-event receives">commission reserved</div>
+          <div class="sync-event receives">order.dispatched → notify billing</div>
+          <div class="sync-event receives">order.delivered → release payout</div>
+        </div>
+      </div>
+      <div style="padding:.75rem 1.5rem;background:var(--bg);font-size:.75rem;color:var(--text-dim);border-top:1px solid var(--border)">
+        🟡 <strong style="color:var(--accent-amber)">Outbox events</strong> are written in the <em>same DB transaction</em> as domain writes, then dispatched by the outbox worker (Temporal or a background task).
+        🟢 <strong style="color:var(--dom-market)">Vendor plugin adapter</strong> receives webhooks at its registered endpoint (set during plugin registration).
+        🔵 <strong style="color:var(--dom-identity)">Buyer UI</strong> polls <code>GET /marketplace/orders/{id}</code> or subscribes to SSE for live status.
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW DB TABLES -->
+  <div class="sync-section">
+    <div class="section-title">New Database Tables Required (Phase 3)</div>
+    <div class="tables-grid">
+      <div class="table-card">
+        <div class="table-card-title">marketplace<span>.inventory</span></div>
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">uuid PK</span></div>
+        <div class="field-row"><span class="field-name">tenant_id</span><span class="field-type">uuid FK</span></div>
+        <div class="field-row"><span class="field-name">product_id</span><span class="field-type">uuid FK</span></div>
+        <div class="field-row"><span class="field-name">sku</span><span class="field-type">text</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">qty_on_hand</span><span class="field-type">integer</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">qty_reserved</span><span class="field-type">integer</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">reorder_point</span><span class="field-type">integer</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">version</span><span class="field-type">integer (optimistic lock)</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-title">marketplace<span>.inventory_reservations</span></div>
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">uuid PK</span></div>
+        <div class="field-row"><span class="field-name">inventory_id</span><span class="field-type">uuid FK</span></div>
+        <div class="field-row"><span class="field-name">order_id</span><span class="field-type">uuid FK</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">qty</span><span class="field-type">integer</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">status</span><span class="field-type">reserved|committed|released</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">reserved_at</span><span class="field-type">timestamptz</span></div>
+        <div class="field-row"><span class="field-name">expires_at</span><span class="field-type">timestamptz</span><span class="field-new">NEW</span></div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-title">marketplace<span>.shipments</span></div>
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">uuid PK</span></div>
+        <div class="field-row"><span class="field-name">order_id</span><span class="field-type">uuid FK</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">tenant_id</span><span class="field-type">uuid FK</span></div>
+        <div class="field-row"><span class="field-name">carrier</span><span class="field-type">text (DHL, FedEx…)</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">tracking_number</span><span class="field-type">text</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">tracking_url</span><span class="field-type">text</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">status</span><span class="field-type">created|in_transit|delivered|failed</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">estimated_delivery</span><span class="field-type">date</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">dispatched_at</span><span class="field-type">timestamptz</span><span class="field-new">NEW</span></div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-title">marketplace<span>.shipment_tracking_events</span></div>
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">uuid PK</span></div>
+        <div class="field-row"><span class="field-name">shipment_id</span><span class="field-type">uuid FK</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">status</span><span class="field-type">text (carrier status)</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">location</span><span class="field-type">text</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">description</span><span class="field-type">text</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">occurred_at</span><span class="field-type">timestamptz</span><span class="field-new">NEW</span></div>
+        <div class="field-row"><span class="field-name">source</span><span class="field-type">vendor|carrier_api|system</span><span class="field-new">NEW</span></div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-title">marketplace<span>.orders</span> <span style="color:var(--accent-amber);font-size:.7rem">(extend)</span></div>
+        <div class="field-row"><span class="field-name">status</span><span class="field-type">→ add new values</span><span class="field-new">EXTEND</span></div>
+        <div class="field-row"><span class="field-name">accepted_at</span><span class="field-type">timestamptz NULL</span><span class="field-new">ADD</span></div>
+        <div class="field-row"><span class="field-name">dispatched_at</span><span class="field-type">timestamptz NULL</span><span class="field-new">ADD</span></div>
+        <div class="field-row"><span class="field-name">delivered_at</span><span class="field-type">timestamptz NULL</span><span class="field-new">ADD</span></div>
+        <div class="field-row"><span class="field-name">rejection_reason</span><span class="field-type">text NULL</span><span class="field-new">ADD</span></div>
+        <div class="field-row"><span class="field-name">return_window_ends</span><span class="field-type">timestamptz NULL</span><span class="field-new">ADD</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOURNEYS -->
+  <div class="section-title">Fulfillment Journeys (J53 – J62)</div>
+  <div class="journey-grid" id="journeys"></div>
+
+</div><!-- /container -->
+
+<script>
+const journeys = [
+  {
+    id:'J53', title:'Vendor Receives New Order Notification',
+    actors:['Vendor','Vendor Plugin','Order Domain'],
+    domains:['marketplace','vendor'],
+    tables:['marketplace.orders','marketplace.outbox'],
+    status:'new',
+    summary:'When a buyer places an order (J48), the Order domain writes an outbox event <code>order.placed</code>. The outbox worker delivers this to the vendor\'s plugin adapter webhook and optionally sends an in-app notification to the vendor portal.',
+    steps:[
+      {n:1, title:'Buyer checkout completes (J48)', desc:'POST /marketplace/orders succeeds. Order inserted with status=placed, tracking=null.', tags:[{t:'marketplace domain',c:'domain'},{t:'marketplace.orders INSERT',c:'db'},{t:'outbox: order.placed WRITE',c:'event'}]},
+      {n:2, title:'Outbox worker dispatches event', desc:'Background task (Temporal or FastAPI BackgroundTask) reads marketplace.outbox WHERE dispatched=false and fires HTTP POST to the vendor plugin\'s registered webhook_url.', tags:[{t:'outbox worker',c:'domain'},{t:'marketplace.outbox UPDATE dispatched=true',c:'db'},{t:'HTTP POST → plugin webhook',c:'ext'}]},
+      {n:3, title:'Vendor plugin adapter receives webhook', desc:'Plugin adapter at /webhook/order-placed validates HMAC signature, maps FairShare order → plugin\'s internal order model, saves locally.', tags:[{t:'vendor plugin (external)',c:'ext'},{t:'HMAC-SHA256 verify',c:'domain'}]},
+      {n:4, title:'Vendor portal shows new order badge', desc:'Vendor portal polls GET /vendor/orders?status=placed or receives SSE push. Badge count increments. Sound alert optional.', tags:[{t:'vendor portal UI',c:'ext'},{t:'GET /vendor/orders',c:'db'}]},
+      {n:5, title:'Vendor sees order detail', desc:'Vendor opens order: product name, qty, buyer shipping address (masked per privacy rules), requested delivery window.', tags:[{t:'GET /vendor/orders/{id}',c:'db'},{t:'vendor portal',c:'ext'}]}
+    ],
+    states:[
+      {schema:'marketplace.orders',field:'status',before:'placed',after:'placed (unchanged — awaiting vendor action)',domain:'marketplace'},
+      {schema:'marketplace.outbox',field:'dispatched',before:'false',after:'true',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'tracking',before:'null',after:'null (still null)',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'GET',path:'/vendor/orders?status=placed&tenant_id={t}',desc:'Vendor pulls new order queue. Returns paginated list of orders where vendor_tenant_id matches caller.', auth:'Bearer (vendor, resource-admin or tenant-admin)', note:'⚠️ NEW ENDPOINT — not built'},
+      {method:'GET',path:'/vendor/orders/{order_id}',desc:'Vendor fetches full order detail including line items, buyer address, requested shipping tier.', auth:'Bearer', note:'⚠️ NEW ENDPOINT — not built'},
+    ],
+    ddd:{
+      domain:['OrderPlaced(domain event) raised by Order aggregate after INSERT','VendorNotificationService.notify(order_id) — application layer, not domain','Plugin webhook delivery is infrastructure (HTTP adapter), not domain logic'],
+      app:['PlaceOrderCommandHandler already exists (J48) — add outbox write at end','NotifyVendorOnOrderPlaced: new application service, reads plugin.webhook_url from vendor profile'],
+      infra:['OutboxTable: marketplace.outbox (id, event_type, payload, tenant_id, dispatched, created_at)','OutboxWorker: polls outbox, POST to webhook, marks dispatched','PluginWebhookAdapter: signs payload with HMAC-SHA256 using plugin.webhook_secret']
+    }
+  },
+  {
+    id:'J54', title:'Vendor Checks Inventory Before Accepting',
+    actors:['Vendor','Vendor Plugin'],
+    domains:['marketplace','vendor'],
+    tables:['marketplace.inventory','marketplace.inventory_reservations'],
+    status:'new',
+    summary:'Before accepting an order, vendor (or plugin) checks whether qty_on_hand - qty_reserved >= order quantity. If stock is sufficient, a soft reservation is created. If not, vendor must reject or partial-fulfil.',
+    steps:[
+      {n:1, title:'Vendor triggers inventory check', desc:'Vendor portal calls GET /vendor/inventory/{product_id}?sku={sku}. Or plugin adapter calls same endpoint programmatically on order receipt.', tags:[{t:'marketplace domain',c:'domain'},{t:'marketplace.inventory SELECT',c:'db'}]},
+      {n:2, title:'Available qty calculated', desc:'available = qty_on_hand - qty_reserved. If available >= order.qty → proceed. Else → insufficient stock path.', tags:[{t:'Inventory aggregate',c:'domain'}]},
+      {n:3, title:'Soft reservation created', desc:'INSERT marketplace.inventory_reservations (order_id, qty, status=reserved, expires_at=now+24h). UPDATE inventory.qty_reserved += qty using optimistic lock (version check).', tags:[{t:'Inventory aggregate',c:'domain'},{t:'inventory_reservations INSERT',c:'db'},{t:'inventory UPDATE qty_reserved',c:'db'},{t:'outbox: inventory.reserved',c:'event'}]},
+      {n:4, title:'Reservation expiry guard', desc:'If vendor does not accept within 24h, Temporal workflow releases the reservation: qty_reserved -= qty, reservation.status=released, order back to placed for retry or auto-cancel.', tags:[{t:'Temporal workflow',c:'ext'},{t:'inventory UPDATE',c:'db'}]}
+    ],
+    states:[
+      {schema:'marketplace.inventory',field:'qty_reserved',before:'e.g. 5',after:'5 + order.qty (e.g. 7)',domain:'marketplace'},
+      {schema:'marketplace.inventory_reservations',field:'status',before:'(row does not exist)',after:'reserved',domain:'marketplace'},
+      {schema:'marketplace.inventory_reservations',field:'expires_at',before:'null',after:'now() + INTERVAL 24h',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'GET',path:'/vendor/inventory/{product_id}',desc:'Returns qty_on_hand, qty_reserved, available, sku details.', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'},
+      {method:'POST',path:'/vendor/inventory/{product_id}/reserve',desc:'Creates soft reservation for an order.', body:'{"order_id":"uuid","qty":2}', note:'⚠️ NEW ENDPOINT'},
+      {method:'PATCH',path:'/vendor/inventory/{product_id}',desc:'Vendor adjusts stock (receive shipment, manual count). Writes inventory_adjustment audit row.', body:'{"delta":50,"reason":"stock_received","reference":"PO-2026-001"}', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['Inventory aggregate: root = Inventory (id, product_id, tenant_id, qty_on_hand, qty_reserved, version)','InsufficientStockError(domain exception)','ReserveStock(qty, order_id, expires_at) → domain method, raises StockReserved domain event','ReleaseReservation(reservation_id) → domain method'],
+      app:['CheckAndReserveInventoryCommand / Handler','ReleaseExpiredReservationsCommand — driven by Temporal cron or scheduler'],
+      infra:['InventoryRepository(SQLAlchemy)','Optimistic locking via UPDATE WHERE version=:v AND id=:id; if rowcount=0 raise ConcurrencyError']
+    }
+  },
+  {
+    id:'J55', title:'Vendor Accepts or Rejects Order',
+    actors:['Vendor','Order Domain','Buyer UI'],
+    domains:['marketplace'],
+    tables:['marketplace.orders','marketplace.inventory_reservations','marketplace.outbox'],
+    status:'new',
+    summary:'Vendor explicitly accepts or rejects the order. Acceptance transitions order to <code>accepted</code> and commits the inventory reservation. Rejection releases the reservation, refunds the buyer, and fires order.rejected event.',
+    steps:[
+      {n:1, title:'Vendor clicks Accept (or plugin auto-accepts)', desc:'PATCH /vendor/orders/{id}/accept. Handler checks: caller is vendor for this order, order.status=placed, reservation exists.', tags:[{t:'marketplace domain',c:'domain'}]},
+      {n:2, title:'Order status transitions to accepted', desc:'UPDATE marketplace.orders SET status=accepted, accepted_at=now(). Reservation status=committed (no longer expires).', tags:[{t:'orders UPDATE',c:'db'},{t:'inventory_reservations UPDATE committed',c:'db'},{t:'outbox: order.accepted WRITE',c:'event'}]},
+      {n:3, title:'Buyer notified', desc:'Outbox worker fires webhook or SSE event. Buyer UI updates status chip from "Order Placed" → "Order Accepted". Email sent via notification service.', tags:[{t:'outbox worker',c:'domain'},{t:'notification service',c:'ext'}]},
+      {n:4, title:'Rejection path', desc:'PATCH /vendor/orders/{id}/reject with rejection_reason. Order status=rejected, reservation released (qty_reserved -= qty), payment refund initiated, outbox: order.rejected.', tags:[{t:'orders UPDATE rejected',c:'db'},{t:'inventory UPDATE released',c:'db'},{t:'outbox: order.rejected',c:'event'},{t:'billing: refund trigger',c:'db'}]}
+    ],
+    states:[
+      {schema:'marketplace.orders',field:'status',before:'placed',after:'accepted (or rejected)',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'accepted_at',before:'null',after:'now()',domain:'marketplace'},
+      {schema:'marketplace.inventory_reservations',field:'status',before:'reserved',after:'committed (accept) or released (reject)',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'rejection_reason',before:'null',after:'text from vendor (reject path only)',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'PATCH',path:'/vendor/orders/{order_id}/accept',desc:'Vendor accepts order. Commits reservation. Fires order.accepted outbox event.', auth:'Bearer (vendor, resource-admin)', note:'⚠️ NEW ENDPOINT'},
+      {method:'PATCH',path:'/vendor/orders/{order_id}/reject',desc:'Vendor rejects order. Requires rejection_reason. Releases reservation. Triggers refund.', body:'{"rejection_reason":"out_of_stock|damaged|cannot_ship_region"}', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['Order aggregate: AcceptOrder() raises OrderAccepted domain event','Order aggregate: RejectOrder(reason) raises OrderRejected domain event','Invariant: order must be in placed status to accept/reject'],
+      app:['AcceptOrderCommandHandler: validates vendor ownership, calls Order.AcceptOrder(), commits reservation via InventoryService','RejectOrderCommandHandler: releases reservation, triggers RefundCommand via billing context'],
+      infra:['OrderRepository.update() with outbox write in same UoW','BillingContextAdapter.initiate_refund(order_id) — outbox event or direct call']
+    }
+  },
+  {
+    id:'J56', title:'Vendor Packs & Prepares Order',
+    actors:['Vendor'],
+    domains:['marketplace'],
+    tables:['marketplace.orders'],
+    status:'new',
+    summary:'Vendor physically picks, packs, and labels the order. Portal lets vendor mark the order as preparing then packed. These status transitions give the buyer visibility into progress.',
+    steps:[
+      {n:1, title:'Vendor marks order as Preparing', desc:'PATCH /vendor/orders/{id}/prepare. Order status → preparing. Timestamp recorded. Buyer UI updates.', tags:[{t:'orders UPDATE',c:'db'},{t:'outbox: order.preparing',c:'event'}]},
+      {n:2, title:'Vendor packs items', desc:'Physical picking and packing happens offline. Plugin can send pack events via adapter if warehouse system is integrated.', tags:[{t:'vendor warehouse (offline)',c:'ext'}]},
+      {n:3, title:'Vendor marks order Packed', desc:'PATCH /vendor/orders/{id}/packed. Order status → packed. Buyer sees "Being Packed" on order tracking page.', tags:[{t:'orders UPDATE packed',c:'db'},{t:'outbox: order.packed',c:'event'}]},
+      {n:4, title:'Shipping label generated (optional)', desc:'If carrier API is integrated (J57 prerequisite), label is created here and attached to the order as a document URL.', tags:[{t:'carrier API (external)',c:'ext'}]}
+    ],
+    states:[
+      {schema:'marketplace.orders',field:'status',before:'accepted',after:'preparing → packed',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'PATCH',path:'/vendor/orders/{order_id}/prepare',desc:'Marks order as being prepared. Status: accepted → preparing.', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'},
+      {method:'PATCH',path:'/vendor/orders/{order_id}/packed',desc:'Marks order as packed, ready for pickup/drop-off. Status: preparing → packed.', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['Order aggregate adds PrepareOrder() and MarkPacked() commands','Status guard invariants: PrepareOrder requires status=accepted, MarkPacked requires status=preparing'],
+      app:['PrepareOrderCommandHandler','MarkOrderPackedCommandHandler'],
+      infra:['Single outbox write per transition']
+    }
+  },
+  {
+    id:'J57', title:'Vendor Creates Shipment & Adds Tracking',
+    actors:['Vendor','Carrier API','Order Domain'],
+    domains:['marketplace'],
+    tables:['marketplace.shipments','marketplace.orders','marketplace.outbox'],
+    status:'new',
+    summary:'Vendor hands order to carrier and creates a shipment record with tracking number and carrier name. This is the most critical sync point — once dispatched, buyer can track the parcel and billing triggers the commission settlement timer.',
+    steps:[
+      {n:1, title:'Vendor books carrier', desc:'Vendor uses their own carrier account (DHL, FedEx, local courier). Or platform can integrate carrier API if configured.', tags:[{t:'carrier (external)',c:'ext'}]},
+      {n:2, title:'Vendor submits shipment details', desc:'POST /vendor/orders/{id}/shipment with carrier, tracking_number, tracking_url, estimated_delivery. Creates marketplace.shipments row.', tags:[{t:'shipments INSERT',c:'db'},{t:'orders UPDATE dispatched',c:'db'},{t:'outbox: order.dispatched',c:'event'}]},
+      {n:3, title:'Order status advances to dispatched', desc:'UPDATE orders SET status=dispatched, dispatched_at=now() in same transaction as shipment INSERT.', tags:[{t:'orders UPDATE dispatched_at',c:'db'}]},
+      {n:4, title:'Buyer receives dispatch notification', desc:'Outbox event fires. Buyer email: "Your order has shipped" with tracking link. Buyer UI shows tracking panel with carrier + number.', tags:[{t:'outbox worker',c:'domain'},{t:'email notification',c:'ext'}]},
+      {n:5, title:'Commission settlement timer starts', desc:'Billing context receives order.dispatched event. Payout to vendor is scheduled for T+14 days (configurable hold period) unless buyer raises dispute.', tags:[{t:'billing domain',c:'domain'},{t:'billing.settlements INSERT',c:'db'}]}
+    ],
+    states:[
+      {schema:'marketplace.shipments',field:'(row)',before:'does not exist',after:'created (carrier, tracking_number, status=created)',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'status',before:'packed',after:'dispatched',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'dispatched_at',before:'null',after:'now()',domain:'marketplace'},
+      {schema:'billing.settlements',field:'status',before:'null',after:'pending (timer T+14d)',domain:'billing'}
+    ],
+    apis:[
+      {method:'POST',path:'/vendor/orders/{order_id}/shipment',desc:'Creates shipment record, advances order to dispatched, fires outbox event.', auth:'Bearer (vendor)', body:'{"carrier":"DHL","tracking_number":"1234567890","tracking_url":"https://track.dhl.com/...","estimated_delivery":"2026-10-20"}', note:'⚠️ NEW ENDPOINT'},
+      {method:'GET',path:'/marketplace/orders/{order_id}/tracking',desc:'Buyer-facing endpoint returning shipment details and tracking events timeline. Replaces current response of tracking:null.', auth:'Bearer (buyer)', note:'⚠️ REPLACES current null response'}
+    ],
+    ddd:{
+      domain:['Shipment aggregate: root=Shipment, contains list of TrackingEvent value objects','Order aggregate: DispatchOrder(shipment_id) raises OrderDispatched domain event','Invariant: must have reservation.committed to dispatch'],
+      app:['CreateShipmentCommandHandler: creates Shipment + calls Order.DispatchOrder() in one UoW','BillingService.schedule_payout(order_id, vendor_id, hold_days=14) called from outbox consumer'],
+      infra:['ShipmentRepository','CarrierAPIAdapter (optional): maps external tracking events → TrackingEvent value objects']
+    }
+  },
+  {
+    id:'J58', title:'Tracking Events Update (In Transit)',
+    actors:['Carrier API','Vendor','Buyer UI'],
+    domains:['marketplace'],
+    tables:['marketplace.shipment_tracking_events','marketplace.shipments'],
+    status:'new',
+    summary:'As the parcel moves through the carrier network, tracking events are pushed (carrier webhook) or pulled (polling) and stored in shipment_tracking_events. Buyer sees a live timeline.',
+    steps:[
+      {n:1, title:'Carrier sends tracking update', desc:'Carrier POSTs webhook to /webhooks/carrier/{carrier_slug}/tracking OR platform polling job fetches carrier API. Event: status, location, timestamp.', tags:[{t:'carrier webhook (external)',c:'ext'},{t:'tracking_events INSERT',c:'db'}]},
+      {n:2, title:'Tracking event stored', desc:'INSERT shipment_tracking_events (shipment_id, status, location, description, occurred_at, source=carrier_api).', tags:[{t:'shipment_tracking_events INSERT',c:'db'},{t:'outbox: tracking.updated',c:'event'}]},
+      {n:3, title:'Shipment status updated if terminal', desc:'If carrier event = "delivered" → UPDATE shipments SET status=delivered. Triggers J59. If "failed" → UPDATE status=failed.', tags:[{t:'shipments UPDATE',c:'db'}]},
+      {n:4, title:'Buyer UI shows live timeline', desc:'GET /marketplace/orders/{id}/tracking returns ordered list of tracking events. Buyer sees each hub scan, departure, arrival.', tags:[{t:'GET tracking endpoint',c:'db'}]},
+      {n:5, title:'Vendor can also add manual event', desc:'POST /vendor/orders/{id}/tracking-event with description (e.g. "Handed to DHL at warehouse"). Source=vendor.', tags:[{t:'tracking_events INSERT source=vendor',c:'db'}]}
+    ],
+    states:[
+      {schema:'marketplace.shipment_tracking_events',field:'(rows)',before:'empty',after:'growing list of scan events',domain:'marketplace'},
+      {schema:'marketplace.shipments',field:'status',before:'created',after:'in_transit → delivered (or failed)',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'status',before:'dispatched',after:'out_for_delivery (on final-mile event)',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'GET',path:'/marketplace/orders/{order_id}/tracking',desc:'Returns shipment info + ordered tracking event timeline for buyer.', auth:'Bearer (buyer)', note:'⚠️ EXTEND existing endpoint that currently returns null'},
+      {method:'POST',path:'/vendor/orders/{order_id}/tracking-event',desc:'Vendor manually adds a tracking event. Stored with source=vendor.', body:'{"description":"Picked up by DHL","occurred_at":"2026-10-15T09:30:00Z"}', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'},
+      {method:'POST',path:'/webhooks/carrier/{carrier_slug}/tracking',desc:'Carrier pushes tracking event (signed webhook). Public endpoint, validates carrier HMAC.', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['TrackingEvent value object (status, location, description, occurred_at, source)','Shipment aggregate: AddTrackingEvent(event) — raises ShipmentUpdated domain event','Shipment: MarkDelivered() — delegates to J59 flow'],
+      app:['ProcessCarrierWebhookCommand / Handler','PollCarrierTrackingCommand — driven by Temporal cron schedule'],
+      infra:['CarrierWebhookRouter: routes by carrier_slug to specific adapter','CarrierAPIAdapter interface: normalize carrier-specific formats']
+    }
+  },
+  {
+    id:'J59', title:'Delivery Confirmed & Order Closes',
+    actors:['Carrier API','Buyer','Order Domain','Billing'],
+    domains:['marketplace','billing'],
+    tables:['marketplace.orders','marketplace.shipments','marketplace.inventory_reservations','billing.settlements'],
+    status:'new',
+    summary:'When carrier marks the parcel delivered (or buyer manually confirms), order moves to delivered status. Inventory reservation committed (already committed at J55), return window opens, and vendor payout is scheduled to release.',
+    steps:[
+      {n:1, title:'Carrier marks delivered', desc:'Carrier webhook fires "delivered" event. OR buyer taps "Mark as received" in buyer portal.', tags:[{t:'carrier webhook',c:'ext'},{t:'buyer UI action',c:'ext'}]},
+      {n:2, title:'Order marked delivered', desc:'UPDATE marketplace.orders SET status=delivered, delivered_at=now(), return_window_ends=now()+30days. Outbox: order.delivered.', tags:[{t:'orders UPDATE delivered',c:'db'},{t:'outbox: order.delivered',c:'event'}]},
+      {n:3, title:'Shipment marked delivered', desc:'UPDATE marketplace.shipments SET status=delivered.', tags:[{t:'shipments UPDATE',c:'db'}]},
+      {n:4, title:'Inventory reservation committed permanently', desc:'inventory_reservations.status already=committed from J55. No further action needed — reservation is closed/archived.', tags:[{t:'inventory_reservations (already committed)',c:'db'}]},
+      {n:5, title:'Vendor payout released (billing)', desc:'Billing context receives order.delivered. If T+14 hold timer has elapsed and no dispute → INSERT billing.payouts. If dispute pending → hold.', tags:[{t:'billing.payouts INSERT',c:'db'},{t:'billing domain',c:'domain'}]},
+      {n:6, title:'Return window opens', desc:'return_window_ends = delivered_at + 30 days. Buyer can initiate J61 (Return Request) within this window.', tags:[{t:'orders.return_window_ends',c:'db'}]}
+    ],
+    states:[
+      {schema:'marketplace.orders',field:'status',before:'dispatched / out_for_delivery',after:'delivered',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'delivered_at',before:'null',after:'now()',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'return_window_ends',before:'null',after:'now() + 30 days',domain:'marketplace'},
+      {schema:'marketplace.shipments',field:'status',before:'in_transit',after:'delivered',domain:'marketplace'},
+      {schema:'billing.settlements',field:'status',before:'pending',after:'released (if no dispute)',domain:'billing'}
+    ],
+    apis:[
+      {method:'PATCH',path:'/marketplace/orders/{order_id}/confirm-delivery',desc:'Buyer manually confirms delivery. Fires same flow as carrier delivered event.', auth:'Bearer (buyer)', note:'⚠️ NEW ENDPOINT'},
+      {method:'GET',path:'/marketplace/orders/{order_id}',desc:'Existing endpoint. After J59: returns status=delivered, delivered_at, return_window_ends, tracking timeline.', auth:'Bearer', note:'✅ Endpoint exists — response shape needs extending'}
+    ],
+    ddd:{
+      domain:['Order aggregate: ConfirmDelivery() raises OrderDelivered domain event','Invariant: must be dispatched to confirm delivery','ReturnWindowPolicy: return_window_days configured per product category'],
+      app:['ConfirmDeliveryCommandHandler: updates order, fires outbox event','BillingService.release_payout(order_id) triggered by outbox consumer in billing context'],
+      infra:['OutboxConsumer in billing context listens for order.delivered']
+    }
+  },
+  {
+    id:'J60', title:'Failed Delivery & Return-to-Origin',
+    actors:['Carrier','Vendor','Buyer'],
+    domains:['marketplace','billing'],
+    tables:['marketplace.orders','marketplace.shipments','marketplace.inventory'],
+    status:'new',
+    summary:'If delivery fails (wrong address, recipient unavailable, refused), carrier marks failed. After configured retry attempts, shipment returns to vendor. Order status transitions to failed_delivery or return_to_origin. Refund initiated.',
+    steps:[
+      {n:1, title:'Carrier reports delivery failure', desc:'Carrier webhook: status=failed_attempt. INSERT tracking event. UPDATE orders.status=out_for_delivery (retry pending).', tags:[{t:'tracking_events INSERT',c:'db'},{t:'outbox: delivery.failed_attempt',c:'event'}]},
+      {n:2, title:'Final failure after retries', desc:'After N failed attempts (carrier-defined), status=undeliverable. UPDATE shipments.status=failed. UPDATE orders.status=failed_delivery. Outbox: order.failed_delivery.', tags:[{t:'orders UPDATE failed_delivery',c:'db'},{t:'outbox: order.failed_delivery',c:'event'}]},
+      {n:3, title:'Vendor receives return parcel', desc:'Physical return in transit. Carrier webhook fires return_to_origin event. INSERT tracking event. UPDATE orders.status=return_to_origin.', tags:[{t:'tracking_events INSERT',c:'db'},{t:'orders UPDATE return_to_origin',c:'db'}]},
+      {n:4, title:'Vendor confirms receipt of return', desc:'PATCH /vendor/orders/{id}/return-received. Inventory stock optionally restocked: UPDATE inventory.qty_on_hand += qty if goods undamaged.', tags:[{t:'inventory UPDATE qty_on_hand',c:'db'},{t:'outbox: order.returned',c:'event'}]},
+      {n:5, title:'Refund issued to buyer', desc:'Billing context receives order.returned. Initiates refund minus any applicable restocking fee. UPDATE billing.settlements.status=refunded.', tags:[{t:'billing.settlements UPDATE',c:'db'},{t:'payment gateway refund',c:'ext'}]}
+    ],
+    states:[
+      {schema:'marketplace.orders',field:'status',before:'dispatched',after:'failed_delivery → return_to_origin',domain:'marketplace'},
+      {schema:'marketplace.shipments',field:'status',before:'in_transit',after:'failed → returned',domain:'marketplace'},
+      {schema:'marketplace.inventory',field:'qty_on_hand',before:'n',after:'n + returned_qty (if restocked)',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'PATCH',path:'/vendor/orders/{order_id}/return-received',desc:'Vendor confirms return received. Optionally triggers inventory restock.', body:'{"restock":true,"qty":1,"condition":"undamaged"}', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['Order aggregate: MarkFailedDelivery(), MarkReturnToOrigin(), MarkReturned()','Inventory aggregate: RestockFromReturn(qty) if condition=undamaged'],
+      app:['ProcessDeliveryFailureCommandHandler','ProcessReturnReceivedCommandHandler'],
+      infra:['Same outbox pattern; billing context listens for order.returned']
+    }
+  },
+  {
+    id:'J61', title:'Buyer Initiates Return / Refund',
+    actors:['Buyer','Vendor','Billing'],
+    domains:['marketplace','billing'],
+    tables:['marketplace.orders','marketplace.returns (new)'],
+    status:'new',
+    summary:'Within the return window (30 days from delivered_at), buyer can request a return. Vendor approves or rejects the return. On approval, buyer ships back, vendor confirms receipt, refund issued.',
+    steps:[
+      {n:1, title:'Buyer requests return', desc:'POST /marketplace/orders/{id}/return with reason and item condition. Guard: delivered_at + 30 days > now().', tags:[{t:'marketplace.returns INSERT',c:'db'},{t:'outbox: return.requested',c:'event'}]},
+      {n:2, title:'Vendor reviews return request', desc:'Vendor portal shows pending returns queue. Vendor has 48h to approve or reject.', tags:[{t:'vendor portal UI',c:'ext'}]},
+      {n:3, title:'Vendor approves return', desc:'PATCH /vendor/returns/{id}/approve. Return pre-paid label optionally generated. Buyer instructed to ship back.', tags:[{t:'marketplace.returns UPDATE approved',c:'db'},{t:'outbox: return.approved',c:'event'}]},
+      {n:4, title:'Buyer ships item back', desc:'Buyer uses provided label (or their own). Vendor marks return in transit.', tags:[{t:'marketplace.returns UPDATE in_transit',c:'db'}]},
+      {n:5, title:'Vendor inspects and confirms', desc:'PATCH /vendor/returns/{id}/received with condition. If approved: refund initiated. If rejected (damaged): dispute opened.', tags:[{t:'marketplace.returns UPDATE received',c:'db'},{t:'billing refund',c:'domain'}]}
+    ],
+    states:[
+      {schema:'marketplace.returns (NEW)',field:'status',before:'(row created)',after:'requested → approved → in_transit → received',domain:'marketplace'},
+      {schema:'marketplace.orders',field:'return_window_ends',before:'future date',after:'check: not expired',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'POST',path:'/marketplace/orders/{order_id}/return',desc:'Buyer creates return request. Guard checks return window.', body:'{"reason":"wrong_item|defective|changed_mind","description":"..."}', auth:'Bearer (buyer)', note:'⚠️ NEW ENDPOINT'},
+      {method:'PATCH',path:'/vendor/returns/{return_id}/approve',desc:'Vendor approves return request.', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'},
+      {method:'PATCH',path:'/vendor/returns/{return_id}/received',desc:'Vendor confirms receipt and condition of returned item.', body:'{"condition":"undamaged|damaged","notes":"..."}', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['Return aggregate: new root entity with status machine','ReturnWindowPolicy.check(order) raises ReturnWindowExpiredError','Return invariant: one return per order line (duplicates → 409)'],
+      app:['RequestReturnCommandHandler','ApproveReturnCommandHandler','ReceiveReturnCommandHandler'],
+      infra:['marketplace.returns table (id, order_id, tenant_id, status, reason, condition, approved_at, received_at)']
+    }
+  },
+  {
+    id:'J62', title:'Vendor Views Inventory Dashboard & Adjusts Stock',
+    actors:['Vendor'],
+    domains:['marketplace'],
+    tables:['marketplace.inventory','marketplace.inventory_reservations'],
+    status:'new',
+    summary:'Vendor can see a real-time inventory dashboard: qty on hand, qty reserved, qty available, reorder alerts. Vendor can manually adjust stock (receive new delivery, write off damaged, etc.).',
+    steps:[
+      {n:1, title:'Vendor opens inventory dashboard', desc:'GET /vendor/inventory returns all products with stock levels for that vendor\'s tenant.', tags:[{t:'marketplace.inventory SELECT',c:'db'}]},
+      {n:2, title:'Reorder alert shown', desc:'Products where qty_on_hand - qty_reserved <= reorder_point are highlighted. Alert count shown in nav badge.', tags:[{t:'inventory SELECT low stock',c:'db'}]},
+      {n:3, title:'Vendor adds stock', desc:'PATCH /vendor/inventory/{product_id}/adjust with delta=+50, reason=stock_received. Writes inventory_adjustment audit row. Updates qty_on_hand.', tags:[{t:'inventory UPDATE qty_on_hand',c:'db'},{t:'inventory_adjustments INSERT',c:'db'}]},
+      {n:4, title:'Vendor writes off damaged', desc:'PATCH adjust with delta=-3, reason=damaged_goods. Same flow, negative delta.', tags:[{t:'inventory UPDATE qty_on_hand',c:'db'}]},
+      {n:5, title:'Low stock alert sent', desc:'When qty available < reorder_point after adjustment, outbox event fires → email/portal notification to vendor.', tags:[{t:'outbox: inventory.low_stock',c:'event'}]}
+    ],
+    states:[
+      {schema:'marketplace.inventory',field:'qty_on_hand',before:'n',after:'n + delta',domain:'marketplace'},
+      {schema:'marketplace.inventory',field:'qty_reserved',before:'n',after:'unchanged (reservations are separate)',domain:'marketplace'}
+    ],
+    apis:[
+      {method:'GET',path:'/vendor/inventory',desc:'Lists all inventory items for vendor\'s tenant with availability status.', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'},
+      {method:'PATCH',path:'/vendor/inventory/{product_id}/adjust',desc:'Adjust stock up or down with reason code. Creates audit row.', body:'{"delta":50,"reason":"stock_received|damaged|expired|correction","reference":"PO-2026-001"}', auth:'Bearer (vendor)', note:'⚠️ NEW ENDPOINT'}
+    ],
+    ddd:{
+      domain:['Inventory aggregate: AdjustStock(delta, reason, reference) raises StockAdjusted domain event','Invariant: qty_on_hand - qty_reserved >= 0 always (cannot write off reserved stock)','LowStockPolicy.check(inventory) raises LowStockAlert event when available <= reorder_point'],
+      app:['AdjustStockCommandHandler','ListInventoryQueryHandler (read-model, no write to domain)'],
+      infra:['marketplace.inventory_adjustments (id, inventory_id, delta, reason, reference, created_by, created_at) — append-only audit']
+    }
+  }
+];
+
+function renderTag(t) {
+  const cls = t.c === 'domain' ? 'stag-domain' : t.c === 'db' ? 'stag-db' : t.c === 'event' ? 'stag-event' : 'stag-ext';
+  return `<span class="stag ${cls}">${t.t}</span>`;
+}
+function renderSteps(steps) {
+  return `<div class="step-list">${steps.map(s=>`
+    <div class="step">
+      <div class="step-num">${s.n}</div>
+      <div class="step-content">
+        <div class="step-title">${s.title}</div>
+        <div class="step-desc">${s.desc}</div>
+        <div class="step-tags">${(s.tags||[]).map(renderTag).join('')}</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+function renderStates(states) {
+  return `<table class="state-table">
+    <thead><tr><th>Table / Field</th><th>Before</th><th>After</th><th>Domain</th></tr></thead>
+    <tbody>${states.map(s=>`<tr>
+      <td><span class="field">${s.schema}.${s.field}</span></td>
+      <td class="before">${s.before}</td>
+      <td class="after">${s.after}</td>
+      <td><span class="domain-label">${s.domain}</span></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+function renderApis(apis) {
+  return apis.map(a=>`<div class="api-block">
+    <span class="api-method ${a.method==='POST'?'method-post':a.method==='GET'?'method-get':'method-patch'}">${a.method}</span>
+    <span class="api-path">${a.path}</span>
+    <div class="api-desc">${a.desc}</div>
+    ${a.auth?`<div style="font-size:.75rem;color:var(--text-dim);margin-top:.3rem">🔒 ${a.auth}</div>`:''}
+    ${a.body?`<pre class="api-body">${a.body}</pre>`:''}
+    <div class="api-note">${a.note}</div>
+  </div>`).join('');
+}
+function renderDdd(d) {
+  const sec = (title,items)=>`<div class="ddd-section"><h4>${title}</h4><ul class="ddd-list">${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  return sec('Domain Layer (pure Python, zero framework)',d.domain)+sec('Application Layer (command handlers, UoW)',d.app)+sec('Infrastructure Layer (SQLAlchemy, adapters)',d.infra);
+}
+
+const container = document.getElementById('journeys');
+journeys.forEach(j=>{
+  const card = document.createElement('div');
+  card.className='journey-card';
+  const statusCls = j.status==='new'?'jm-new':j.status==='partial'?'jm-partial':'jm-done';
+  const statusLabel = j.status==='new'?'⚠️ Phase 3 — Not Built':j.status==='partial'?'Partial':'Done';
+  card.innerHTML=`
+  <div class="journey-header">
+    <span class="journey-num phase3">${j.id}</span>
+    <div class="journey-title-block">
+      <div class="journey-title">${j.title}</div>
+      <div class="journey-meta">
+        ${j.actors.map(a=>`<span class="jm-tag jm-actor">👤 ${a}</span>`).join('')}
+        ${j.domains.map(d=>`<span class="jm-tag jm-domain">⬡ ${d}</span>`).join('')}
+        ${j.tables.map(t=>`<span class="jm-tag jm-table">⬡ ${t}</span>`).join('')}
+        <span class="jm-status ${statusCls}">${statusLabel}</span>
+      </div>
+    </div>
+    <span class="journey-chevron">⌄</span>
+  </div>
+  <div class="journey-body">
+    <div style="padding:.75rem 1.5rem;font-size:.84rem;color:var(--text-dim);border-bottom:1px solid var(--border);background:var(--bg)">${j.summary}</div>
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="steps">Steps</button>
+      <button class="tab-btn" data-tab="states">State Changes</button>
+      <button class="tab-btn" data-tab="api">API Design</button>
+      <button class="tab-btn" data-tab="ddd">DDD Plan</button>
+    </div>
+    <div class="tab-panel active" data-panel="steps">${renderSteps(j.steps)}</div>
+    <div class="tab-panel" data-panel="states">${renderStates(j.states)}</div>
+    <div class="tab-panel" data-panel="api">${renderApis(j.apis)}</div>
+    <div class="tab-panel" data-panel="ddd">${renderDdd(j.ddd)}</div>
+  </div>`;
+  container.appendChild(card);
+  card.querySelector('.journey-header').addEventListener('click',()=>{
+    card.classList.toggle('open');
+  });
+  card.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const tab=btn.dataset.tab;
+      card.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      card.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      card.querySelector(`.tab-panel[data-panel="${tab}"]`).classList.add('active');
+    });
+  });
+});
+</script>
+</body>
+</html>
+
+</body></html>
