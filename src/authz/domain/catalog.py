@@ -31,6 +31,12 @@ PERMISSION_CATALOG: tuple[PermissionSpec, ...] = (
     PermissionSpec("billing.invoice.read", "tenant", "Read tenant invoices"),
     PermissionSpec("platform.tenant.read", "platform", "Read any tenant (management plane)"),
     PermissionSpec("platform.tenant.suspend", "platform", "Suspend a customer tenant"),
+    PermissionSpec("platform.plugin.review", "platform", "Review and decide vendor plugin versions"),
+    PermissionSpec(
+        "platform.plugin.manage_standard", "platform", "Create and lifecycle platform standard plugins"
+    ),
+    PermissionSpec("platform.user.manage", "platform", "Manage platform user directory lifecycle"),
+    PermissionSpec("platform.audit.read", "platform", "Read cross-tenant audit log"),
 )
 
 # Kept active so Phase 1 journeys / AuthzReader checks keep working.
@@ -81,6 +87,10 @@ PLATFORM_SYSTEM_ROLE_PERMISSIONS: dict[str, tuple[str, ...]] = {
     "platform-admin": (
         "platform.tenant.read",
         "platform.tenant.suspend",
+        "platform.plugin.review",
+        "platform.plugin.manage_standard",
+        "platform.user.manage",
+        "platform.audit.read",
     ),
     "platform-support": (
         "platform.tenant.read",

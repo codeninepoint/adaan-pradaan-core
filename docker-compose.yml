@@ -80,7 +80,7 @@ services:
       TENANT_WORKFLOW_MODE: temporal
       TENANT_TEMPORAL_ADDRESS: temporal:7233
       TENANT_CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
-      TENANT_PLATFORM_OPERATOR_EMAILS: runuthakur0@gmail.com
+      TENANT_PLATFORM_OPERATOR_EMAILS: runuthakur0@gmail.com,runuthakur@gmail.com
       RUN_MIGRATIONS: "true"
     depends_on:
       postgres:

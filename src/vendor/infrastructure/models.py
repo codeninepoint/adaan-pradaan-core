@@ -56,6 +56,7 @@ class VendorSettingsRow(Base):
     bank_ifsc: Mapped[str] = mapped_column(String(16), default="")
     notify_install: Mapped[bool] = mapped_column(Boolean, default=True)
     notify_payout: Mapped[bool] = mapped_column(Boolean, default=True)
+    default_currency: Mapped[str] = mapped_column(String(3), default="INR")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -183,6 +183,8 @@ class ApiKeyRow(Base):
     key_hash: Mapped[str] = mapped_column(String(255))
     status: Mapped[str] = mapped_column(String(32), default="active")
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

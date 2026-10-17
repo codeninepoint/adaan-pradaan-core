@@ -139,6 +139,7 @@ def _settings_response(result) -> VendorSettingsResponse:
         bank_ifsc=result.bank_ifsc,
         notify_install=result.notify_install,
         notify_payout=result.notify_payout,
+        default_currency=result.default_currency,
     )
 
 
@@ -170,6 +171,7 @@ async def update_vendor_settings(
         bank_ifsc=body.bank_ifsc,
         notify_install=body.notify_install,
         notify_payout=body.notify_payout,
+        default_currency=body.default_currency,
     )
     return _settings_response(result)
 

@@ -21,6 +21,7 @@ import authz.infrastructure.models  # noqa: F401
 import resources.infrastructure.models  # noqa: F401
 import vendor.infrastructure.models  # noqa: F401
 import marketplace.infrastructure.models  # noqa: F401
+import platform_ops.infrastructure.models  # noqa: F401
 from shared.infrastructure.models import Base
 from identity.infrastructure.models import DeliverySecretRow
 
@@ -104,6 +105,9 @@ async def clean_db(session_factory: async_sessionmaker[AsyncSession]) -> AsyncGe
                   marketplace.payouts,
                   vendor.support_requests,
                   vendor.settings,
+                  marketplace.product_service_cities,
+                  marketplace.vendor_city_pincodes,
+                  marketplace.vendor_service_cities,
                   marketplace.inventory,
                   marketplace.warehouses,
                   marketplace.returns,
@@ -116,12 +120,16 @@ async def clean_db(session_factory: async_sessionmaker[AsyncSession]) -> AsyncGe
                   marketplace.service_instances,
                   marketplace.entitlements,
                   marketplace.installations,
+                  marketplace.vendor_plugin_activations,
                   marketplace.plugin_capabilities,
                   marketplace.offerings,
                   marketplace.product_content,
                   marketplace.plugin_versions,
                   marketplace.products,
                   marketplace.plugins,
+                  platform.team_members,
+                  platform.config,
+                  platform.policies,
                   platform.outbox_events,
                   resource.resources,
                   authz.authorization_audit_log,

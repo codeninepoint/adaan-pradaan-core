@@ -53,6 +53,9 @@ async def list_service_accounts(
                 description=i.description,
                 status=i.status,
                 key_prefix=i.key_prefix,
+                account_type=i.account_type,
+                last_used_at=i.last_used_at,
+                expires_at=i.expires_at,
             )
             for i in items
         ]

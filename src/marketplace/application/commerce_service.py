@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import timedelta, timezone
 from decimal import Decimal
 from uuid import UUID
 
@@ -23,14 +23,16 @@ from marketplace.infrastructure.models import (
     OrderLineRow,
     OrderRow,
     PayoutLedgerRow,
+    ProductReviewRow,
     ProductRow,
     ReturnRow,
     VendorFulfilmentRow,
     WishlistRow,
 )
+from platform_ops.infrastructure.models import PlatformConfigRow
 from shared.domain.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
 from tenant.infrastructure.models import AddressRow, TenantMembershipRow, TenantRow
-from vendor.infrastructure.models import VendorProfileRow
+from vendor.infrastructure.models import VendorProfileRow, VendorSettingsRow
 
 PAYMENT_METHODS = frozenset({"upi", "card", "netbanking"})
 
@@ -54,6 +56,7 @@ class CartLineView:
     unit_price: float
     fulfilment_type: str
     billing_period: str
+    currency: str = "INR"
 
 
 @dataclass(frozen=True, slots=True)
@@ -111,6 +114,7 @@ class VendorOrderLine:
     phone: str
     courier: str
     tracking_number: str
+    currency: str = "INR"
 
 
 FULFILMENT_TRANSITIONS: dict[str, frozenset[str]] = {
@@ -129,6 +133,40 @@ class VendorCustomer:
     order_count: int
     total: float
     last_order_at: str
+    city: str = ""
+    currency: str = "INR"
+    segment: str = "New"
+
+
+@dataclass(frozen=True, slots=True)
+class VendorReview:
+    review_id: UUID
+    customer_name: str
+    product_name: str
+    rating: int
+    comment: str
+    created_at: str
+
+
+@dataclass(frozen=True, slots=True)
+class CreatedReview:
+    review_id: UUID
+    order_id: UUID
+    line_id: UUID
+    product_name: str
+    rating: int
+    comment: str
+
+
+REFUND_METHODS = frozenset({"original", "wallet", "upi"})
+
+
+def customer_segment(order_count: int) -> str:
+    if order_count >= 8:
+        return "VIP"
+    if order_count >= 3:
+        return "Regular"
+    return "New"
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,15 +180,45 @@ class VendorReturn:
     status: str
     created_at: str
     customer_name: str
+    quantity: int = 1
+    amount: float = 0.0
+    currency: str = "INR"
+    refund_amount: float | None = None
+    refund_currency: str = "INR"
+    refund_method: str | None = None
+    vendor_notes: str = ""
+    decided_at: str = ""
+    refunded_at: str = ""
 
 
 @dataclass(frozen=True, slots=True)
 class PayoutView:
+    settlement_id: str
     period: str
     gross: float
     platform_fee: float
     net: float
     status: str
+
+
+@dataclass(frozen=True, slots=True)
+class PayoutSummary:
+    earned_this_month: float
+    next_settlement: float | None
+    next_settlement_due_days: int | None
+    commission_this_month: float
+    commission_rate_pct: int
+    total_settled: float
+
+
+@dataclass(frozen=True, slots=True)
+class PayoutListResult:
+    payouts: list[PayoutView]
+    summary: PayoutSummary
+
+
+def settlement_id_for(payout_id: UUID) -> str:
+    return f"SET-{payout_id.hex[-6:].upper()}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -164,6 +232,7 @@ class OrderLineView:
     billing_period: str
     unit_price: float
     status: str
+    currency: str = "INR"
 
 
 @dataclass(frozen=True, slots=True)
@@ -467,6 +536,7 @@ class CommerceService:
                     fulfilment_type=product.fulfilment_type,
                     billing_period=offering.billing_period,
                     unit_price=offering.price_usd,
+                    currency=getattr(offering, "currency", None) or "INR",
                     status="active",
                 )
             )
@@ -564,6 +634,7 @@ class CommerceService:
                 phone=address.phone if address is not None else "",
                 courier=fulfilment.courier if fulfilment is not None else "",
                 tracking_number=fulfilment.tracking_number if fulfilment is not None else "",
+                currency=getattr(line, "currency", None) or "INR",
             )
             for line, order, tenant, address, fulfilment in rows
         ]
@@ -642,6 +713,9 @@ class CommerceService:
         self, *, vendor_id: UUID, caller_user_id: UUID
     ) -> list[VendorCustomer]:
         await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        currency = await self.vendor_payout_currency(
+            vendor_id=vendor_id, caller_user_id=caller_user_id
+        )
         rows = (
             await self._session.execute(
                 select(OrderLineRow, OrderRow, TenantRow, AddressRow)
@@ -658,9 +732,11 @@ class CommerceService:
             bucket = grouped.get(tenant.id)
             placed = order.created_at.isoformat() if order.created_at else ""
             name = address.contact_name if address is not None else tenant.name
+            city = address.city if address is not None else ""
             if bucket is None:
                 grouped[tenant.id] = {
                     "name": name,
+                    "city": city,
                     "orders": {order.id},
                     "total": float(line.unit_price) * line.quantity,
                     "last": placed,
@@ -671,6 +747,7 @@ class CommerceService:
             if placed >= bucket["last"]:
                 bucket["last"] = placed
                 bucket["name"] = name
+                bucket["city"] = city
         customers = [
             VendorCustomer(
                 tenant_id=tenant_id,
@@ -678,11 +755,112 @@ class CommerceService:
                 order_count=len(bucket["orders"]),
                 total=bucket["total"],
                 last_order_at=bucket["last"],
+                city=bucket.get("city") or "",
+                currency=currency,
+                segment=customer_segment(len(bucket["orders"])),
             )
             for tenant_id, bucket in grouped.items()
         ]
         customers.sort(key=lambda item: item.last_order_at, reverse=True)
         return customers
+
+    async def create_review(
+        self,
+        *,
+        tenant_id: UUID,
+        caller_user_id: UUID,
+        order_id: UUID,
+        line_id: UUID,
+        rating: int,
+        comment: str,
+    ) -> CreatedReview:
+        await self._require_member(tenant_id, caller_user_id)
+        if rating < 1 or rating > 5:
+            raise ValidationError("rating must be between 1 and 5")
+        order = await self._session.get(OrderRow, order_id)
+        if order is None or order.tenant_id != tenant_id:
+            raise NotFoundError("order not found")
+        line = await self._session.get(OrderLineRow, line_id)
+        if line is None or line.order_id != order.id:
+            raise NotFoundError("order line not found")
+        existing = (
+            await self._session.execute(
+                select(ProductReviewRow.id).where(ProductReviewRow.line_id == line.id)
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            raise ConflictError("this line already has a review")
+        product = (
+            await self._session.execute(
+                select(ProductRow)
+                .join(OfferingRow, OfferingRow.product_id == ProductRow.id)
+                .where(OfferingRow.id == line.offering_id)
+            )
+        ).scalar_one_or_none()
+        if product is None:
+            raise NotFoundError("product not found")
+        row = ProductReviewRow(
+            id=uuid.uuid4(),
+            vendor_id=product.vendor_id,
+            product_id=product.id,
+            order_id=order.id,
+            line_id=line.id,
+            tenant_id=tenant_id,
+            rating=rating,
+            comment=comment.strip(),
+        )
+        self._session.add(row)
+        await audit(
+            self._session,
+            action="review.created",
+            actor_user_id=caller_user_id,
+            tenant_id=tenant_id,
+            payload={
+                "review_id": str(row.id),
+                "order_id": str(order.id),
+                "line_id": str(line.id),
+                "rating": rating,
+            },
+        )
+        await self._session.commit()
+        return CreatedReview(
+            review_id=row.id,
+            order_id=order.id,
+            line_id=line.id,
+            product_name=line.product_name,
+            rating=row.rating,
+            comment=row.comment,
+        )
+
+    async def list_vendor_reviews(
+        self, *, vendor_id: UUID, caller_user_id: UUID
+    ) -> list[VendorReview]:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        rows = (
+            await self._session.execute(
+                select(ProductReviewRow, OrderLineRow, OrderRow, TenantRow, AddressRow)
+                .join(OrderLineRow, OrderLineRow.id == ProductReviewRow.line_id)
+                .join(OrderRow, OrderRow.id == ProductReviewRow.order_id)
+                .join(TenantRow, TenantRow.id == ProductReviewRow.tenant_id)
+                .outerjoin(AddressRow, AddressRow.id == OrderRow.address_id)
+                .where(ProductReviewRow.vendor_id == vendor_id)
+                .order_by(ProductReviewRow.created_at.desc())
+            )
+        ).all()
+        reviews: list[VendorReview] = []
+        for review, line, order, tenant, address in rows:
+            name = address.contact_name if address is not None else tenant.name
+            reviews.append(
+                VendorReview(
+                    review_id=review.id,
+                    customer_name=name,
+                    product_name=line.product_name,
+                    rating=review.rating,
+                    comment=review.comment,
+                    created_at=review.created_at.isoformat() if review.created_at else "",
+                )
+            )
+        return reviews
 
     async def list_vendor_returns(
         self, *, vendor_id: UUID, caller_user_id: UUID
@@ -712,31 +890,196 @@ class CommerceService:
                 status=item.status,
                 created_at=item.created_at.isoformat() if item.created_at else "",
                 customer_name=address.contact_name if address is not None else tenant.name,
+                quantity=line.quantity,
+                amount=float(line.unit_price) * line.quantity,
+                currency=getattr(line, "currency", None) or "INR",
+                refund_amount=float(item.refund_amount) if item.refund_amount is not None else None,
+                refund_currency=getattr(item, "refund_currency", None) or "INR",
+                refund_method=item.refund_method,
+                vendor_notes=item.vendor_notes or "",
+                decided_at=item.decided_at.isoformat() if item.decided_at else "",
+                refunded_at=item.refunded_at.isoformat() if item.refunded_at else "",
             )
             for item, line, _order, tenant, address in rows
         ]
 
+    async def decide_vendor_return(
+        self,
+        *,
+        vendor_id: UUID,
+        return_id: UUID,
+        caller_user_id: UUID,
+        decision: str,
+        refund_amount: Decimal | None = None,
+        refund_method: str | None = None,
+        vendor_notes: str | None = None,
+    ) -> VendorReturn:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        row, line = await self._vendor_return_row(vendor_id=vendor_id, return_id=return_id)
+        if row.status != "requested":
+            raise ConflictError("return is not awaiting review")
+        cleaned_decision = decision.strip().lower()
+        if cleaned_decision not in ("approved", "rejected"):
+            raise ValidationError("decision must be approved or rejected")
+        notes = (vendor_notes or "").strip()
+        row.vendor_notes = notes
+        row.decided_at = utcnow()
+        if cleaned_decision == "rejected":
+            row.status = "rejected"
+            await audit(
+                self._session,
+                action="return.rejected",
+                actor_user_id=caller_user_id,
+                payload={"return_id": str(row.id), "vendor_id": str(vendor_id)},
+            )
+        else:
+            line_total = Decimal(str(line.unit_price)) * line.quantity
+            if refund_amount is None:
+                raise ValidationError("refund_amount is required when approving")
+            if refund_amount <= 0 or refund_amount > line_total:
+                raise ValidationError("refund_amount must be greater than zero and at most the line total")
+            method = (refund_method or "").strip().lower()
+            if method not in REFUND_METHODS:
+                raise ValidationError(
+                    f"refund_method must be one of {', '.join(sorted(REFUND_METHODS))}"
+                )
+            row.status = "approved"
+            row.refund_amount = refund_amount
+            row.refund_currency = getattr(line, "currency", None) or "INR"
+            row.refund_method = method
+            await audit(
+                self._session,
+                action="return.approved",
+                actor_user_id=caller_user_id,
+                payload={
+                    "return_id": str(row.id),
+                    "vendor_id": str(vendor_id),
+                    "refund_amount": str(refund_amount),
+                    "refund_method": method,
+                },
+            )
+        await self._session.commit()
+        returns = await self.list_vendor_returns(vendor_id=vendor_id, caller_user_id=caller_user_id)
+        return next(item for item in returns if item.return_id == return_id)
+
+    async def issue_vendor_return_refund(
+        self,
+        *,
+        vendor_id: UUID,
+        return_id: UUID,
+        caller_user_id: UUID,
+    ) -> VendorReturn:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        row, _line = await self._vendor_return_row(vendor_id=vendor_id, return_id=return_id)
+        if row.status != "approved":
+            raise ConflictError("return must be approved before refunding")
+        row.status = "refunded"
+        row.refunded_at = utcnow()
+        await audit(
+            self._session,
+            action="return.refunded",
+            actor_user_id=caller_user_id,
+            payload={
+                "return_id": str(row.id),
+                "vendor_id": str(vendor_id),
+                "refund_amount": str(row.refund_amount) if row.refund_amount is not None else None,
+            },
+        )
+        await self._session.commit()
+        returns = await self.list_vendor_returns(vendor_id=vendor_id, caller_user_id=caller_user_id)
+        return next(item for item in returns if item.return_id == return_id)
+
+    async def _vendor_return_row(
+        self, *, vendor_id: UUID, return_id: UUID
+    ) -> tuple[ReturnRow, OrderLineRow]:
+        row = (
+            await self._session.execute(
+                select(ReturnRow, OrderLineRow)
+                .join(OrderLineRow, OrderLineRow.id == ReturnRow.line_id)
+                .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .where(ReturnRow.id == return_id, ProductRow.vendor_id == vendor_id)
+            )
+        ).one_or_none()
+        if row is None:
+            raise NotFoundError("return not found")
+        return row[0], row[1]
+
     async def list_vendor_payouts(
         self, *, vendor_id: UUID, caller_user_id: UUID
-    ) -> list[PayoutView]:
+    ) -> PayoutListResult:
         await require_vendor_owner(self._session, vendor_id, caller_user_id)
         rows = (
             await self._session.execute(
                 select(PayoutLedgerRow)
                 .where(PayoutLedgerRow.vendor_id == vendor_id)
-                .order_by(PayoutLedgerRow.period.desc())
+                .order_by(PayoutLedgerRow.created_at.desc(), PayoutLedgerRow.period.desc())
             )
         ).scalars().all()
-        return [
-            PayoutView(
-                period=row.period,
-                gross=float(row.gross),
-                platform_fee=float(row.platform_fee),
-                net=float(row.net),
-                status=row.status,
+        now = utcnow()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        earned_this_month = 0.0
+        commission_this_month = 0.0
+        total_settled = 0.0
+        next_settlement: float | None = None
+        next_settlement_due_days: int | None = None
+        payouts: list[PayoutView] = []
+        for row in rows:
+            created = row.created_at
+            if created is not None and created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            if created is not None and created >= month_start:
+                earned_this_month += float(row.gross)
+                commission_this_month += float(row.platform_fee)
+            status_l = (row.status or "").lower()
+            if status_l == "paid":
+                total_settled += float(row.net)
+            elif next_settlement is None:
+                next_settlement = float(row.net)
+                if created is not None:
+                    days_since = max(0, (now - created).days)
+                    next_settlement_due_days = max(0, 7 - days_since)
+                else:
+                    next_settlement_due_days = 7
+            payouts.append(
+                PayoutView(
+                    settlement_id=settlement_id_for(row.id),
+                    period=row.period,
+                    gross=float(row.gross),
+                    platform_fee=float(row.platform_fee),
+                    net=float(row.net),
+                    status=row.status,
+                )
             )
-            for row in rows
-        ]
+        rate = await self._commission_rate_pct()
+        return PayoutListResult(
+            payouts=payouts,
+            summary=PayoutSummary(
+                earned_this_month=earned_this_month,
+                next_settlement=next_settlement,
+                next_settlement_due_days=next_settlement_due_days,
+                commission_this_month=commission_this_month,
+                commission_rate_pct=rate,
+                total_settled=total_settled,
+            ),
+        )
+
+    async def _commission_rate_pct(self) -> int:
+        row = await self._session.get(PlatformConfigRow, "commission_rate_pct")
+        if row is None:
+            return 10
+        value = row.value
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return 10
+
+    async def vendor_payout_currency(self, *, vendor_id: UUID, caller_user_id: UUID) -> str:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        row = await self._session.get(VendorSettingsRow, vendor_id)
+        if row is None or not row.default_currency:
+            return "INR"
+        return row.default_currency.strip().upper() or "INR"
 
     async def order_detail(
         self, *, order_id: UUID, caller_user_id: UUID
@@ -768,6 +1111,7 @@ class CommerceService:
                     billing_period=line.billing_period,
                     unit_price=float(line.unit_price),
                     status=line.status,
+                    currency=getattr(line, "currency", None) or "INR",
                 )
                 for line in lines
             ],
@@ -1066,6 +1410,7 @@ class CommerceService:
                 unit_price=float(offering.price_usd),
                 fulfilment_type=product.fulfilment_type,
                 billing_period=offering.billing_period,
+                currency=getattr(offering, "currency", None) or "INR",
             )
             for line, offering, product in await self._cart_line_rows(cart_id)
         ]

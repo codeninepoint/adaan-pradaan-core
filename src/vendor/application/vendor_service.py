@@ -83,6 +83,9 @@ class QueuedVerification:
     business_doc_url: str | None
 
 
+ALLOWED_CURRENCIES = frozenset({"INR", "USD", "EUR", "AED", "GBP"})
+
+
 @dataclass(frozen=True, slots=True)
 class VendorSettingsView:
     vendor_id: UUID
@@ -95,6 +98,7 @@ class VendorSettingsView:
     bank_ifsc: str
     notify_install: bool
     notify_payout: bool
+    default_currency: str = "INR"
 
 
 @dataclass(frozen=True, slots=True)
@@ -365,6 +369,7 @@ class VendorService:
         bank_ifsc: str | None = None,
         notify_install: bool | None = None,
         notify_payout: bool | None = None,
+        default_currency: str | None = None,
     ) -> VendorSettingsView:
         vendor = await require_vendor_owner(self._session, vendor_id, caller_user_id)
         row = await self._session.get(VendorSettingsRow, vendor_id)
@@ -377,6 +382,7 @@ class VendorService:
                 bank_ifsc="",
                 notify_install=True,
                 notify_payout=True,
+                default_currency="INR",
             )
             self._session.add(row)
         if support_email is not None:
@@ -404,6 +410,13 @@ class VendorService:
             row.notify_install = notify_install
         if notify_payout is not None:
             row.notify_payout = notify_payout
+        if default_currency is not None:
+            code = default_currency.strip().upper()
+            if code not in ALLOWED_CURRENCIES:
+                raise ValidationError(
+                    f"default_currency must be one of {', '.join(sorted(ALLOWED_CURRENCIES))}"
+                )
+            row.default_currency = code
         row.updated_at = utcnow()
         self._session.add(
             AuditLogRow(
@@ -486,6 +499,7 @@ class VendorService:
             bank_ifsc=row.bank_ifsc if row else "",
             notify_install=row.notify_install if row else True,
             notify_payout=row.notify_payout if row else True,
+            default_currency=(row.default_currency if row and row.default_currency else "INR"),
         )
 
     async def _require_org_owner(self, org_id: UUID, user_id: UUID) -> OrganizationRow:

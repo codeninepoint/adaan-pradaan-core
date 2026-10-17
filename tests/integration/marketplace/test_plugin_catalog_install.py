@@ -532,7 +532,7 @@ async def test_plugin_core_then_catalog_install(
         await session.commit()
     payouts = await client.get(f"/api/v1/vendors/{vendor_id}/payouts", headers=headers)
     assert payouts.status_code == 200, payouts.text
-    assert payouts.json()["currency"] == "USD"
+    assert payouts.json()["currency"] == "INR"
     assert payouts.json()["this_period"]["gross"] == 100
     assert payouts.json()["this_period"]["platform_fee"] == 20
     assert payouts.json()["payouts"][0]["net"] == 80

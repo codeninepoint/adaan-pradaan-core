@@ -77,6 +77,7 @@ class VendorSettingsResponse(BaseModel):
     bank_ifsc: str
     notify_install: bool
     notify_payout: bool
+    default_currency: str = "INR"
 
 
 class VendorSettingsPatch(BaseModel):
@@ -86,6 +87,7 @@ class VendorSettingsPatch(BaseModel):
     bank_ifsc: str | None = None
     notify_install: bool | None = None
     notify_payout: bool | None = None
+    default_currency: str | None = None
 
 
 class SupportRequestBody(BaseModel):

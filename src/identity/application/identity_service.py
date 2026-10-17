@@ -486,6 +486,7 @@ class IdentityApplicationService:
         if promoted:
             await self._session.commit()
         is_operator = any(org.is_platform_operator for _, org in org_rows)
+        mfa_enabled = await self._mfa_enabled_for(user)
 
         return {
             "user_id": str(user.id),
@@ -494,6 +495,8 @@ class IdentityApplicationService:
             "display_name": user.display_name,
             "status": user.status,
             "is_platform_operator": is_operator,
+            "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+            "mfa_enabled": mfa_enabled,
             "organizations": [
                 {
                     "org_id": str(org.id),
@@ -518,6 +521,26 @@ class IdentityApplicationService:
                 for membership, tenant in tenant_rows
             ],
         }
+
+    async def _mfa_enabled_for(self, user: UserRow) -> bool:
+        row = (
+            await self._session.execute(
+                select(CredentialRow, IdentityRealmRow)
+                .join(IdentityRealmRow, IdentityRealmRow.id == CredentialRow.identity_realm_id)
+                .where(
+                    CredentialRow.principal_id == user.principal_id,
+                    CredentialRow.status == "active",
+                )
+                .limit(1)
+            )
+        ).one_or_none()
+        if row is None:
+            return False
+        credential, realm = row
+        try:
+            return await self._keycloak.has_mfa(realm.realm_name, credential.keycloak_subject)
+        except Exception:
+            return False
 
     async def password_reset_request(self, *, email: str) -> dict:
         result: dict = {"message": "If that email exists, a reset link has been sent."}

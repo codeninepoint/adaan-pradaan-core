@@ -27,6 +27,9 @@ class ServiceAccountItem(BaseModel):
     description: str | None = None
     status: str
     key_prefix: str | None = None
+    account_type: str = "service_account"
+    last_used_at: str | None = None
+    expires_at: str | None = None
 
 
 class ListServiceAccountsResponse(BaseModel):

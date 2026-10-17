@@ -17,6 +17,8 @@ from marketplace.interface.api.schemas import (
     CatalogResponse,
     CreateOfferingRequest,
     CreateProductRequest,
+    CreateStandardPluginRequest,
+    CreateStandardPluginResponse,
     DeclareCapabilitiesRequest,
     DeclareCapabilitiesResponse,
     EntitlementItem,
@@ -39,6 +41,16 @@ from marketplace.interface.api.schemas import (
     InventoryListResponse,
     InventoryRequest,
     InventoryResponse,
+    CityInventoryResponse,
+    ServiceCityListResponse,
+    ServiceCityResponse,
+    AddServiceCityRequest,
+    UpdateServiceCityRequest,
+    SetCityPincodesRequest,
+    ProductCityAssignmentListResponse,
+    ProductCityAssignmentResponse,
+    SetProductServiceCitiesRequest,
+    SubmitProductListingRequest,
     WarehouseListResponse,
     WarehouseRequest,
     WarehouseResponse,
@@ -46,15 +58,30 @@ from marketplace.interface.api.schemas import (
     RegisterPluginRequest,
     RequestChangesRequest,
     ReviewDetailResponse,
+    ReviewStatsResponse,
     RegisterPluginResponse,
+    StandardPluginItem,
+    StandardPluginListResponse,
     SubmitVersionRequest,
     SubmitVersionResponse,
+    VendorPluginSubmitRequest,
+    VendorPluginSubmitResponse,
+    VendorStandardPluginItem,
+    VendorStandardPluginListResponse,
     SuspendVendorRequest,
     SuspendVendorResponse,
     UpdateOfferingPriceRequest,
     UpdateProductRequest,
+    UpdateStandardPluginRequest,
+    AdminProductItemResponse,
+    AdminProductListResponse,
+    AdminProductStatsResponse,
+    LocationSummaryItemResponse,
+    LocationSummaryResponse,
+    RejectProductRequest,
     VendorDirectoryItemResponse,
     VendorDirectoryResponse,
+    VendorStatsResponse,
     VendorInstallItem,
     VendorInstallListResponse,
     PendingReviewItem,
@@ -80,7 +107,53 @@ def get_catalog_service(
     return CatalogService(session, authorization)
 
 
+def _product(item) -> ProductResponse:
+    return ProductResponse(
+        product_id=str(item.product_id),
+        name=item.name,
+        status=item.status,
+        fulfilment_type=item.fulfilment_type,
+        category=item.category,
+        content=item.content,
+        pa_status=item.pa_status,
+        pa_reject_reason=item.pa_reject_reason,
+        mrp_inr=item.mrp_inr,
+        image_count=item.image_count,
+        cities=item.cities,
+        stock_status=item.stock_status,
+        visibility=item.visibility,
+        brand=item.brand,
+        net_weight=item.net_weight,
+        sku=item.sku,
+        image_urls=item.image_urls,
+        currency=getattr(item, "currency", None) or "INR",
+    )
+
+
+def _service_city(item) -> ServiceCityResponse:
+    return ServiceCityResponse(
+        city_id=str(item.city_id),
+        city_name=item.city_name,
+        warehouse_id=str(item.warehouse_id),
+        pincodes=item.pincodes,
+        currency=item.currency,
+        resolved_currency=getattr(item, "resolved_currency", None) or item.currency or "INR",
+    )
+
+
+def _product_city_assignment(item) -> ProductCityAssignmentResponse:
+    return ProductCityAssignmentResponse(
+        product_id=str(item.product_id),
+        product_name=item.product_name,
+        category=item.category,
+        cities=item.cities,
+        status=item.status,
+    )
+
+
 def _card(item) -> CatalogItem:
+    amount = float(getattr(item, "price", None) or item.price_usd)
+    currency = getattr(item, "currency", None) or "INR"
     return CatalogItem(
         offering_id=str(item.offering_id),
         product_id=str(item.product_id),
@@ -88,10 +161,27 @@ def _card(item) -> CatalogItem:
         vendor=item.vendor_name,
         vendor_id=str(item.vendor_id),
         plan_name=item.plan_name,
-        price_usd=item.price_usd,
+        price=amount,
+        currency=currency,
+        price_usd=amount,
         billing_period=item.billing_period,
         fulfilment_type=item.fulfilment_type,
         category=item.category,
+    )
+
+
+def _offering_list_item(item) -> OfferingListItemResponse:
+    amount = float(getattr(item, "price", None) or item.price_usd)
+    currency = getattr(item, "currency", None) or "INR"
+    return OfferingListItemResponse(
+        offering_id=str(item.offering_id),
+        product_id=str(item.product_id),
+        product_name=item.product_name,
+        plan_name=item.plan_name,
+        status=item.status,
+        price=amount,
+        currency=currency,
+        price_usd=amount,
     )
 
 
@@ -130,9 +220,113 @@ async def list_plugins(
                 status=item.status,
                 latest_version=item.latest_version,
                 latest_version_status=item.latest_version_status,
+                category=item.category,
+                short_description=item.short_description,
+                review_notes=item.review_notes,
+                submitted_at=item.submitted_at,
+                changelog=item.changelog,
             )
             for item in items
         ]
+    )
+
+
+def _vendor_std_plugin(item) -> VendorStandardPluginItem:
+    return VendorStandardPluginItem(
+        plugin_id=str(item.plugin_id),
+        name=item.name,
+        slug=item.slug,
+        category=item.category,
+        short_description=item.short_description,
+        version=item.version,
+        tags=item.tags,
+        vendor_count=item.vendor_count,
+        activation_status=item.activation_status,
+    )
+
+
+@router.get(
+    "/vendors/{vendor_id}/standard-plugins",
+    response_model=VendorStandardPluginListResponse,
+)
+async def list_vendor_standard_plugins(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+    q: Annotated[str | None, Query()] = None,
+    category: Annotated[str | None, Query()] = None,
+) -> VendorStandardPluginListResponse:
+    user, _session, _credential = auth
+    items = await service.list_vendor_standard_plugins(
+        vendor_id=vendor_id, caller_user_id=user.id, q=q, category=category
+    )
+    return VendorStandardPluginListResponse(items=[_vendor_std_plugin(item) for item in items])
+
+
+@router.post(
+    "/vendors/{vendor_id}/standard-plugins/{plugin_id}/activate",
+    response_model=VendorStandardPluginItem,
+)
+async def activate_vendor_standard_plugin(
+    vendor_id: UUID,
+    plugin_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> VendorStandardPluginItem:
+    user, _session, _credential = auth
+    item = await service.activate_standard_plugin(
+        vendor_id=vendor_id, caller_user_id=user.id, plugin_id=plugin_id
+    )
+    return _vendor_std_plugin(item)
+
+
+@router.post(
+    "/vendors/{vendor_id}/standard-plugins/{plugin_id}/deactivate",
+    response_model=VendorStandardPluginItem,
+)
+async def deactivate_vendor_standard_plugin(
+    vendor_id: UUID,
+    plugin_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> VendorStandardPluginItem:
+    user, _session, _credential = auth
+    item = await service.deactivate_standard_plugin(
+        vendor_id=vendor_id, caller_user_id=user.id, plugin_id=plugin_id
+    )
+    return _vendor_std_plugin(item)
+
+
+@router.post(
+    "/vendors/{vendor_id}/plugins/submit",
+    response_model=VendorPluginSubmitResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def submit_vendor_plugin_bundle(
+    vendor_id: UUID,
+    body: VendorPluginSubmitRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> VendorPluginSubmitResponse:
+    user, _session, _credential = auth
+    result = await service.submit_plugin_bundle(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        name=body.name,
+        version=body.version,
+        category=body.category,
+        description=body.description,
+        artifact_url=body.artifact_url,
+        sbom_url=body.sbom_url,
+        plugin_id=UUID(body.plugin_id) if body.plugin_id else None,
+        slug=body.slug,
+    )
+    return VendorPluginSubmitResponse(
+        plugin_id=str(result.plugin_id),
+        version_id=str(result.version_id),
+        slug=result.slug,
+        version=result.version,
+        status=result.status,
     )
 
 
@@ -229,6 +423,7 @@ async def list_versions(
                 scan_status=item.scan_status,
                 submitted_at=item.submitted_at,
                 decided_at=item.decided_at,
+                review_notes=item.review_notes,
                 artifact_url=item.artifact_url,
                 changelog=item.changelog,
                 sbom_url=item.sbom_url,
@@ -243,9 +438,14 @@ async def list_plugin_reviews(
     auth: CurrentAuthDep,
     service: Annotated[PluginService, Depends(get_plugin_service)],
     status: Annotated[str | None, Query()] = None,
+    claimed: Annotated[bool | None, Query()] = None,
+    risk: Annotated[str | None, Query()] = None,
+    q: Annotated[str | None, Query()] = None,
 ) -> PendingReviewsResponse:
     user, _session, _credential = auth
-    items = await service.list_pending_reviews(caller_user_id=user.id, status=status)
+    items = await service.list_pending_reviews(
+        caller_user_id=user.id, status=status, claimed=claimed, risk=risk, q=q
+    )
     return PendingReviewsResponse(
         items=[
             PendingReviewItem(
@@ -254,13 +454,33 @@ async def list_plugin_reviews(
                 plugin_slug=item.plugin_slug,
                 version=item.version,
                 status=item.status,
-                vendor_id=str(item.vendor_id),
+                vendor_id=str(item.vendor_id) if item.vendor_id else None,
                 vendor_name=item.vendor_name,
                 claimed_by=str(item.claimed_by) if item.claimed_by else None,
                 submitted_at=item.submitted_at,
+                risk_level=item.risk_level,
+                decided_by=str(item.decided_by) if item.decided_by else None,
+                decided_at=item.decided_at,
+                review_notes=item.review_notes,
             )
             for item in items
         ]
+    )
+
+
+@router.get("/admin/plugin-reviews/stats", response_model=ReviewStatsResponse)
+async def plugin_review_stats(
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> ReviewStatsResponse:
+    user, _session, _credential = auth
+    stats = await service.review_stats(caller_user_id=user.id)
+    return ReviewStatsResponse(
+        pending=stats.pending,
+        in_review=stats.in_review,
+        published=stats.published,
+        rejected=stats.rejected,
+        standard_plugins=stats.standard_plugins,
     )
 
 
@@ -284,6 +504,7 @@ async def plugin_version_review(
         artifact_url=detail.artifact_url,
         claimed_by=str(detail.claimed_by) if detail.claimed_by else None,
         review_notes=detail.review_notes,
+        risk_level=detail.risk_level,
     )
 
 
@@ -326,9 +547,10 @@ async def list_admin_vendors(
     auth: CurrentAuthDep,
     service: Annotated[CatalogService, Depends(get_catalog_service)],
     status: Annotated[str | None, Query()] = None,
+    q: Annotated[str | None, Query()] = None,
 ) -> VendorDirectoryResponse:
     user, _session, _credential = auth
-    items = await service.list_vendors(caller_user_id=user.id, status=status)
+    items = await service.list_vendors(caller_user_id=user.id, status=status, q=q)
     return VendorDirectoryResponse(
         results=[
             VendorDirectoryItemResponse(
@@ -337,6 +559,131 @@ async def list_admin_vendors(
                 status=item.status,
                 product_count=item.product_count,
                 active_installs=item.active_installs,
+                plugin_count=item.plugin_count,
+                warehouse_count=item.warehouse_count,
+                kyc_status=item.kyc_status,
+                gmv_mtd=item.gmv_mtd,
+            )
+            for item in items
+        ]
+    )
+
+
+@router.get("/admin/vendors/stats", response_model=VendorStatsResponse)
+async def admin_vendor_stats(
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> VendorStatsResponse:
+    user, _session, _credential = auth
+    stats = await service.vendor_stats(caller_user_id=user.id)
+    return VendorStatsResponse(
+        active=stats.active,
+        pending_verification=stats.pending_verification,
+        suspended=stats.suspended,
+        total_plugins=stats.total_plugins,
+    )
+
+
+@router.post("/admin/vendors/{vendor_id}/reinstate", response_model=SuspendVendorResponse)
+async def reinstate_vendor(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> SuspendVendorResponse:
+    user, _session, _credential = auth
+    result = await service.reinstate_vendor(vendor_id=vendor_id, caller_user_id=user.id)
+    return SuspendVendorResponse(
+        vendor_id=str(result.vendor_id),
+        status=result.status,
+        offerings_unpublished=result.offerings_unpublished,
+    )
+
+
+def _admin_product(item) -> AdminProductItemResponse:
+    return AdminProductItemResponse(
+        product_id=str(item.product_id),
+        name=item.name,
+        vendor_id=str(item.vendor_id),
+        vendor_name=item.vendor_name,
+        category=item.category,
+        status=item.status,
+        pa_status=item.pa_status,
+        pa_reject_reason=item.pa_reject_reason,
+        fulfilment_type=item.fulfilment_type,
+        submitted_at=item.submitted_at,
+    )
+
+
+@router.get("/admin/products", response_model=AdminProductListResponse)
+async def list_admin_products(
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+    pa_status: Annotated[str | None, Query()] = None,
+    q: Annotated[str | None, Query()] = None,
+    vendor_id: Annotated[UUID | None, Query()] = None,
+) -> AdminProductListResponse:
+    user, _session, _credential = auth
+    items = await service.list_admin_products(
+        caller_user_id=user.id, pa_status=pa_status, q=q, vendor_id=vendor_id
+    )
+    return AdminProductListResponse(items=[_admin_product(item) for item in items])
+
+
+@router.get("/admin/products/stats", response_model=AdminProductStatsResponse)
+async def admin_product_stats(
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> AdminProductStatsResponse:
+    user, _session, _credential = auth
+    stats = await service.product_stats(caller_user_id=user.id)
+    return AdminProductStatsResponse(
+        pending_review=stats.pending_review,
+        live=stats.live,
+        rejected=stats.rejected,
+        not_submitted=stats.not_submitted,
+        warehouse_locations=stats.warehouse_locations,
+    )
+
+
+@router.post("/admin/products/{product_id}/approve", response_model=AdminProductItemResponse)
+async def approve_admin_product(
+    product_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> AdminProductItemResponse:
+    user, _session, _credential = auth
+    item = await service.approve_product(product_id=product_id, caller_user_id=user.id)
+    return _admin_product(item)
+
+
+@router.post("/admin/products/{product_id}/reject", response_model=AdminProductItemResponse)
+async def reject_admin_product(
+    product_id: UUID,
+    body: RejectProductRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> AdminProductItemResponse:
+    user, _session, _credential = auth
+    item = await service.reject_product(
+        product_id=product_id, caller_user_id=user.id, reason=body.reason
+    )
+    return _admin_product(item)
+
+
+@router.get("/admin/locations/summary", response_model=LocationSummaryResponse)
+async def admin_locations_summary(
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> LocationSummaryResponse:
+    user, _session, _credential = auth
+    items = await service.locations_summary(caller_user_id=user.id)
+    return LocationSummaryResponse(
+        items=[
+            LocationSummaryItemResponse(
+                location=item.location,
+                warehouse_count=item.warehouse_count,
+                vendor_count=item.vendor_count,
+                units_stored=item.units_stored,
             )
             for item in items
         ]
@@ -386,6 +733,129 @@ async def decide_plugin_version(
     )
 
 
+def _standard_plugin_item(view) -> StandardPluginItem:
+    return StandardPluginItem(
+        plugin_id=str(view.plugin_id) if view.plugin_id else None,
+        category=view.category,
+        name=view.name,
+        slug=view.slug,
+        status=view.status,
+        short_description=view.short_description,
+        version=view.version,
+        requirements=view.requirements,
+        updated_at=view.updated_at,
+    )
+
+
+@router.get("/admin/standard-plugins", response_model=StandardPluginListResponse)
+async def list_standard_plugins(
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> StandardPluginListResponse:
+    user, _session, _credential = auth
+    items = await service.list_standard_plugins(caller_user_id=user.id)
+    return StandardPluginListResponse(items=[_standard_plugin_item(item) for item in items])
+
+
+@router.post(
+    "/admin/standard-plugins",
+    response_model=CreateStandardPluginResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_standard_plugin(
+    body: CreateStandardPluginRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> CreateStandardPluginResponse:
+    user, _session, _credential = auth
+    result = await service.create_standard_plugin(
+        caller_user_id=user.id,
+        name=body.name,
+        slug=body.slug,
+        category=body.category,
+        short_description=body.short_description,
+        version=body.version,
+        artifact_url=body.artifact_url,
+        changelog=body.changelog,
+        requirements=body.requirements,
+        publish=body.publish,
+    )
+    return CreateStandardPluginResponse(
+        plugin_id=str(result.plugin_id),
+        slug=result.slug,
+        category=result.category,
+        status=result.status,
+        version=result.version,
+    )
+
+
+@router.patch("/admin/standard-plugins/{plugin_id}", response_model=StandardPluginItem)
+async def update_standard_plugin(
+    plugin_id: UUID,
+    body: UpdateStandardPluginRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> StandardPluginItem:
+    user, _session, _credential = auth
+    view = await service.update_standard_plugin(
+        plugin_id=plugin_id,
+        caller_user_id=user.id,
+        name=body.name,
+        short_description=body.short_description,
+        requirements=body.requirements,
+    )
+    return _standard_plugin_item(view)
+
+
+@router.post("/admin/standard-plugins/{plugin_id}/publish", response_model=StandardPluginItem)
+async def publish_standard_plugin(
+    plugin_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> StandardPluginItem:
+    user, _session, _credential = auth
+    view = await service.set_standard_plugin_status(
+        plugin_id=plugin_id, caller_user_id=user.id, status="active"
+    )
+    return _standard_plugin_item(view)
+
+
+@router.post("/admin/standard-plugins/{plugin_id}/unpublish", response_model=StandardPluginItem)
+async def unpublish_standard_plugin(
+    plugin_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> StandardPluginItem:
+    user, _session, _credential = auth
+    view = await service.set_standard_plugin_status(
+        plugin_id=plugin_id, caller_user_id=user.id, status="unpublished"
+    )
+    return _standard_plugin_item(view)
+
+
+@router.post("/admin/standard-plugins/{plugin_id}/deprecate", response_model=StandardPluginItem)
+async def deprecate_standard_plugin(
+    plugin_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> StandardPluginItem:
+    user, _session, _credential = auth
+    view = await service.set_standard_plugin_status(
+        plugin_id=plugin_id, caller_user_id=user.id, status="deprecated"
+    )
+    return _standard_plugin_item(view)
+
+
+@router.delete("/admin/standard-plugins/{plugin_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_standard_plugin(
+    plugin_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[PluginService, Depends(get_plugin_service)],
+) -> None:
+    user, _session, _credential = auth
+    await service.delete_standard_plugin(plugin_id=plugin_id, caller_user_id=user.id)
+
+
 @router.get("/vendors/{vendor_id}/offerings", response_model=OfferingListResponse)
 async def list_offerings(
     vendor_id: UUID,
@@ -394,19 +864,7 @@ async def list_offerings(
 ) -> OfferingListResponse:
     user, _session, _credential = auth
     items = await service.list_offerings(vendor_id=vendor_id, caller_user_id=user.id)
-    return OfferingListResponse(
-        offerings=[
-            OfferingListItemResponse(
-                offering_id=str(item.offering_id),
-                product_id=str(item.product_id),
-                product_name=item.product_name,
-                plan_name=item.plan_name,
-                status=item.status,
-                price_usd=item.price_usd,
-            )
-            for item in items
-        ]
-    )
+    return OfferingListResponse(offerings=[_offering_list_item(item) for item in items])
 
 
 @router.get("/vendors/{vendor_id}/products", response_model=ProductListResponse)
@@ -417,19 +875,7 @@ async def list_products(
 ) -> ProductListResponse:
     user, _session, _credential = auth
     items = await service.list_products(vendor_id=vendor_id, caller_user_id=user.id)
-    return ProductListResponse(
-        products=[
-            ProductResponse(
-                product_id=str(item.product_id),
-                name=item.name,
-                status=item.status,
-                fulfilment_type=item.fulfilment_type,
-                category=item.category,
-                content=item.content,
-            )
-            for item in items
-        ]
-    )
+    return ProductListResponse(products=[_product(item) for item in items])
 
 
 def _warehouse(item) -> WarehouseResponse:
@@ -453,6 +899,24 @@ def _inventory(item) -> InventoryResponse:
         sku=item.sku,
         available=item.available,
         reserved=item.reserved,
+        reorder_threshold=item.reorder_threshold,
+        city_name=item.city_name,
+        status=item.status,
+    )
+
+
+def _city_inventory(item) -> CityInventoryResponse:
+    return CityInventoryResponse(
+        inventory_id=str(item.inventory_id),
+        product_id=str(item.product_id),
+        product_name=item.product_name,
+        city_id=str(item.city_id),
+        city_name=item.city_name,
+        sku=item.sku,
+        available=item.available,
+        reserved=item.reserved,
+        reorder_threshold=item.reorder_threshold,
+        status=item.status,
     )
 
 
@@ -514,9 +978,14 @@ async def list_inventory(
     vendor_id: UUID,
     auth: CurrentAuthDep,
     service: Annotated[CatalogService, Depends(get_catalog_service)],
+    view: Annotated[str | None, Query()] = None,
 ) -> InventoryListResponse:
     user, _session, _credential = auth
-    rows = await service.list_inventory(vendor_id=vendor_id, caller_user_id=user.id)
+    rows = await service.list_inventory(
+        vendor_id=vendor_id, caller_user_id=user.id, view=view
+    )
+    if view == "by_city":
+        return InventoryListResponse(city_rows=[_city_inventory(row) for row in rows])
     return InventoryListResponse(rows=[_inventory(row) for row in rows])
 
 
@@ -539,6 +1008,7 @@ async def add_inventory(
         warehouse_id=UUID(body.warehouse_id),
         sku=body.sku,
         available=body.available,
+        reorder_threshold=body.reorder_threshold,
     )
     return _inventory(created)
 
@@ -557,8 +1027,179 @@ async def adjust_inventory(
         caller_user_id=user.id,
         inventory_id=inventory_id,
         available=body.available,
+        reorder_threshold=body.reorder_threshold,
     )
     return _inventory(updated)
+
+
+@router.get("/vendors/{vendor_id}/service-cities", response_model=ServiceCityListResponse)
+async def list_service_cities(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ServiceCityListResponse:
+    user, _session, _credential = auth
+    cities = await service.list_service_cities(vendor_id=vendor_id, caller_user_id=user.id)
+    return ServiceCityListResponse(cities=[_service_city(city) for city in cities])
+
+
+@router.post(
+    "/vendors/{vendor_id}/service-cities",
+    response_model=ServiceCityResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_service_city(
+    vendor_id: UUID,
+    body: AddServiceCityRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ServiceCityResponse:
+    user, _session, _credential = auth
+    created = await service.add_service_city(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        city_name=body.city_name,
+        currency=body.currency,
+    )
+    return _service_city(created)
+
+
+@router.patch(
+    "/vendors/{vendor_id}/service-cities/{city_id}",
+    response_model=ServiceCityResponse,
+)
+async def update_service_city(
+    vendor_id: UUID,
+    city_id: UUID,
+    body: UpdateServiceCityRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ServiceCityResponse:
+    user, _session, _credential = auth
+    updated = await service.update_service_city(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        city_id=city_id,
+        currency=body.currency,
+    )
+    return _service_city(updated)
+
+
+@router.delete(
+    "/vendors/{vendor_id}/service-cities/{city_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_service_city(
+    vendor_id: UUID,
+    city_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> None:
+    user, _session, _credential = auth
+    await service.delete_service_city(
+        vendor_id=vendor_id, caller_user_id=user.id, city_id=city_id
+    )
+
+
+@router.put(
+    "/vendors/{vendor_id}/service-cities/{city_id}/pincodes",
+    response_model=ServiceCityResponse,
+)
+async def set_city_pincodes(
+    vendor_id: UUID,
+    city_id: UUID,
+    body: SetCityPincodesRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ServiceCityResponse:
+    user, _session, _credential = auth
+    updated = await service.set_city_pincodes(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        city_id=city_id,
+        pincodes=body.pincodes,
+    )
+    return _service_city(updated)
+
+
+@router.get(
+    "/vendors/{vendor_id}/product-city-assignments",
+    response_model=ProductCityAssignmentListResponse,
+)
+async def list_product_city_assignments(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ProductCityAssignmentListResponse:
+    user, _session, _credential = auth
+    items = await service.list_product_city_assignments(
+        vendor_id=vendor_id, caller_user_id=user.id
+    )
+    return ProductCityAssignmentListResponse(
+        items=[_product_city_assignment(item) for item in items]
+    )
+
+
+@router.put(
+    "/products/{product_id}/service-cities",
+    response_model=ProductCityAssignmentResponse,
+)
+async def set_product_service_cities(
+    product_id: UUID,
+    body: SetProductServiceCitiesRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ProductCityAssignmentResponse:
+    user, _session, _credential = auth
+    item = await service.set_product_service_cities(
+        product_id=product_id,
+        caller_user_id=user.id,
+        city_ids=[UUID(city_id) for city_id in body.city_ids],
+    )
+    return _product_city_assignment(item)
+
+
+@router.post(
+    "/vendors/{vendor_id}/products/submit",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def submit_product_listing(
+    vendor_id: UUID,
+    body: SubmitProductListingRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ProductResponse:
+    user, _session, _credential = auth
+    item = await service.submit_product_listing(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        product_id=UUID(body.product_id) if body.product_id else None,
+        name=body.name,
+        description=body.description,
+        category=body.category,
+        sku=body.sku,
+        mrp_inr=body.mrp_inr,
+        currency=body.currency,
+        net_weight=body.net_weight,
+        brand=body.brand,
+        image_urls=body.image_urls,
+        authenticity_attested=body.authenticity_attested,
+        city_ids=[UUID(city_id) for city_id in body.city_ids],
+        fulfilment_type=body.fulfilment_type,
+    )
+    return _product(item)
+
+
+@router.post("/products/{product_id}/resubmit", response_model=ProductResponse)
+async def resubmit_product(
+    product_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> ProductResponse:
+    user, _session, _credential = auth
+    item = await service.resubmit_product(product_id=product_id, caller_user_id=user.id)
+    return _product(item)
 
 
 @router.post(
@@ -578,7 +1219,7 @@ async def create_product(
         caller_user_id=user.id,
         name=body.name,
         description=body.description,
-        plugin_id=UUID(body.plugin_id),
+        plugin_id=UUID(body.plugin_id) if body.plugin_id else None,
         fulfilment_type=body.fulfilment_type,
         content=body.content,
         category=body.category,
@@ -607,14 +1248,7 @@ async def update_product(
         category=body.category,
         content=body.content,
     )
-    return ProductResponse(
-        product_id=str(item.product_id),
-        name=item.name,
-        status=item.status,
-        fulfilment_type=item.fulfilment_type,
-        category=item.category,
-        content=item.content,
-    )
+    return _product(item)
 
 
 @router.post("/products/{product_id}/archive", response_model=ProductResponse)
@@ -652,6 +1286,7 @@ async def create_offering(
         plan_name=body.plan_name,
         billing_period=body.billing_period,
         price_usd=body.price_usd,
+        currency=body.currency,
         included_transactions=body.included_transactions,
         overage_price_per_1k=body.overage_price_per_1k,
     )
@@ -675,15 +1310,9 @@ async def update_offering_price(
         offering_id=offering_id,
         caller_user_id=user.id,
         price_usd=body.price_usd,
+        currency=body.currency,
     )
-    return OfferingListItemResponse(
-        offering_id=str(item.offering_id),
-        product_id=str(item.product_id),
-        product_name=item.product_name,
-        plan_name=item.plan_name,
-        status=item.status,
-        price_usd=item.price_usd,
-    )
+    return _offering_list_item(item)
 
 
 @router.post("/offerings/{offering_id}/publish", response_model=OfferingResponse)
@@ -757,7 +1386,9 @@ async def product_detail(
             OfferingDetailItem(
                 offering_id=str(item.offering_id),
                 plan_name=item.plan_name,
-                price_usd=item.price_usd,
+                price=float(getattr(item, "price", None) or item.price_usd),
+                currency=getattr(item, "currency", None) or "INR",
+                price_usd=float(getattr(item, "price", None) or item.price_usd),
                 billing_period=item.billing_period,
                 status=item.status,
             )

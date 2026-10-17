@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.errors import register_exception_handlers
+from authz.interface.api.admin_routes import router as authz_admin_router
 from authz.interface.api.routes import router as authz_router
+from identity.interface.api.admin_routes import router as identity_admin_router
 from identity.interface.api.routes import router as identity_router
 from identity.interface.api.sa_routes import router as service_accounts_router
 from resources.interface.api.routes import router as resources_router
@@ -10,6 +12,7 @@ from shared.settings import settings
 from marketplace.interface.api.commerce_routes import router as commerce_router
 from marketplace.interface.api.routes import router as marketplace_router
 from tenant.interface.api.routes import router as tenant_router
+from platform_ops.interface.api.routes import router as platform_ops_router
 from vendor.interface.api.routes import router as vendor_router
 
 
@@ -26,13 +29,16 @@ def create_app() -> FastAPI:
         )
     register_exception_handlers(app)
     app.include_router(identity_router)
+    app.include_router(identity_admin_router)
     app.include_router(resources_router)
     app.include_router(authz_router)
+    app.include_router(authz_admin_router)
     app.include_router(tenant_router)
     app.include_router(service_accounts_router)
     app.include_router(vendor_router)
     app.include_router(marketplace_router)
     app.include_router(commerce_router)
+    app.include_router(platform_ops_router)
     return app
 
 

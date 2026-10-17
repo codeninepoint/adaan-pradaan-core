@@ -224,3 +224,47 @@ class RealKeycloakClient:
         if reset.status_code not in (204, 200):
             raise ValueError("Subject not found")
         return target
+
+    async def has_mfa(self, realm: str, subject: str) -> bool:
+        try:
+            creds = await self._admin(
+                "GET",
+                f"/admin/realms/{quote(realm)}/users/{quote(subject)}/credentials",
+            )
+        except Exception:
+            return False
+        if creds.status_code != 200:
+            return False
+        for cred in creds.json():
+            if str(cred.get("type", "")).lower() in ("otp", "totp"):
+                return True
+        return False
+
+    async def reset_mfa(self, realm: str, subject: str) -> None:
+        """Clear OTP credentials and force TOTP setup on next login."""
+        creds = await self._admin(
+            "GET",
+            f"/admin/realms/{quote(realm)}/users/{quote(subject)}/credentials",
+        )
+        if creds.status_code == 200:
+            for cred in creds.json():
+                if str(cred.get("type", "")).lower() in ("otp", "totp"):
+                    await self._admin(
+                        "DELETE",
+                        f"/admin/realms/{quote(realm)}/users/{quote(subject)}/credentials/{quote(str(cred['id']))}",
+                    )
+        user = await self._admin("GET", f"/admin/realms/{quote(realm)}/users/{quote(subject)}")
+        if user.status_code != 200:
+            raise ValueError("Subject not found")
+        payload = user.json()
+        required = list(payload.get("requiredActions") or [])
+        if "CONFIGURE_TOTP" not in required:
+            required.append("CONFIGURE_TOTP")
+        payload["requiredActions"] = required
+        update = await self._admin(
+            "PUT",
+            f"/admin/realms/{quote(realm)}/users/{quote(subject)}",
+            json=payload,
+        )
+        if update.status_code not in (204, 200):
+            raise ValueError("Unable to reset MFA")

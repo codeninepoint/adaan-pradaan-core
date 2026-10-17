@@ -126,5 +126,36 @@ class MeResponse(BaseModel):
     display_name: str
     status: str
     is_platform_operator: bool = False
+    last_login_at: str | None = None
+    mfa_enabled: bool = False
     organizations: list[MeOrganization]
     tenants: list[MeTenant]
+
+
+class AdminUserItemResponse(BaseModel):
+    user_id: str
+    principal_id: str
+    email: str
+    display_name: str
+    principal_type: str
+    status: str
+    tenant_id: str | None = None
+    tenant_name: str | None = None
+    org_name: str | None = None
+    role_label: str | None = None
+    is_platform_operator: bool = False
+    last_active_at: str | None = None
+
+
+class AdminUserListResponse(BaseModel):
+    items: list[AdminUserItemResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+class AdminUserActionResponse(BaseModel):
+    user_id: str
+    status: str | None = None
+    sessions_revoked: int | None = None
+    is_platform_operator: bool | None = None

@@ -19,14 +19,16 @@ class PluginRow(Base, TimestampMixin):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vendor_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    vendor_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), nullable=True, index=True
     )
+    owner_kind: Mapped[str] = mapped_column(String(32), default="vendor")
     name: Mapped[str] = mapped_column(String(255))
     slug: Mapped[str] = mapped_column(String(128))
     category: Mapped[str] = mapped_column(String(128))
     short_description: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(32), default="draft")
+    requirements: Mapped[list] = mapped_column(JSONB, default=list)
 
 
 class PluginVersionRow(Base):
@@ -46,6 +48,7 @@ class PluginVersionRow(Base):
     sbom_url: Mapped[str] = mapped_column(String(1024))
     status: Mapped[str] = mapped_column(String(32), default="pending_review")
     scan_status: Mapped[str] = mapped_column(String(32), default="pending")
+    risk_level: Mapped[str] = mapped_column(String(16), default="low")
     decided_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     claimed_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
@@ -74,9 +77,12 @@ class PluginCapabilityRow(Base):
     )
 
 
-class ProductRow(Base, TimestampMixin):
-    __tablename__ = "products"
-    __table_args__ = {"schema": "marketplace"}
+class VendorPluginActivationRow(Base):
+    __tablename__ = "vendor_plugin_activations"
+    __table_args__ = (
+        UniqueConstraint("vendor_id", "plugin_id", name="uq_vendor_plugin_activations_vendor_plugin"),
+        {"schema": "marketplace"},
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     vendor_id: Mapped[uuid.UUID] = mapped_column(
@@ -85,11 +91,33 @@ class ProductRow(Base, TimestampMixin):
     plugin_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("marketplace.plugins.id"), index=True
     )
+    status: Mapped[str] = mapped_column(String(32), default="active")
+    activated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class ProductRow(Base, TimestampMixin):
+    __tablename__ = "products"
+    __table_args__ = {"schema": "marketplace"}
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    plugin_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.plugins.id"), index=True, nullable=True
+    )
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text, default="")
     category: Mapped[str] = mapped_column(String(128), default="")
     fulfilment_type: Mapped[str] = mapped_column(String(64))
     status: Mapped[str] = mapped_column(String(32), default="draft")
+    pa_status: Mapped[str] = mapped_column(String(32), default="not_submitted")
+    pa_reject_reason: Mapped[str] = mapped_column(Text, default="")
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
@@ -114,6 +142,7 @@ class OfferingRow(Base, TimestampMixin):
     plan_name: Mapped[str] = mapped_column(String(128))
     billing_period: Mapped[str] = mapped_column(String(32))
     price_usd: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
     included_transactions: Mapped[int | None] = mapped_column(nullable=True)
     overage_price_per_1k: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="draft")
@@ -293,6 +322,7 @@ class OrderLineRow(Base):
     fulfilment_type: Mapped[str] = mapped_column(String(64))
     billing_period: Mapped[str] = mapped_column(String(32))
     unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2))
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
     status: Mapped[str] = mapped_column(String(32), default="active")
 
 
@@ -310,6 +340,42 @@ class ReturnRow(Base):
     reason: Mapped[str] = mapped_column(String(255))
     notes: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(32), default="requested")
+    refund_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
+    refund_currency: Mapped[str] = mapped_column(String(3), default="INR")
+    refund_method: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    vendor_notes: Mapped[str] = mapped_column(Text, default="")
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    refunded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class ProductReviewRow(Base):
+    __tablename__ = "product_reviews"
+    __table_args__ = (
+        UniqueConstraint("line_id", name="uq_product_reviews_line_id"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.products.id"), index=True
+    )
+    order_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.orders.id"), index=True
+    )
+    line_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.order_lines.id"), index=True
+    )
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tenant.tenants.id"), index=True
+    )
+    rating: Mapped[int] = mapped_column(Integer)
+    comment: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -351,6 +417,57 @@ class InventoryRow(Base):
     sku: Mapped[str] = mapped_column(String(128))
     available: Mapped[int] = mapped_column(Integer, default=0)
     reserved: Mapped[int] = mapped_column(Integer, default=0)
+    reorder_threshold: Mapped[int] = mapped_column(Integer, default=20)
+
+
+class VendorServiceCityRow(Base, TimestampMixin):
+    __tablename__ = "vendor_service_cities"
+    __table_args__ = (
+        UniqueConstraint("vendor_id", "city_name", name="uq_vendor_service_cities_vendor_city"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    city_name: Mapped[str] = mapped_column(String(128))
+    warehouse_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.warehouses.id")
+    )
+    currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+
+
+class VendorCityPincodeRow(Base):
+    __tablename__ = "vendor_city_pincodes"
+    __table_args__ = (
+        UniqueConstraint("city_id", "pincode", name="uq_vendor_city_pincodes_city_pin"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    city_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("marketplace.vendor_service_cities.id", ondelete="CASCADE"),
+        index=True,
+    )
+    pincode: Mapped[str] = mapped_column(String(16))
+
+
+class ProductServiceCityRow(Base):
+    __tablename__ = "product_service_cities"
+    __table_args__ = {"schema": "marketplace"}
+
+    product_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("marketplace.products.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    city_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("marketplace.vendor_service_cities.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
 
 
 class PayoutLedgerRow(Base):

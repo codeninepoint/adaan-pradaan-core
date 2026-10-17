@@ -11,6 +11,7 @@ class FakeKeycloakClient:
     _users: dict[tuple[str, str], str] = field(default_factory=dict)
     _passwords: dict[tuple[str, str], str] = field(default_factory=dict)
     _subjects: set[str] = field(default_factory=set)
+    _mfa_subjects: set[str] = field(default_factory=set)
     _realms: set[str] = field(default_factory=lambda: {"platform"})
 
     async def create_realm(self, realm_name: str) -> str:
@@ -59,3 +60,19 @@ class FakeKeycloakClient:
             self._realms.add(realm)
             return subject
         raise ValueError("Subject not found")
+
+    async def reset_mfa(self, realm: str, subject: str) -> None:
+        if subject not in self._subjects and not any(
+            sub == subject and key[0] == realm for key, sub in self._users.items()
+        ):
+            raise ValueError("Subject not found")
+        # Fake IdP: no OTP credentials to clear; treat as success.
+        self._mfa_subjects.discard(subject)
+        return None
+
+    async def has_mfa(self, realm: str, subject: str) -> bool:
+        if subject not in self._subjects and not any(
+            sub == subject and key[0] == realm for key, sub in self._users.items()
+        ):
+            return False
+        return subject in self._mfa_subjects

@@ -41,6 +41,7 @@ packages = [
   "src/resources",
   "src/vendor",
   "src/marketplace",
+  "src/platform_ops",
   "src/workflows",
   "src/api",
 ]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -38,6 +39,7 @@ class CartLineResponse(BaseModel):
     plan_name: str
     quantity: int
     unit_price: float
+    currency: str = "INR"
     fulfilment_type: str
     billing_period: str
 
@@ -124,6 +126,7 @@ class VendorOrderLineResponse(BaseModel):
     fulfilment_type: str
     unit_price: float
     total: float
+    currency: str = "INR"
     status: str
     placed_at: str
     customer_name: str
@@ -159,10 +162,42 @@ class VendorCustomerResponse(BaseModel):
     order_count: int
     total: float
     last_order_at: str
+    city: str = ""
+    currency: str = "INR"
+    segment: str = "New"
 
 
 class VendorCustomerListResponse(BaseModel):
     customers: list[VendorCustomerResponse]
+
+
+class CreateReviewRequest(BaseModel):
+    order_id: str
+    line_id: str
+    rating: int = Field(ge=1, le=5)
+    comment: str = ""
+
+
+class CreateReviewResponse(BaseModel):
+    review_id: str
+    order_id: str
+    line_id: str
+    product_name: str
+    rating: int
+    comment: str
+
+
+class VendorReviewResponse(BaseModel):
+    id: str
+    customer_name: str
+    product_name: str
+    rating: int
+    comment: str
+    created_at: str
+
+
+class VendorReviewListResponse(BaseModel):
+    reviews: list[VendorReviewResponse]
 
 
 class VendorReturnResponse(BaseModel):
@@ -175,13 +210,30 @@ class VendorReturnResponse(BaseModel):
     status: str
     created_at: str
     customer_name: str
+    quantity: int = 1
+    amount: float = 0.0
+    currency: str = "INR"
+    refund_amount: float | None = None
+    refund_currency: str = "INR"
+    refund_method: str | None = None
+    vendor_notes: str = ""
+    decided_at: str = ""
+    refunded_at: str = ""
 
 
 class VendorReturnListResponse(BaseModel):
     returns: list[VendorReturnResponse]
 
 
+class DecideVendorReturnRequest(BaseModel):
+    decision: str
+    refund_amount: float | None = None
+    refund_method: str | None = None
+    vendor_notes: str = ""
+
+
 class PayoutResponse(BaseModel):
+    settlement_id: str = ""
     period: str
     gross: float
     platform_fee: float
@@ -189,9 +241,19 @@ class PayoutResponse(BaseModel):
     status: str
 
 
+class PayoutSummaryResponse(BaseModel):
+    earned_this_month: float = 0.0
+    next_settlement: float | None = None
+    next_settlement_due_days: int | None = None
+    commission_this_month: float = 0.0
+    commission_rate_pct: int = 10
+    total_settled: float = 0.0
+
+
 class PayoutListResponse(BaseModel):
     currency: str
     this_period: PayoutResponse | None
+    summary: PayoutSummaryResponse
     payouts: list[PayoutResponse]
 
 
@@ -204,6 +266,7 @@ class OrderLineResponse(BaseModel):
     fulfilment_type: str
     billing_period: str
     unit_price: float
+    currency: str = "INR"
     status: str
 
 
@@ -269,6 +332,7 @@ def _cart(view) -> CartResponse:
                 plan_name=line.plan_name,
                 quantity=line.quantity,
                 unit_price=line.unit_price,
+                currency=getattr(line, "currency", None) or "INR",
                 fulfilment_type=line.fulfilment_type,
                 billing_period=line.billing_period,
             )
@@ -520,6 +584,7 @@ async def list_vendor_orders(
                 fulfilment_type=line.fulfilment_type,
                 unit_price=line.unit_price,
                 total=line.total,
+                currency=getattr(line, "currency", None) or "INR",
                 status=line.status,
                 placed_at=line.placed_at,
                 customer_name=line.customer_name,
@@ -577,9 +642,88 @@ async def list_vendor_customers(
                 order_count=item.order_count,
                 total=item.total,
                 last_order_at=item.last_order_at,
+                city=item.city,
+                currency=item.currency,
+                segment=item.segment,
             )
             for item in customers
         ]
+    )
+
+
+@router.get("/vendors/{vendor_id}/reviews", response_model=VendorReviewListResponse)
+async def list_vendor_reviews(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> VendorReviewListResponse:
+    user, _session, _credential = auth
+    reviews = await service.list_vendor_reviews(vendor_id=vendor_id, caller_user_id=user.id)
+    return VendorReviewListResponse(
+        reviews=[
+            VendorReviewResponse(
+                id=str(item.review_id),
+                customer_name=item.customer_name,
+                product_name=item.product_name,
+                rating=item.rating,
+                comment=item.comment,
+                created_at=item.created_at,
+            )
+            for item in reviews
+        ]
+    )
+
+
+@router.post(
+    "/tenants/{tenant_id}/reviews",
+    response_model=CreateReviewResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_review(
+    tenant_id: UUID,
+    body: CreateReviewRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> CreateReviewResponse:
+    user, _session, _credential = auth
+    item = await service.create_review(
+        tenant_id=tenant_id,
+        caller_user_id=user.id,
+        order_id=UUID(body.order_id),
+        line_id=UUID(body.line_id),
+        rating=body.rating,
+        comment=body.comment,
+    )
+    return CreateReviewResponse(
+        review_id=str(item.review_id),
+        order_id=str(item.order_id),
+        line_id=str(item.line_id),
+        product_name=item.product_name,
+        rating=item.rating,
+        comment=item.comment,
+    )
+
+
+def _vendor_return(item) -> VendorReturnResponse:
+    return VendorReturnResponse(
+        return_id=str(item.return_id),
+        order_id=str(item.order_id),
+        line_id=str(item.line_id),
+        product_name=item.product_name,
+        reason=item.reason,
+        notes=item.notes,
+        status=item.status,
+        created_at=item.created_at,
+        customer_name=item.customer_name,
+        quantity=item.quantity,
+        amount=item.amount,
+        currency=item.currency,
+        refund_amount=item.refund_amount,
+        refund_currency=item.refund_currency,
+        refund_method=item.refund_method,
+        vendor_notes=item.vendor_notes,
+        decided_at=item.decided_at,
+        refunded_at=item.refunded_at,
     )
 
 
@@ -591,22 +735,47 @@ async def list_vendor_returns(
 ) -> VendorReturnListResponse:
     user, _session, _credential = auth
     items = await service.list_vendor_returns(vendor_id=vendor_id, caller_user_id=user.id)
-    return VendorReturnListResponse(
-        returns=[
-            VendorReturnResponse(
-                return_id=str(item.return_id),
-                order_id=str(item.order_id),
-                line_id=str(item.line_id),
-                product_name=item.product_name,
-                reason=item.reason,
-                notes=item.notes,
-                status=item.status,
-                created_at=item.created_at,
-                customer_name=item.customer_name,
-            )
-            for item in items
-        ]
+    return VendorReturnListResponse(returns=[_vendor_return(item) for item in items])
+
+
+@router.patch("/vendors/{vendor_id}/returns/{return_id}", response_model=VendorReturnResponse)
+async def decide_vendor_return(
+    vendor_id: UUID,
+    return_id: UUID,
+    body: DecideVendorReturnRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> VendorReturnResponse:
+    user, _session, _credential = auth
+    item = await service.decide_vendor_return(
+        vendor_id=vendor_id,
+        return_id=return_id,
+        caller_user_id=user.id,
+        decision=body.decision,
+        refund_amount=Decimal(str(body.refund_amount)) if body.refund_amount is not None else None,
+        refund_method=body.refund_method,
+        vendor_notes=body.vendor_notes,
     )
+    return _vendor_return(item)
+
+
+@router.post(
+    "/vendors/{vendor_id}/returns/{return_id}/refund",
+    response_model=VendorReturnResponse,
+)
+async def issue_vendor_return_refund(
+    vendor_id: UUID,
+    return_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> VendorReturnResponse:
+    user, _session, _credential = auth
+    item = await service.issue_vendor_return_refund(
+        vendor_id=vendor_id,
+        return_id=return_id,
+        caller_user_id=user.id,
+    )
+    return _vendor_return(item)
 
 
 @router.get("/vendors/{vendor_id}/payouts", response_model=PayoutListResponse)
@@ -616,18 +785,33 @@ async def list_vendor_payouts(
     service: Annotated[CommerceService, Depends(get_commerce_service)],
 ) -> PayoutListResponse:
     user, _session, _credential = auth
-    payouts = await service.list_vendor_payouts(vendor_id=vendor_id, caller_user_id=user.id)
+    result = await service.list_vendor_payouts(vendor_id=vendor_id, caller_user_id=user.id)
+    currency = await service.vendor_payout_currency(vendor_id=vendor_id, caller_user_id=user.id)
     rows = [
         PayoutResponse(
+            settlement_id=item.settlement_id,
             period=item.period,
             gross=item.gross,
             platform_fee=item.platform_fee,
             net=item.net,
             status=item.status,
         )
-        for item in payouts
+        for item in result.payouts
     ]
-    return PayoutListResponse(currency="USD", this_period=rows[0] if rows else None, payouts=rows)
+    summary = result.summary
+    return PayoutListResponse(
+        currency=currency,
+        this_period=rows[0] if rows else None,
+        summary=PayoutSummaryResponse(
+            earned_this_month=summary.earned_this_month,
+            next_settlement=summary.next_settlement,
+            next_settlement_due_days=summary.next_settlement_due_days,
+            commission_this_month=summary.commission_this_month,
+            commission_rate_pct=summary.commission_rate_pct,
+            total_settled=summary.total_settled,
+        ),
+        payouts=rows,
+    )
 
 
 @router.get("/tenants/{tenant_id}/orders", response_model=OrderListResponse)
@@ -678,6 +862,7 @@ async def order_detail(
                 fulfilment_type=line.fulfilment_type,
                 billing_period=line.billing_period,
                 unit_price=line.unit_price,
+                currency=getattr(line, "currency", None) or "INR",
                 status=line.status,
             )
             for line in detail.lines

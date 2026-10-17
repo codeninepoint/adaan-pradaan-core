@@ -4,7 +4,7 @@ import re
 import secrets
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import select
@@ -75,12 +75,22 @@ class ServiceAccountSummary:
     description: str | None
     status: str
     key_prefix: str | None
+    account_type: str = "service_account"
+    last_used_at: str | None = None
+    expires_at: str | None = None
+
+
+API_KEY_TTL_DAYS = 90
 
 
 def _generate_api_key() -> tuple[str, str]:
     prefix = f"ak_{secrets.token_hex(4)}"
     secret = secrets.token_urlsafe(24)
     return prefix, f"{prefix}_{secret}"
+
+
+def _key_expires_at() -> datetime:
+    return utcnow() + timedelta(days=API_KEY_TTL_DAYS)
 
 
 class ServiceAccountService:
@@ -124,6 +134,9 @@ class ServiceAccountService:
                     description=sa.description,
                     status=sa.status,
                     key_prefix=key.prefix if key else None,
+                    account_type="service_account",
+                    last_used_at=key.last_used_at.isoformat() if key and key.last_used_at else None,
+                    expires_at=key.expires_at.isoformat() if key and key.expires_at else None,
                 )
             )
         return items
@@ -185,6 +198,7 @@ class ServiceAccountService:
             prefix=prefix,
             key_hash=hash_secret(raw_key),
             status="active",
+            expires_at=_key_expires_at(),
         )
         self._session.add(key)
 
@@ -343,6 +357,7 @@ class ServiceAccountService:
             prefix=prefix,
             key_hash=hash_secret(raw_key),
             status="active",
+            expires_at=_key_expires_at(),
         )
         self._session.add(new_key)
 
