@@ -1,0 +1,21 @@
+#!/bin/sh
+# Run Alembic migrations for the Core API tarball.
+set -eu
+
+ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
+VENV="${ROOT}/.venv"
+ENV_FILE="${ADAAN_ENV_FILE:-/etc/adaan/core.env}"
+
+if [ -f "${ENV_FILE}" ]; then
+	set -a
+	# shellcheck disable=SC1090
+	. "${ENV_FILE}"
+	set +a
+fi
+
+# shellcheck disable=SC1091
+. "${VENV}/bin/activate"
+
+export PYTHONPATH="${ROOT}/src${PYTHONPATH:+:$PYTHONPATH}"
+cd "${ROOT}"
+exec alembic upgrade head

@@ -1,0 +1,53 @@
+#!/sbin/openrc-run
+# Adaan Pradaan Next.js standalone — Alpine OpenRC
+# Install: /etc/init.d/adaan-ui && chmod +x && rc-update add adaan-ui default
+
+description="Adaan Pradaan UI (Next.js standalone)"
+name="adaan-ui"
+
+: "${ADAAN_UI_HOME:=/opt/adaan/ui}"
+: "${PORT:=3000}"
+: "${HOSTNAME:=127.0.0.1}"
+
+command="/usr/bin/node"
+command_args="${ADAAN_UI_HOME}/server.js"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+directory="${ADAAN_UI_HOME}"
+
+depend() {
+	need net
+	use dns logger
+	before nginx
+}
+
+start_pre() {
+	checkpath --directory --mode 0755 /run
+	if [ ! -f "${ADAAN_UI_HOME}/server.js" ]; then
+		eerror "Missing Next standalone server: ${ADAAN_UI_HOME}/server.js"
+		return 1
+	fi
+	if ! command -v node >/dev/null 2>&1; then
+		eerror "nodejs is required (apk add nodejs)"
+		return 1
+	fi
+}
+
+start() {
+	ebegin "Starting ${name}"
+	export NODE_ENV=production
+	export NEXT_TELEMETRY_DISABLED=1
+	export PORT
+	export HOSTNAME
+	start-stop-daemon --start --background --make-pidfile \
+		--pidfile "${pidfile}" \
+		--chdir "${directory}" \
+		--exec "${command}" -- ${command_args}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping ${name}"
+	start-stop-daemon --stop --pidfile "${pidfile}"
+	eend $?
+}

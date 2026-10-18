@@ -1,0 +1,61 @@
+#!/sbin/openrc-run
+# Adaan Pradaan Core API (uvicorn) — Alpine OpenRC
+# Install: /etc/init.d/adaan-api && chmod +x && rc-update add adaan-api default
+
+description="Adaan Pradaan Core API"
+name="adaan-api"
+
+: "${ADAAN_CORE_HOME:=/opt/adaan/core}"
+: "${ADAAN_ENV_FILE:=/etc/adaan/core.env}"
+
+command="${ADAAN_CORE_HOME}/bin/adaan-api"
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+directory="${ADAAN_CORE_HOME}"
+
+depend() {
+	need net
+	use dns logger
+	after postgresql
+}
+
+start_pre() {
+	checkpath --directory --mode 0755 /run
+	if [ ! -x "${command}" ]; then
+		eerror "Missing launcher: ${command}"
+		return 1
+	fi
+	if [ ! -f "${ADAAN_ENV_FILE}" ]; then
+		ewarn "Env file ${ADAAN_ENV_FILE} not found; relying on process environment"
+	fi
+	# Migrations before listen (idempotent)
+	if [ -x "${ADAAN_CORE_HOME}/bin/adaan-migrate" ]; then
+		ebegin "Running database migrations"
+		# shellcheck disable=SC1090
+		[ -f "${ADAAN_ENV_FILE}" ] && set -a && . "${ADAAN_ENV_FILE}" && set +a
+		"${ADAAN_CORE_HOME}/bin/adaan-migrate"
+		eend $? "Migrations failed"
+	fi
+}
+
+start() {
+	ebegin "Starting ${name}"
+	# shellcheck disable=SC1090
+	if [ -f "${ADAAN_ENV_FILE}" ]; then
+		set -a
+		# shellcheck source=/dev/null
+		. "${ADAAN_ENV_FILE}"
+		set +a
+	fi
+	start-stop-daemon --start --background --make-pidfile \
+		--pidfile "${pidfile}" \
+		--chdir "${directory}" \
+		--exec "${command}"
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping ${name}"
+	start-stop-daemon --stop --pidfile "${pidfile}"
+	eend $?
+}

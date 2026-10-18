@@ -1,0 +1,163 @@
+name: Demo Alpine Release
+
+# Triggers when a demo-* tag is pushed to THIS repo (adaan-pradaan-core).
+# Example:
+#   git tag demo-0.1.0
+#   git push origin demo-0.1.0
+on:
+  push:
+    tags:
+      - "demo-*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to create/publish (e.g. demo-0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  NEXT_PUBLIC_API_URL: /api
+
+jobs:
+  package-ops:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pack ops bundle
+        run: |
+          chmod +x deploy/demo-alpine/scripts/*.sh deploy/demo-alpine/install-demo.sh
+          ./deploy/demo-alpine/scripts/package-ops.sh
+          cp deploy/demo-alpine/install-demo.sh dist/install-demo.sh
+          chmod +x dist/install-demo.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-ops
+          path: |
+            dist/adaan-demo-alpine-openrc.tar.gz
+            dist/install-demo.sh
+
+  package-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Core aarch64 musl tarball
+        run: |
+          chmod +x deploy/demo-alpine/scripts/*.sh
+          mkdir -p dist
+          docker run --rm --platform linux/arm64 \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e OUT_DIR=/workspace/dist \
+            python:3.12-alpine \
+            sh /workspace/deploy/demo-alpine/scripts/package-core.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-core
+          path: dist/adaan-pradaan-core-linux-aarch64-musl.tar.gz
+
+  package-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout UI repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/adan-pradan-ui
+          path: adan-pradan-ui
+          # Private UI repos: add repo secret DEMO_UI_CHECKOUT_TOKEN (PAT with repo read).
+          token: ${{ secrets.DEMO_UI_CHECKOUT_TOKEN != '' && secrets.DEMO_UI_CHECKOUT_TOKEN || github.token }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build UI aarch64 standalone tarball
+        run: |
+          chmod +x deploy/demo-alpine/scripts/*.sh
+          mkdir -p dist
+          docker run --rm --platform linux/arm64 \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            -e OUT_DIR=/workspace/dist \
+            -e NEXT_PUBLIC_API_URL=/api \
+            node:22-alpine \
+            sh /workspace/deploy/demo-alpine/scripts/package-ui.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-ui
+          path: dist/adan-pradan-ui-standalone-linux-aarch64.tar.gz
+
+  release:
+    needs: [package-ops, package-core, package-ui]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: SHA256SUMS
+        working-directory: dist
+        run: |
+          sha256sum \
+            adaan-pradaan-core-linux-aarch64-musl.tar.gz \
+            adan-pradan-ui-standalone-linux-aarch64.tar.gz \
+            adaan-demo-alpine-openrc.tar.gz \
+            install-demo.sh \
+            > SHA256SUMS
+          ls -lh
+          cat SHA256SUMS
+
+      - name: Resolve tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: Demo ${{ steps.tag.outputs.name }}
+          body: |
+            Raspberry Pi (Alpine aarch64) demo artifacts.
+
+            Install on the Pi:
+            ```sh
+            apk add curl
+            curl -fsSL "https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.name }}/install-demo.sh" -o install-demo.sh
+            chmod +x install-demo.sh
+            ./install-demo.sh --repo ${{ github.repository }} --version ${{ steps.tag.outputs.name }}
+            ```
+
+            See `adaan-demo-alpine-openrc.tar.gz` → `INSTALL.md` for manual steps.
+            UI is built with `NEXT_PUBLIC_API_URL=/api` (nginx strips `/api` to the Core API).
+          files: |
+            dist/adaan-pradaan-core-linux-aarch64-musl.tar.gz
+            dist/adan-pradan-ui-standalone-linux-aarch64.tar.gz
+            dist/adaan-demo-alpine-openrc.tar.gz
+            dist/install-demo.sh
+            dist/SHA256SUMS
+          generate_release_notes: true
