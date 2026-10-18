@@ -98,7 +98,7 @@ if [ ! -d "${OPS_DIR}" ]; then
 fi
 
 if [ ! -f "${ENV_DIR}/core.env" ]; then
-	cp "${OPS_DIR}/env/demo.env.example" "${ENV_DIR}/core.env"
+	cp "${OPS_DIR}/config/demo.env.example" "${ENV_DIR}/core.env"
 	echo "Wrote ${ENV_DIR}/core.env — edit TENANT_JWT_SECRET and TENANT_CORS_ORIGINS"
 fi
 

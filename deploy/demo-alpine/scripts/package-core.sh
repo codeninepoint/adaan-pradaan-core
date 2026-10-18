@@ -49,7 +49,7 @@ fi
 STAGE="$(mktemp -d)"
 trap 'rm -rf "${STAGE}"' EXIT
 PKG="${STAGE}/core"
-mkdir -p "${PKG}/bin" "${PKG}/env"
+mkdir -p "${PKG}/bin" "${PKG}/config"
 
 cp -a "${CORE_SRC}/src" "${PKG}/src"
 cp -a "${CORE_SRC}/migrations" "${PKG}/migrations"
@@ -58,7 +58,7 @@ cp "${CORE_SRC}/pyproject.toml" "${PKG}/pyproject.toml"
 cp "${CORE_SRC}/README.md" "${PKG}/README.md" 2>/dev/null || true
 cp "${DEPLOY_ROOT}/bin/adaan-api" "${PKG}/bin/adaan-api"
 cp "${DEPLOY_ROOT}/bin/adaan-migrate" "${PKG}/bin/adaan-migrate"
-cp "${DEPLOY_ROOT}/env/demo.env.example" "${PKG}/env/demo.env.example"
+cp "${DEPLOY_ROOT}/config/demo.env.example" "${PKG}/config/demo.env.example"
 chmod +x "${PKG}/bin/adaan-api" "${PKG}/bin/adaan-migrate"
 
 python3 -m venv "${PKG}/.venv"

@@ -56,7 +56,7 @@ tar -xzf adan-pradan-ui-standalone-linux-aarch64.tar.gz -C /opt/adaan
 tar -xzf adaan-demo-alpine-openrc.tar.gz -C /tmp
 # Expected dirs: /opt/adaan/core , /opt/adaan/ui
 
-cp /tmp/adaan-demo-alpine/env/demo.env.example /etc/adaan/core.env
+cp /tmp/adaan-demo-alpine/config/demo.env.example /etc/adaan/core.env
 # Edit TENANT_JWT_SECRET and TENANT_CORS_ORIGINS (Pi IP / hostname)
 
 cp /tmp/adaan-demo-alpine/nginx/adaan.conf /etc/nginx/http.d/adaan.conf

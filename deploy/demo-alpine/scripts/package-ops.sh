@@ -21,7 +21,7 @@ mkdir -p "${PKG}"
 
 cp -a "${DEPLOY_ROOT}/nginx" "${PKG}/nginx"
 cp -a "${DEPLOY_ROOT}/openrc" "${PKG}/openrc"
-cp -a "${DEPLOY_ROOT}/env" "${PKG}/env"
+cp -a "${DEPLOY_ROOT}/config" "${PKG}/config"
 cp "${DEPLOY_ROOT}/INSTALL.md" "${PKG}/INSTALL.md"
 cp "${DEPLOY_ROOT}/README.md" "${PKG}/README.md"
 cp "${DEPLOY_ROOT}/install-demo.sh" "${PKG}/install-demo.sh"
