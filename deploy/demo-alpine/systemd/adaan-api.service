@@ -1,0 +1,19 @@
+[Unit]
+Description=Adaan Pradaan Core API
+Documentation=file:///opt/adaan/core/config/demo.env.example
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/adaan/core.env
+WorkingDirectory=/opt/adaan/core
+ExecStartPre=/opt/adaan/core/bin/adaan-migrate
+ExecStart=/opt/adaan/core/bin/adaan-api
+Restart=on-failure
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

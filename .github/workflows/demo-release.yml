@@ -1,9 +1,7 @@
-name: Demo Alpine Release
+name: Demo Pi Release
 
 # Triggers when a demo-* tag is pushed to THIS repo (adaan-pradaan-core).
-# Example:
-#   git tag demo-0.1.0
-#   git push origin demo-0.1.0
+# Builds Debian/glibc (gnu) artifacts for Raspberry Pi OS by default.
 on:
   push:
     tags:
@@ -11,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Release tag to create/publish (e.g. demo-0.1.0)"
+        description: "Release tag to create/publish (e.g. demo-0.1.2)"
         required: true
         type: string
 
@@ -20,6 +18,7 @@ permissions:
 
 env:
   NEXT_PUBLIC_API_URL: /api
+  LIBC: gnu
 
 jobs:
   package-ops:
@@ -38,7 +37,7 @@ jobs:
         with:
           name: demo-ops
           path: |
-            dist/adaan-demo-alpine-openrc.tar.gz
+            dist/adaan-demo-pi-ops.tar.gz
             dist/install-demo.sh
 
   package-core:
@@ -52,7 +51,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Core aarch64 musl tarball
+      - name: Build Core aarch64 gnu (Debian) tarball
         run: |
           chmod +x deploy/demo-alpine/scripts/*.sh
           mkdir -p dist
@@ -60,13 +59,14 @@ jobs:
             -v "$PWD:/workspace" \
             -w /workspace \
             -e OUT_DIR=/workspace/dist \
-            python:3.12-alpine \
-            sh /workspace/deploy/demo-alpine/scripts/package-core.sh
+            -e LIBC=gnu \
+            python:3.12-slim \
+            sh /workspace/deploy/demo-alpine/scripts/package-core.sh --libc gnu
 
       - uses: actions/upload-artifact@v4
         with:
           name: demo-core
-          path: dist/adaan-pradaan-core-linux-aarch64-musl.tar.gz
+          path: dist/adaan-pradaan-core-linux-aarch64-gnu.tar.gz
 
   package-ui:
     runs-on: ubuntu-latest
@@ -78,7 +78,6 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/adan-pradan-ui
           path: adan-pradan-ui
-          # Private UI repos: add repo secret DEMO_UI_CHECKOUT_TOKEN (PAT with repo read).
           token: ${{ secrets.DEMO_UI_CHECKOUT_TOKEN != '' && secrets.DEMO_UI_CHECKOUT_TOKEN || github.token }}
 
       - name: Set up QEMU
@@ -87,7 +86,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build UI aarch64 standalone tarball
+      - name: Build UI aarch64 gnu (Debian) tarball
         run: |
           chmod +x deploy/demo-alpine/scripts/*.sh
           mkdir -p dist
@@ -96,13 +95,14 @@ jobs:
             -w /workspace \
             -e OUT_DIR=/workspace/dist \
             -e NEXT_PUBLIC_API_URL=/api \
-            node:22-alpine \
-            sh /workspace/deploy/demo-alpine/scripts/package-ui.sh
+            -e LIBC=gnu \
+            node:22-bookworm \
+            sh /workspace/deploy/demo-alpine/scripts/package-ui.sh --libc gnu
 
       - uses: actions/upload-artifact@v4
         with:
           name: demo-ui
-          path: dist/adan-pradan-ui-standalone-linux-aarch64.tar.gz
+          path: dist/adan-pradan-ui-standalone-linux-aarch64-gnu.tar.gz
 
   release:
     needs: [package-ops, package-core, package-ui]
@@ -119,9 +119,9 @@ jobs:
         working-directory: dist
         run: |
           sha256sum \
-            adaan-pradaan-core-linux-aarch64-musl.tar.gz \
-            adan-pradan-ui-standalone-linux-aarch64.tar.gz \
-            adaan-demo-alpine-openrc.tar.gz \
+            adaan-pradaan-core-linux-aarch64-gnu.tar.gz \
+            adan-pradan-ui-standalone-linux-aarch64-gnu.tar.gz \
+            adaan-demo-pi-ops.tar.gz \
             install-demo.sh \
             > SHA256SUMS
           ls -lh
@@ -142,22 +142,22 @@ jobs:
           tag_name: ${{ steps.tag.outputs.name }}
           name: Demo ${{ steps.tag.outputs.name }}
           body: |
-            Raspberry Pi (Alpine aarch64) demo artifacts.
+            Raspberry Pi OS / Debian (aarch64, glibc) demo artifacts.
 
-            Install on the Pi:
+            On the Pi (Raspberry Pi OS):
             ```sh
-            apk add curl
+            sudo apt-get update && sudo apt-get install -y curl
             curl -fsSL "https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.name }}/install-demo.sh" -o install-demo.sh
             chmod +x install-demo.sh
-            ./install-demo.sh --repo ${{ github.repository }} --version ${{ steps.tag.outputs.name }}
+            sudo ./install-demo.sh --repo ${{ github.repository }} --version ${{ steps.tag.outputs.name }}
             ```
 
-            See `adaan-demo-alpine-openrc.tar.gz` → `INSTALL.md` for manual steps.
-            UI is built with `NEXT_PUBLIC_API_URL=/api` (nginx strips `/api` to the Core API).
+            Artifacts use `*-linux-aarch64-gnu.tar.gz` (not Alpine musl).
+            UI calls same-origin `/api` via nginx.
           files: |
-            dist/adaan-pradaan-core-linux-aarch64-musl.tar.gz
-            dist/adan-pradan-ui-standalone-linux-aarch64.tar.gz
-            dist/adaan-demo-alpine-openrc.tar.gz
+            dist/adaan-pradaan-core-linux-aarch64-gnu.tar.gz
+            dist/adan-pradan-ui-standalone-linux-aarch64-gnu.tar.gz
+            dist/adaan-demo-pi-ops.tar.gz
             dist/install-demo.sh
             dist/SHA256SUMS
           generate_release_notes: true

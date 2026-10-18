@@ -1,0 +1,20 @@
+[Unit]
+Description=Adaan Pradaan UI (Next.js standalone)
+After=network-online.target
+Wants=network-online.target
+Before=nginx.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/adaan/ui
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+ExecStart=/usr/bin/node /opt/adaan/ui/server.js
+Restart=on-failure
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,9 +1,7 @@
 #!/bin/sh
-# Build Next.js standalone tarball for Alpine aarch64.
-# UI may live at:
-#   <core>/adan-pradan-ui/app          (CI checkout)
-#   <core>/../adan-pradan-ui/app       (local sibling folders)
-# Or set UI_APP explicitly.
+# Build Next.js standalone tarball for aarch64.
+#   --libc gnu   → Debian / Raspberry Pi OS (node:22 bookworm)  [default]
+#   --libc musl  → Alpine (node:22-alpine)
 set -eu
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
@@ -12,6 +10,7 @@ CORE_ROOT="$(CDPATH= cd -- "${DEPLOY_ROOT}/../.." && pwd)"
 OUT_DIR="${OUT_DIR:-${CORE_ROOT}/dist}"
 ARCH="${ARCH:-$(uname -m)}"
 NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-/api}"
+LIBC="${LIBC:-gnu}"
 USE_DOCKER=0
 
 resolve_ui_app() {
@@ -34,16 +33,21 @@ while [ $# -gt 0 ]; do
 		--docker) USE_DOCKER=1; shift ;;
 		--out) OUT_DIR="${2:-}"; shift 2 ;;
 		--api-url) NEXT_PUBLIC_API_URL="${2:-}"; shift 2 ;;
+		--libc) LIBC="${2:-}"; shift 2 ;;
 		*) echo "Unknown arg: $1" >&2; exit 1 ;;
 	esac
 done
+
+case "${LIBC}" in
+	gnu|musl) ;;
+	*) echo "LIBC must be gnu or musl" >&2; exit 1 ;;
+esac
 
 if ! resolve_ui_app; then
 	echo "UI app not found. Checkout adan-pradan-ui next to core, or set UI_APP." >&2
 	exit 1
 fi
 
-# Docker mount: nested UI under core → mount core; sibling UI → mount parent
 DOCKER_ROOT="${CORE_ROOT}"
 DOCKER_SCRIPT="/workspace/deploy/demo-alpine/scripts/package-ui.sh"
 case "${UI_APP}" in
@@ -61,20 +65,30 @@ if [ "${USE_DOCKER}" -eq 1 ]; then
 	else
 		DOCKER_OUT=/workspace/adaan-pradaan-core/dist
 	fi
+	if [ "${LIBC}" = "musl" ]; then
+		IMAGE="node:22-alpine"
+	else
+		IMAGE="node:22-bookworm"
+	fi
 	docker run --rm --platform linux/arm64 \
 		-v "${DOCKER_ROOT}:/workspace" \
 		-w /workspace \
 		-e OUT_DIR="${DOCKER_OUT}" \
 		-e NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL}" \
-		node:22-alpine \
-		sh "${DOCKER_SCRIPT}"
+		-e LIBC="${LIBC}" \
+		"${IMAGE}" \
+		sh "${DOCKER_SCRIPT}" --libc "${LIBC}"
 	exit $?
 fi
 
-echo "==> Packaging UI from ${UI_APP} (API_URL=${NEXT_PUBLIC_API_URL})"
+echo "==> Packaging UI from ${UI_APP} (API_URL=${NEXT_PUBLIC_API_URL} libc=${LIBC})"
 
 if command -v apk >/dev/null 2>&1; then
 	apk add --no-cache bash tar gzip libc6-compat
+elif command -v apt-get >/dev/null 2>&1; then
+	export DEBIAN_FRONTEND=noninteractive
+	apt-get update -qq
+	apt-get install -y -qq tar gzip ca-certificates
 fi
 
 cd "${UI_APP}"
@@ -129,12 +143,7 @@ case "${ARCH}" in
 esac
 
 mkdir -p "${OUT_DIR}"
-# When docker-mounted from parent, write into core dist if present
-if [ -d "${CORE_ROOT}/dist" ] || [ "${OUT_DIR}" = "${CORE_ROOT}/dist" ]; then
-	mkdir -p "${CORE_ROOT}/dist"
-	OUT_DIR="${CORE_ROOT}/dist"
-fi
-TGZ="${OUT_DIR}/adan-pradan-ui-standalone-linux-${ASSET_ARCH}.tar.gz"
+TGZ="${OUT_DIR}/adan-pradan-ui-standalone-linux-${ASSET_ARCH}-${LIBC}.tar.gz"
 tar -czf "${TGZ}" -C "${STAGE}" ui
 echo "Wrote ${TGZ}"
 ls -lh "${TGZ}"

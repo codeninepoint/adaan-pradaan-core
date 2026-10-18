@@ -1,5 +1,5 @@
 #!/bin/sh
-# Pack nginx + OpenRC + env + install helpers for Alpine demo.
+# Pack nginx + systemd + OpenRC + config + install helpers for Pi demo.
 set -eu
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
@@ -16,11 +16,12 @@ done
 
 STAGE="$(mktemp -d)"
 trap 'rm -rf "${STAGE}"' EXIT
-PKG="${STAGE}/adaan-demo-alpine"
+PKG="${STAGE}/adaan-demo-pi"
 mkdir -p "${PKG}"
 
 cp -a "${DEPLOY_ROOT}/nginx" "${PKG}/nginx"
 cp -a "${DEPLOY_ROOT}/openrc" "${PKG}/openrc"
+cp -a "${DEPLOY_ROOT}/systemd" "${PKG}/systemd"
 cp -a "${DEPLOY_ROOT}/config" "${PKG}/config"
 cp "${DEPLOY_ROOT}/INSTALL.md" "${PKG}/INSTALL.md"
 cp "${DEPLOY_ROOT}/README.md" "${PKG}/README.md"
@@ -28,7 +29,7 @@ cp "${DEPLOY_ROOT}/install-demo.sh" "${PKG}/install-demo.sh"
 chmod +x "${PKG}/install-demo.sh" "${PKG}/openrc/"*
 
 mkdir -p "${OUT_DIR}"
-TGZ="${OUT_DIR}/adaan-demo-alpine-openrc.tar.gz"
-tar -czf "${TGZ}" -C "${STAGE}" adaan-demo-alpine
+TGZ="${OUT_DIR}/adaan-demo-pi-ops.tar.gz"
+tar -czf "${TGZ}" -C "${STAGE}" adaan-demo-pi
 echo "Wrote ${TGZ}"
 ls -lh "${TGZ}"
