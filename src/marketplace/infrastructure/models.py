@@ -300,6 +300,8 @@ class VendorFulfilmentRow(Base):
     status: Mapped[str] = mapped_column(String(32), default="placed")
     courier: Mapped[str] = mapped_column(String(128), default="")
     tracking_number: Mapped[str] = mapped_column(String(128), default="")
+    refund_status: Mapped[str] = mapped_column(String(32), default="none")
+    refund_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -524,12 +524,38 @@ class CatalogItem(BaseModel):
     billing_period: str
     fulfilment_type: str
     category: str
+    avg_rating: float = 0.0
+    review_count: int = 0
+    in_stock: bool = True
+
+
+class CatalogVendorFacet(BaseModel):
+    vendor_id: str
+    name: str
+
+
+class CatalogFacets(BaseModel):
+    vendors: list[CatalogVendorFacet] = Field(default_factory=list)
 
 
 class CatalogResponse(BaseModel):
     results: list[CatalogItem]
     page: int = 1
     total: int
+    facets: CatalogFacets = Field(default_factory=CatalogFacets)
+
+
+class PublicProductReviewItem(BaseModel):
+    rating: int
+    comment: str
+    customer_name: str
+    created_at: str
+
+
+class PublicProductReviewListResponse(BaseModel):
+    reviews: list[PublicProductReviewItem]
+    avg_rating: float = 0.0
+    review_count: int = 0
 
 
 class HomeResponse(BaseModel):

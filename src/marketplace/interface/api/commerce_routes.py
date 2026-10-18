@@ -42,6 +42,8 @@ class CartLineResponse(BaseModel):
     currency: str = "INR"
     fulfilment_type: str
     billing_period: str
+    vendor_id: str
+    vendor_name: str
 
 
 class CartResponse(BaseModel):
@@ -105,6 +107,12 @@ class PlaceOrderResponse(BaseModel):
     line_count: int
 
 
+class OrderVendorSummaryResponse(BaseModel):
+    vendor_id: str
+    vendor_name: str
+    status: str
+
+
 class OrderSummaryResponse(BaseModel):
     order_id: str
     status: str
@@ -112,6 +120,7 @@ class OrderSummaryResponse(BaseModel):
     placed_at: str
     line_count: int
     total: float
+    vendors: list[OrderVendorSummaryResponse] = []
 
 
 class OrderListResponse(BaseModel):
@@ -137,6 +146,8 @@ class VendorOrderLineResponse(BaseModel):
     phone: str = ""
     courier: str = ""
     tracking_number: str = ""
+    refund_status: str = "none"
+    refund_amount: float | None = None
 
 
 class AdvanceVendorOrderRequest(BaseModel):
@@ -268,6 +279,25 @@ class OrderLineResponse(BaseModel):
     unit_price: float
     currency: str = "INR"
     status: str
+    vendor_id: str
+    vendor_name: str
+
+
+class TimelineStepResponse(BaseModel):
+    label: str
+    at: str
+    done: bool
+
+
+class OrderVendorSliceResponse(BaseModel):
+    vendor_id: str
+    vendor_name: str
+    status: str
+    courier: str = ""
+    tracking_number: str = ""
+    refund_status: str = "none"
+    refund_amount: float | None = None
+    lines: list[OrderLineResponse]
 
 
 class OrderDetailResponse(BaseModel):
@@ -278,6 +308,9 @@ class OrderDetailResponse(BaseModel):
     placed_at: str
     tracking: None = None
     lines: list[OrderLineResponse]
+    vendors: list[OrderVendorSliceResponse] = []
+    address: AddressResponse | None = None
+    timeline: list[TimelineStepResponse] = []
 
 
 class ReturnRequest(BaseModel):
@@ -335,8 +368,57 @@ def _cart(view) -> CartResponse:
                 currency=getattr(line, "currency", None) or "INR",
                 fulfilment_type=line.fulfilment_type,
                 billing_period=line.billing_period,
+                vendor_id=str(line.vendor_id),
+                vendor_name=line.vendor_name,
             )
             for line in view.lines
+        ],
+    )
+
+
+def _order_line(line) -> OrderLineResponse:
+    return OrderLineResponse(
+        line_id=str(line.line_id),
+        offering_id=str(line.offering_id),
+        product_name=line.product_name,
+        plan_name=line.plan_name,
+        quantity=line.quantity,
+        fulfilment_type=line.fulfilment_type,
+        billing_period=line.billing_period,
+        unit_price=line.unit_price,
+        currency=getattr(line, "currency", None) or "INR",
+        status=line.status,
+        vendor_id=str(line.vendor_id),
+        vendor_name=line.vendor_name,
+    )
+
+
+def _order_detail(detail) -> OrderDetailResponse:
+    return OrderDetailResponse(
+        order_id=str(detail.order_id),
+        status=detail.status,
+        payment_method=detail.payment_method,
+        address_id=str(detail.address_id) if detail.address_id else None,
+        placed_at=detail.placed_at,
+        tracking=None,
+        lines=[_order_line(line) for line in detail.lines],
+        vendors=[
+            OrderVendorSliceResponse(
+                vendor_id=str(vendor.vendor_id),
+                vendor_name=vendor.vendor_name,
+                status=vendor.status,
+                courier=vendor.courier,
+                tracking_number=vendor.tracking_number,
+                refund_status=vendor.refund_status,
+                refund_amount=vendor.refund_amount,
+                lines=[_order_line(line) for line in vendor.lines],
+            )
+            for vendor in detail.vendors
+        ],
+        address=_address(detail.address) if detail.address is not None else None,
+        timeline=[
+            TimelineStepResponse(label=step.label, at=step.at, done=step.done)
+            for step in detail.timeline
         ],
     )
 
@@ -595,6 +677,8 @@ async def list_vendor_orders(
                 phone=line.phone,
                 courier=line.courier,
                 tracking_number=line.tracking_number,
+                refund_status=line.refund_status,
+                refund_amount=line.refund_amount,
             )
             for line in lines
         ]
@@ -623,6 +707,39 @@ async def advance_vendor_order(
         status=updated.status,
         courier=updated.courier,
         tracking_number=updated.tracking_number,
+    )
+
+
+class VendorRejectRefundResponse(BaseModel):
+    order_id: str
+    vendor_id: str
+    status: str
+    refund_status: str
+    refund_amount: float | None = None
+
+
+@router.post(
+    "/vendors/{vendor_id}/orders/{order_id}/refund-slice",
+    response_model=VendorRejectRefundResponse,
+)
+async def issue_vendor_reject_refund(
+    vendor_id: UUID,
+    order_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> VendorRejectRefundResponse:
+    user, _session, _credential = auth
+    updated = await service.issue_vendor_reject_refund(
+        vendor_id=vendor_id, order_id=order_id, caller_user_id=user.id
+    )
+    return VendorRejectRefundResponse(
+        order_id=str(order_id),
+        vendor_id=str(vendor_id),
+        status=updated.status,
+        refund_status=updated.refund_status,
+        refund_amount=(
+            float(updated.refund_amount) if updated.refund_amount is not None else None
+        ),
     )
 
 
@@ -831,10 +948,35 @@ async def list_orders(
                 placed_at=item.placed_at,
                 line_count=item.line_count,
                 total=item.total,
+                vendors=[
+                    OrderVendorSummaryResponse(
+                        vendor_id=str(vendor.vendor_id),
+                        vendor_name=vendor.vendor_name,
+                        status=vendor.status,
+                    )
+                    for vendor in item.vendors
+                ],
             )
             for item in orders
         ]
     )
+
+
+@router.post(
+    "/tenants/{tenant_id}/orders/{order_id}/cancel",
+    response_model=OrderDetailResponse,
+)
+async def cancel_order(
+    tenant_id: UUID,
+    order_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CommerceService, Depends(get_commerce_service)],
+) -> OrderDetailResponse:
+    user, _session, _credential = auth
+    detail = await service.cancel_order(
+        tenant_id=tenant_id, order_id=order_id, caller_user_id=user.id
+    )
+    return _order_detail(detail)
 
 
 @router.get("/orders/{order_id}", response_model=OrderDetailResponse)
@@ -845,29 +987,7 @@ async def order_detail(
 ) -> OrderDetailResponse:
     user, _session, _credential = auth
     detail = await service.order_detail(order_id=order_id, caller_user_id=user.id)
-    return OrderDetailResponse(
-        order_id=str(detail.order_id),
-        status=detail.status,
-        payment_method=detail.payment_method,
-        address_id=str(detail.address_id) if detail.address_id else None,
-        placed_at=detail.placed_at,
-        tracking=None,
-        lines=[
-            OrderLineResponse(
-                line_id=str(line.line_id),
-                offering_id=str(line.offering_id),
-                product_name=line.product_name,
-                plan_name=line.plan_name,
-                quantity=line.quantity,
-                fulfilment_type=line.fulfilment_type,
-                billing_period=line.billing_period,
-                unit_price=line.unit_price,
-                currency=getattr(line, "currency", None) or "INR",
-                status=line.status,
-            )
-            for line in detail.lines
-        ],
-    )
+    return _order_detail(detail)
 
 
 @router.post(

@@ -383,6 +383,15 @@ async def test_plugin_core_then_catalog_install(
     assert other_status.json()["lines"] == []
     order_id = placed.json()["order_id"]
 
+    parent_after = {
+        "confirmed": "processing",
+        "processing": "processing",
+        "ready_to_ship": "processing",
+        "shipped": "processing",
+        "delivered": "delivered",
+        "cancelled": "cancelled",
+    }
+
     async def advance(target: str, **extra: str):
         moved = await client.patch(
             f"/api/v1/vendors/{vendor_id}/orders/{order_id}",
@@ -392,7 +401,7 @@ async def test_plugin_core_then_catalog_install(
         assert moved.status_code == 200, moved.text
         assert moved.json()["status"] == target
         buyer = await client.get(f"/api/v1/orders/{order_id}", headers=headers)
-        assert buyer.json()["status"] == "placed"
+        assert buyer.json()["status"] == parent_after[target]
         return moved
 
     skipped = await client.patch(

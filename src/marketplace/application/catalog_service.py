@@ -27,6 +27,7 @@ from marketplace.infrastructure.models import (
     PluginRow,
     PluginVersionRow,
     ProductContentRow,
+    ProductReviewRow,
     ProductRow,
     InventoryRow,
     ProductServiceCityRow,
@@ -39,7 +40,7 @@ from sqlalchemy import or_
 from shared.domain.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
 from shared.infrastructure.models import OutboxEventRow
 from shared.settings import settings
-from tenant.infrastructure.models import ProjectRow, TenantRow
+from tenant.infrastructure.models import AddressRow, ProjectRow, TenantRow
 from vendor.application.vendor_service import ALLOWED_CURRENCIES
 from vendor.infrastructure.models import VendorProfileRow, VendorSettingsRow
 
@@ -194,6 +195,39 @@ class CatalogCard:
     category: str
     currency: str = "INR"
     price: float = 0.0
+    avg_rating: float = 0.0
+    review_count: int = 0
+    in_stock: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogVendorFacet:
+    vendor_id: UUID
+    name: str
+
+
+@dataclass(frozen=True, slots=True)
+class CatalogResult:
+    cards: list[CatalogCard]
+    vendors: list[CatalogVendorFacet]
+
+
+@dataclass(frozen=True, slots=True)
+class PublicReview:
+    rating: int
+    comment: str
+    customer_name: str
+    created_at: str
+
+
+@dataclass(frozen=True, slots=True)
+class PublicReviewList:
+    reviews: list[PublicReview]
+    avg_rating: float
+    review_count: int
+
+
+PHYSICAL_FULFILMENT = frozenset({"SHIP_PHYSICAL"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -1493,20 +1527,28 @@ class CatalogService:
         category: str | None,
         q: str | None,
         vendor_id: UUID | None,
-        verified_only: bool,
-        price_min: Decimal | None,
-        price_max: Decimal | None,
-        sort: str,
-    ) -> list[CatalogCard]:
-        stmt = (
+        vendor_ids: list[UUID] | None = None,
+        verified_only: bool = False,
+        price_min: Decimal | None = None,
+        price_max: Decimal | None = None,
+        sort: str = "newest",
+        pincode: str | None = None,
+        in_stock: bool = False,
+        fulfilment: str | None = None,
+    ) -> CatalogResult:
+        selected_vendors = list(vendor_ids or [])
+        if vendor_id is not None and vendor_id not in selected_vendors:
+            selected_vendors.append(vendor_id)
+
+        base = (
             select(OfferingRow, ProductRow, VendorProfileRow)
             .join(ProductRow, ProductRow.id == OfferingRow.product_id)
             .join(VendorProfileRow, VendorProfileRow.id == ProductRow.vendor_id)
             .where(OfferingRow.status == "published", ProductRow.status == "published")
         )
         if await self._product_content_review_required():
-            stmt = stmt.where(ProductRow.pa_status.in_(("live", "not_submitted")))
-        stmt = stmt.where(
+            base = base.where(ProductRow.pa_status.in_(("live", "not_submitted")))
+        base = base.where(
             (ProductRow.fulfilment_type != "SHIP_PHYSICAL")
             | exists(
                 select(ProductServiceCityRow.product_id).where(
@@ -1514,29 +1556,184 @@ class CatalogService:
                 )
             )
         )
+
+        # Facets: vendors from catalog before vendor_ids filter
+        facet_stmt = base
+        if category:
+            facet_stmt = facet_stmt.where(ProductRow.category == category)
+        if q:
+            facet_stmt = facet_stmt.where(ProductRow.name.ilike(f"%{q.strip()}%"))
+        if verified_only:
+            facet_stmt = facet_stmt.where(VendorProfileRow.status == "verified")
+        facet_rows = (await self._session.execute(facet_stmt)).all()
+        vendors_map: dict[UUID, str] = {}
+        for _off, product, vendor in facet_rows:
+            vendors_map[vendor.id] = vendor.legal_name
+        vendor_facets = [
+            CatalogVendorFacet(vendor_id=vid, name=name)
+            for vid, name in sorted(vendors_map.items(), key=lambda item: item[1].lower())
+        ]
+
+        stmt = base
         if category:
             stmt = stmt.where(ProductRow.category == category)
         if q:
             stmt = stmt.where(ProductRow.name.ilike(f"%{q.strip()}%"))
-        if vendor_id is not None:
-            stmt = stmt.where(ProductRow.vendor_id == vendor_id)
+        if selected_vendors:
+            stmt = stmt.where(ProductRow.vendor_id.in_(selected_vendors))
         if verified_only:
             stmt = stmt.where(VendorProfileRow.status == "verified")
         if price_min is not None:
             stmt = stmt.where(OfferingRow.price_usd >= price_min)
         if price_max is not None:
             stmt = stmt.where(OfferingRow.price_usd <= price_max)
+
+        fulfilment_modes = {
+            part.strip().lower()
+            for part in (fulfilment or "").split(",")
+            if part.strip()
+        }
+        if fulfilment_modes and fulfilment_modes != {"physical", "digital"}:
+            if fulfilment_modes == {"physical"}:
+                stmt = stmt.where(ProductRow.fulfilment_type.in_(PHYSICAL_FULFILMENT))
+            elif fulfilment_modes == {"digital"}:
+                stmt = stmt.where(ProductRow.fulfilment_type.notin_(PHYSICAL_FULFILMENT))
+
+        pin = (pincode or "").strip()
+        if pin:
+            stmt = stmt.where(
+                (ProductRow.fulfilment_type.notin_(PHYSICAL_FULFILMENT))
+                | exists(
+                    select(ProductServiceCityRow.product_id)
+                    .join(
+                        VendorServiceCityRow,
+                        VendorServiceCityRow.id == ProductServiceCityRow.city_id,
+                    )
+                    .join(
+                        VendorCityPincodeRow,
+                        VendorCityPincodeRow.city_id == VendorServiceCityRow.id,
+                    )
+                    .where(
+                        ProductServiceCityRow.product_id == ProductRow.id,
+                        VendorCityPincodeRow.pincode == pin,
+                    )
+                )
+            )
+
         if sort == "price_asc":
             stmt = stmt.order_by(OfferingRow.price_usd.asc())
         elif sort == "price_desc":
             stmt = stmt.order_by(OfferingRow.price_usd.desc())
         else:
             stmt = stmt.order_by(OfferingRow.created_at.desc())
+
         rows = (await self._session.execute(stmt)).all()
-        return [self._card(offering, product, vendor) for offering, product, vendor in rows]
+        product_ids = list({product.id for _o, product, _v in rows})
+        ratings = await self._rating_map(product_ids)
+        stock = await self._stock_map(product_ids)
+
+        cards: list[CatalogCard] = []
+        for offering, product, vendor in rows:
+            available, reserved = stock.get(product.id, (0, 0))
+            is_physical = product.fulfilment_type in PHYSICAL_FULFILMENT
+            product_in_stock = (not is_physical) or (available > reserved)
+            if in_stock and not product_in_stock:
+                continue
+            avg, count = ratings.get(product.id, (0.0, 0))
+            card = self._card(offering, product, vendor)
+            cards.append(
+                CatalogCard(
+                    offering_id=card.offering_id,
+                    product_id=card.product_id,
+                    product_name=card.product_name,
+                    vendor_name=card.vendor_name,
+                    vendor_id=card.vendor_id,
+                    plan_name=card.plan_name,
+                    price_usd=card.price_usd,
+                    billing_period=card.billing_period,
+                    fulfilment_type=card.fulfilment_type,
+                    category=card.category,
+                    currency=card.currency,
+                    price=card.price,
+                    avg_rating=avg,
+                    review_count=count,
+                    in_stock=product_in_stock,
+                )
+            )
+        return CatalogResult(cards=cards, vendors=vendor_facets)
+
+    async def _rating_map(self, product_ids: list[UUID]) -> dict[UUID, tuple[float, int]]:
+        if not product_ids:
+            return {}
+        rows = (
+            await self._session.execute(
+                select(
+                    ProductReviewRow.product_id,
+                    func.avg(ProductReviewRow.rating),
+                    func.count(ProductReviewRow.id),
+                )
+                .where(ProductReviewRow.product_id.in_(product_ids))
+                .group_by(ProductReviewRow.product_id)
+            )
+        ).all()
+        out: dict[UUID, tuple[float, int]] = {}
+        for product_id, avg, count in rows:
+            out[product_id] = (round(float(avg or 0), 1), int(count or 0))
+        return out
+
+    async def _stock_map(self, product_ids: list[UUID]) -> dict[UUID, tuple[int, int]]:
+        if not product_ids:
+            return {}
+        rows = (
+            await self._session.execute(
+                select(
+                    InventoryRow.product_id,
+                    func.coalesce(func.sum(InventoryRow.available), 0),
+                    func.coalesce(func.sum(InventoryRow.reserved), 0),
+                )
+                .where(InventoryRow.product_id.in_(product_ids))
+                .group_by(InventoryRow.product_id)
+            )
+        ).all()
+        return {
+            product_id: (int(available or 0), int(reserved or 0))
+            for product_id, available, reserved in rows
+        }
+
+    async def list_public_reviews(self, *, product_id: UUID) -> PublicReviewList:
+        product = await self._session.get(ProductRow, product_id)
+        if product is None or product.status != "published":
+            raise NotFoundError("product not found")
+        rows = (
+            await self._session.execute(
+                select(ProductReviewRow, OrderRow, TenantRow, AddressRow)
+                .join(OrderRow, OrderRow.id == ProductReviewRow.order_id)
+                .join(TenantRow, TenantRow.id == ProductReviewRow.tenant_id)
+                .outerjoin(AddressRow, AddressRow.id == OrderRow.address_id)
+                .where(ProductReviewRow.product_id == product_id)
+                .order_by(ProductReviewRow.created_at.desc())
+            )
+        ).all()
+        reviews: list[PublicReview] = []
+        total = 0
+        count = 0
+        for review, _order, tenant, address in rows:
+            name = address.contact_name if address is not None else tenant.name
+            reviews.append(
+                PublicReview(
+                    rating=review.rating,
+                    comment=review.comment,
+                    customer_name=name,
+                    created_at=review.created_at.isoformat() if review.created_at else "",
+                )
+            )
+            total += review.rating
+            count += 1
+        avg = round(total / count, 1) if count else 0.0
+        return PublicReviewList(reviews=reviews, avg_rating=avg, review_count=count)
 
     async def home(self) -> dict[str, list[CatalogCard]]:
-        cards = await self.catalog(
+        result = await self.catalog(
             category=None,
             q=None,
             vendor_id=None,
@@ -1545,6 +1742,7 @@ class CatalogService:
             price_max=None,
             sort="newest",
         )
+        cards = result.cards
         return {"new": cards[:8], "trending": cards[:12], "sponsored": []}
 
     async def product_detail(self, *, product_id: UUID) -> ProductDetail:

@@ -56,6 +56,8 @@ class CartLineView:
     unit_price: float
     fulfilment_type: str
     billing_period: str
+    vendor_id: UUID
+    vendor_name: str
     currency: str = "INR"
 
 
@@ -86,6 +88,13 @@ class OrderPlaced:
 
 
 @dataclass(frozen=True, slots=True)
+class OrderVendorSummary:
+    vendor_id: UUID
+    vendor_name: str
+    status: str
+
+
+@dataclass(frozen=True, slots=True)
 class OrderSummary:
     order_id: UUID
     status: str
@@ -93,6 +102,7 @@ class OrderSummary:
     placed_at: str
     line_count: int
     total: float
+    vendors: list[OrderVendorSummary]
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,12 +125,15 @@ class VendorOrderLine:
     courier: str
     tracking_number: str
     currency: str = "INR"
+    refund_status: str = "none"
+    refund_amount: float | None = None
 
 
 FULFILMENT_TRANSITIONS: dict[str, frozenset[str]] = {
     "placed": frozenset({"confirmed", "cancelled"}),
     "confirmed": frozenset({"processing"}),
-    "processing": frozenset({"ready_to_ship"}),
+    "processing": frozenset({"ready_to_ship", "delayed"}),
+    "delayed": frozenset({"ready_to_ship"}),
     "ready_to_ship": frozenset({"shipped"}),
     "shipped": frozenset({"delivered"}),
 }
@@ -232,7 +245,28 @@ class OrderLineView:
     billing_period: str
     unit_price: float
     status: str
+    vendor_id: UUID
+    vendor_name: str
     currency: str = "INR"
+
+
+@dataclass(frozen=True, slots=True)
+class TimelineStep:
+    label: str
+    at: str
+    done: bool
+
+
+@dataclass(frozen=True, slots=True)
+class OrderVendorSlice:
+    vendor_id: UUID
+    vendor_name: str
+    status: str
+    courier: str
+    tracking_number: str
+    refund_status: str
+    refund_amount: float | None
+    lines: list[OrderLineView]
 
 
 @dataclass(frozen=True, slots=True)
@@ -243,7 +277,10 @@ class OrderDetail:
     address_id: UUID | None
     placed_at: str
     lines: list[OrderLineView]
-    tracking: None
+    vendors: list[OrderVendorSlice]
+    address: AddressView | None
+    timeline: list[TimelineStep]
+    tracking: None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -524,6 +561,7 @@ class CommerceService:
         )
         self._session.add(order)
         await self._session.flush()
+        vendor_ids: set[UUID] = set()
         for line, offering, product in lines:
             self._session.add(
                 OrderLineRow(
@@ -538,6 +576,17 @@ class CommerceService:
                     unit_price=offering.price_usd,
                     currency=getattr(offering, "currency", None) or "INR",
                     status="active",
+                )
+            )
+            vendor_ids.add(product.vendor_id)
+        for vendor_id in vendor_ids:
+            self._session.add(
+                VendorFulfilmentRow(
+                    id=uuid.uuid4(),
+                    order_id=order.id,
+                    vendor_id=vendor_id,
+                    status="placed",
+                    refund_status="none",
                 )
             )
         cart.status = "checked_out"
@@ -573,6 +622,14 @@ class CommerceService:
                 )
             ).scalars().all()
             total = sum(float(line.unit_price) * line.quantity for line in lines)
+            vendor_rows = (
+                await self._session.execute(
+                    select(VendorFulfilmentRow, VendorProfileRow)
+                    .join(VendorProfileRow, VendorProfileRow.id == VendorFulfilmentRow.vendor_id)
+                    .where(VendorFulfilmentRow.order_id == order.id)
+                    .order_by(VendorProfileRow.legal_name.asc())
+                )
+            ).all()
             summaries.append(
                 OrderSummary(
                     order_id=order.id,
@@ -581,6 +638,14 @@ class CommerceService:
                     placed_at=order.created_at.isoformat() if order.created_at else "",
                     line_count=len(lines),
                     total=total,
+                    vendors=[
+                        OrderVendorSummary(
+                            vendor_id=fulfilment.vendor_id,
+                            vendor_name=vendor.legal_name,
+                            status=fulfilment.status,
+                        )
+                        for fulfilment, vendor in vendor_rows
+                    ],
                 )
             )
         return summaries
@@ -635,6 +700,12 @@ class CommerceService:
                 courier=fulfilment.courier if fulfilment is not None else "",
                 tracking_number=fulfilment.tracking_number if fulfilment is not None else "",
                 currency=getattr(line, "currency", None) or "INR",
+                refund_status=fulfilment.refund_status if fulfilment is not None else "none",
+                refund_amount=(
+                    float(fulfilment.refund_amount)
+                    if fulfilment is not None and fulfilment.refund_amount is not None
+                    else None
+                ),
             )
             for line, order, tenant, address, fulfilment in rows
         ]
@@ -687,6 +758,7 @@ class CommerceService:
                 status=status,
                 courier=cleaned_courier if status == "shipped" else "",
                 tracking_number=cleaned_tracking if status == "shipped" else "",
+                refund_status="none",
             )
             self._session.add(current)
         else:
@@ -695,6 +767,21 @@ class CommerceService:
                 current.courier = cleaned_courier
                 current.tracking_number = cleaned_tracking
             current.updated_at = utcnow()
+        vendor_line_total = await self._vendor_line_total(order_id, vendor_id)
+        if status == "cancelled":
+            current.refund_status = "pending"
+            current.refund_amount = Decimal(str(vendor_line_total))
+            await audit(
+                self._session,
+                action="order.vendor_rejected",
+                actor_user_id=caller_user_id,
+                tenant_id=order.tenant_id,
+                payload={
+                    "order_id": str(order_id),
+                    "vendor_id": str(vendor_id),
+                    "refund_amount": vendor_line_total,
+                },
+            )
         await audit(
             self._session,
             action="order.fulfilment_updated",
@@ -706,8 +793,120 @@ class CommerceService:
                 "status": status,
             },
         )
+        await self._rollup_order_status(order_id)
         await self._session.commit()
         return current
+
+    async def issue_vendor_reject_refund(
+        self, *, vendor_id: UUID, order_id: UUID, caller_user_id: UUID
+    ) -> VendorFulfilmentRow:
+        await require_vendor_owner(self._session, vendor_id, caller_user_id)
+        fulfilment = (
+            await self._session.execute(
+                select(VendorFulfilmentRow).where(
+                    VendorFulfilmentRow.order_id == order_id,
+                    VendorFulfilmentRow.vendor_id == vendor_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if fulfilment is None:
+            raise NotFoundError("order not found")
+        if fulfilment.status != "cancelled" or fulfilment.refund_status != "pending":
+            raise ConflictError("refund is not pending for a cancelled vendor slice")
+        order = await self._session.get(OrderRow, order_id)
+        if order is None:
+            raise NotFoundError("order not found")
+        fulfilment.refund_status = "refunded"
+        fulfilment.updated_at = utcnow()
+        await audit(
+            self._session,
+            action="order.vendor_reject_refunded",
+            actor_user_id=caller_user_id,
+            tenant_id=order.tenant_id,
+            payload={
+                "order_id": str(order_id),
+                "vendor_id": str(vendor_id),
+                "refund_amount": (
+                    float(fulfilment.refund_amount) if fulfilment.refund_amount is not None else None
+                ),
+            },
+        )
+        await self._session.commit()
+        return fulfilment
+
+    async def cancel_order(
+        self, *, tenant_id: UUID, order_id: UUID, caller_user_id: UUID
+    ) -> OrderDetail:
+        await self._require_member(tenant_id, caller_user_id)
+        order = await self._session.get(OrderRow, order_id)
+        if order is None or order.tenant_id != tenant_id:
+            raise NotFoundError("order not found")
+        fulfilments = (
+            await self._session.execute(
+                select(VendorFulfilmentRow).where(VendorFulfilmentRow.order_id == order_id)
+            )
+        ).scalars().all()
+        if any(row.status != "placed" for row in fulfilments):
+            raise ConflictError("order can only be cancelled while all vendors are still placed")
+        for fulfilment in fulfilments:
+            total = await self._vendor_line_total(order_id, fulfilment.vendor_id)
+            fulfilment.status = "cancelled"
+            fulfilment.refund_status = "pending"
+            fulfilment.refund_amount = Decimal(str(total))
+            fulfilment.updated_at = utcnow()
+        order.status = "cancelled"
+        await audit(
+            self._session,
+            action="order.cancelled_by_buyer",
+            actor_user_id=caller_user_id,
+            tenant_id=tenant_id,
+            payload={"order_id": str(order_id)},
+        )
+        await self._session.commit()
+        return await self.order_detail(order_id=order_id, caller_user_id=caller_user_id)
+
+    async def _rollup_order_status(self, order_id: UUID) -> None:
+        order = await self._session.get(OrderRow, order_id)
+        if order is None:
+            return
+        statuses = [
+            row.status
+            for row in (
+                await self._session.execute(
+                    select(VendorFulfilmentRow).where(VendorFulfilmentRow.order_id == order_id)
+                )
+            ).scalars().all()
+        ]
+        if not statuses:
+            return
+        all_cancelled = all(status == "cancelled" for status in statuses)
+        all_delivered = all(status == "delivered" for status in statuses)
+        any_cancelled = any(status == "cancelled" for status in statuses)
+        any_delivered = any(status == "delivered" for status in statuses)
+        all_placed = all(status == "placed" for status in statuses)
+        if all_cancelled:
+            order.status = "cancelled"
+        elif all_delivered:
+            order.status = "delivered"
+        elif any_cancelled and any(status != "cancelled" for status in statuses):
+            order.status = "partial"
+        elif any_delivered and any(status != "delivered" for status in statuses):
+            order.status = "partial"
+        elif all_placed:
+            order.status = "placed"
+        else:
+            order.status = "processing"
+
+    async def _vendor_line_total(self, order_id: UUID, vendor_id: UUID) -> float:
+        lines = (
+            await self._session.execute(
+                select(OrderLineRow)
+                .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .where(OrderLineRow.order_id == order_id, ProductRow.vendor_id == vendor_id)
+            )
+        ).scalars().all()
+        return sum(float(line.unit_price) * line.quantity for line in lines)
 
     async def list_vendor_customers(
         self, *, vendor_id: UUID, caller_user_id: UUID
@@ -1088,33 +1287,91 @@ class CommerceService:
         if order is None:
             raise NotFoundError("order not found")
         await self._require_member(order.tenant_id, caller_user_id)
-        lines = (
+        line_rows = (
             await self._session.execute(
-                select(OrderLineRow).where(OrderLineRow.order_id == order.id)
+                select(OrderLineRow, ProductRow, VendorProfileRow)
+                .join(OfferingRow, OfferingRow.id == OrderLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .join(VendorProfileRow, VendorProfileRow.id == ProductRow.vendor_id)
+                .where(OrderLineRow.order_id == order.id)
+                .order_by(OrderLineRow.id.asc())
             )
-        ).scalars().all()
+        ).all()
+        fulfilments = {
+            row.vendor_id: row
+            for row in (
+                await self._session.execute(
+                    select(VendorFulfilmentRow).where(VendorFulfilmentRow.order_id == order.id)
+                )
+            ).scalars().all()
+        }
+        flat_lines: list[OrderLineView] = []
+        by_vendor: dict[UUID, OrderVendorSlice] = {}
+        for line, product, vendor in line_rows:
+            view = OrderLineView(
+                line_id=line.id,
+                offering_id=line.offering_id,
+                product_name=line.product_name,
+                plan_name=line.plan_name,
+                quantity=line.quantity,
+                fulfilment_type=line.fulfilment_type,
+                billing_period=line.billing_period,
+                unit_price=float(line.unit_price),
+                status=line.status,
+                vendor_id=vendor.id,
+                vendor_name=vendor.legal_name,
+                currency=getattr(line, "currency", None) or "INR",
+            )
+            flat_lines.append(view)
+            slice_view = by_vendor.get(vendor.id)
+            if slice_view is None:
+                fulfilment = fulfilments.get(vendor.id)
+                by_vendor[vendor.id] = OrderVendorSlice(
+                    vendor_id=vendor.id,
+                    vendor_name=vendor.legal_name,
+                    status=fulfilment.status if fulfilment is not None else "placed",
+                    courier=fulfilment.courier if fulfilment is not None else "",
+                    tracking_number=fulfilment.tracking_number if fulfilment is not None else "",
+                    refund_status=fulfilment.refund_status if fulfilment is not None else "none",
+                    refund_amount=(
+                        float(fulfilment.refund_amount)
+                        if fulfilment is not None and fulfilment.refund_amount is not None
+                        else None
+                    ),
+                    lines=[view],
+                )
+            else:
+                slice_view.lines.append(view)
+        placed_at = order.created_at.isoformat() if order.created_at else ""
+        timeline: list[TimelineStep] = [
+            TimelineStep(label="Order Placed", at=placed_at, done=True),
+            TimelineStep(label="Payment Confirmed", at=placed_at, done=True),
+        ]
+        if order.status == "cancelled":
+            timeline.append(TimelineStep(label="Cancelled", at=placed_at, done=True))
+        elif order.status == "delivered":
+            timeline.append(TimelineStep(label="Delivered", at=placed_at, done=True))
+        else:
+            beyond_placed = any(fulfilment.status != "placed" for fulfilment in fulfilments.values())
+            timeline.append(
+                TimelineStep(label="Vendor Processing", at=placed_at, done=beyond_placed)
+            )
+        address_view: AddressView | None = None
+        if order.address_id is not None:
+            address_row = await self._session.get(AddressRow, order.address_id)
+            if address_row is not None:
+                address_view = self._address_view(address_row)
         return OrderDetail(
             order_id=order.id,
             status=order.status,
             payment_method=order.payment_method,
             address_id=order.address_id,
-            placed_at=order.created_at.isoformat() if order.created_at else "",
+            placed_at=placed_at,
+            lines=flat_lines,
+            vendors=list(by_vendor.values()),
+            address=address_view,
+            timeline=timeline,
             tracking=None,
-            lines=[
-                OrderLineView(
-                    line_id=line.id,
-                    offering_id=line.offering_id,
-                    product_name=line.product_name,
-                    plan_name=line.plan_name,
-                    quantity=line.quantity,
-                    fulfilment_type=line.fulfilment_type,
-                    billing_period=line.billing_period,
-                    unit_price=float(line.unit_price),
-                    status=line.status,
-                    currency=getattr(line, "currency", None) or "INR",
-                )
-                for line in lines
-            ],
         )
 
     async def request_return(
@@ -1130,8 +1387,8 @@ class CommerceService:
         if order is None:
             raise NotFoundError("order not found")
         await self._require_member(order.tenant_id, caller_user_id)
-        if order.status not in ("placed", "fulfilled"):
-            raise ValidationError("order is not placed or fulfilled")
+        if order.status not in ("placed", "fulfilled", "partial", "processing", "delivered"):
+            raise ValidationError("order cannot accept a return in its current status")
         line = await self._session.get(OrderLineRow, line_id)
         if line is None or line.order_id != order.id:
             raise NotFoundError("order line not found")
@@ -1399,6 +1656,16 @@ class CommerceService:
         return [(line, offering, product) for line, offering, product in rows]
 
     async def _cart_lines(self, cart_id: UUID) -> list[CartLineView]:
+        rows = (
+            await self._session.execute(
+                select(CartLineRow, OfferingRow, ProductRow, VendorProfileRow)
+                .join(OfferingRow, OfferingRow.id == CartLineRow.offering_id)
+                .join(ProductRow, ProductRow.id == OfferingRow.product_id)
+                .join(VendorProfileRow, VendorProfileRow.id == ProductRow.vendor_id)
+                .where(CartLineRow.cart_id == cart_id)
+                .order_by(CartLineRow.created_at.asc())
+            )
+        ).all()
         return [
             CartLineView(
                 line_id=line.id,
@@ -1410,9 +1677,11 @@ class CommerceService:
                 unit_price=float(offering.price_usd),
                 fulfilment_type=product.fulfilment_type,
                 billing_period=offering.billing_period,
+                vendor_id=vendor.id,
+                vendor_name=vendor.legal_name,
                 currency=getattr(offering, "currency", None) or "INR",
             )
-            for line, offering, product in await self._cart_line_rows(cart_id)
+            for line, offering, product, vendor in rows
         ]
 
     async def _line_on_cart(self, cart: CartRow | None, line_id: UUID) -> CartLineRow:

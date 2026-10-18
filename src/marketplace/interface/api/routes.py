@@ -13,8 +13,10 @@ from identity.interface.api.dependencies import CurrentAuthDep, get_session
 from marketplace.application.catalog_service import CatalogService
 from marketplace.application.plugin_service import PluginService
 from marketplace.interface.api.schemas import (
+    CatalogFacets,
     CatalogItem,
     CatalogResponse,
+    CatalogVendorFacet,
     CreateOfferingRequest,
     CreateProductRequest,
     CreateStandardPluginRequest,
@@ -37,6 +39,8 @@ from marketplace.interface.api.schemas import (
     ProductDetailResponse,
     ProductListResponse,
     ProductResponse,
+    PublicProductReviewItem,
+    PublicProductReviewListResponse,
     InventoryAdjustRequest,
     InventoryListResponse,
     InventoryRequest,
@@ -167,6 +171,9 @@ def _card(item) -> CatalogItem:
         billing_period=item.billing_period,
         fulfilment_type=item.fulfilment_type,
         category=item.category,
+        avg_rating=float(getattr(item, "avg_rating", 0) or 0),
+        review_count=int(getattr(item, "review_count", 0) or 0),
+        in_stock=bool(getattr(item, "in_stock", True)),
     )
 
 
@@ -1337,22 +1344,46 @@ async def browse_catalog(
     category: Annotated[str | None, Query()] = None,
     q: Annotated[str | None, Query()] = None,
     vendor_id: Annotated[UUID | None, Query()] = None,
+    vendor_ids: Annotated[str | None, Query()] = None,
     verified_only: Annotated[bool, Query()] = False,
     price_min: Annotated[Decimal | None, Query()] = None,
     price_max: Annotated[Decimal | None, Query()] = None,
     sort: Annotated[str, Query()] = "newest",
+    pincode: Annotated[str | None, Query()] = None,
+    in_stock: Annotated[bool, Query()] = False,
+    fulfilment: Annotated[str | None, Query()] = None,
 ) -> CatalogResponse:
-    cards = await service.catalog(
+    parsed_vendor_ids: list[UUID] = []
+    if vendor_ids:
+        for part in vendor_ids.split(","):
+            part = part.strip()
+            if part:
+                parsed_vendor_ids.append(UUID(part))
+    result = await service.catalog(
         category=category,
         q=q,
         vendor_id=vendor_id,
+        vendor_ids=parsed_vendor_ids or None,
         verified_only=verified_only,
         price_min=price_min,
         price_max=price_max,
         sort=sort,
+        pincode=pincode,
+        in_stock=in_stock,
+        fulfilment=fulfilment,
     )
-    results = [_card(item) for item in cards]
-    return CatalogResponse(results=results, page=1, total=len(results))
+    results = [_card(item) for item in result.cards]
+    return CatalogResponse(
+        results=results,
+        page=1,
+        total=len(results),
+        facets=CatalogFacets(
+            vendors=[
+                CatalogVendorFacet(vendor_id=str(v.vendor_id), name=v.name)
+                for v in result.vendors
+            ]
+        ),
+    )
 
 
 @router.get("/marketplace/home", response_model=HomeResponse)
@@ -1364,6 +1395,30 @@ async def marketplace_home(
     return HomeResponse(
         categories=categories,
         rails={name: [_card(item) for item in cards] for name, cards in rails.items()},
+    )
+
+
+@router.get(
+    "/marketplace/products/{product_id}/reviews",
+    response_model=PublicProductReviewListResponse,
+)
+async def product_public_reviews(
+    product_id: UUID,
+    service: Annotated[CatalogService, Depends(get_catalog_service)],
+) -> PublicProductReviewListResponse:
+    result = await service.list_public_reviews(product_id=product_id)
+    return PublicProductReviewListResponse(
+        reviews=[
+            PublicProductReviewItem(
+                rating=item.rating,
+                comment=item.comment,
+                customer_name=item.customer_name,
+                created_at=item.created_at,
+            )
+            for item in result.reviews
+        ],
+        avg_rating=result.avg_rating,
+        review_count=result.review_count,
     )
 
 
