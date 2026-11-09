@@ -11,7 +11,9 @@ from authz.application.authorization_service import AuthorizationService
 from authz.interface.api.dependencies import get_authorization_service
 from identity.interface.api.dependencies import CurrentAuthDep, get_session
 from marketplace.application.catalog_service import CatalogService
+from marketplace.application.growth_plugins import GrowthPluginService
 from marketplace.application.plugin_service import PluginService
+from marketplace.application.vendor_growth_plugins import VendorGrowthPluginService
 from marketplace.interface.api.schemas import (
     CatalogFacets,
     CatalogItem,
@@ -64,6 +66,31 @@ from marketplace.interface.api.schemas import (
     ReviewDetailResponse,
     ReviewStatsResponse,
     RegisterPluginResponse,
+    GrowthPluginItem,
+    GrowthPluginListResponse,
+    GrowthPluginModule,
+    GrowthPluginSummary,
+    AiDraftRequest,
+    AiDraftResponse,
+    CreateMarketingCampaignRequest,
+    CreatePressReleaseRequest,
+    CreateSalesDealRequest,
+    PressReleaseItem,
+    PublicityBoardResponse,
+    UpdatePressReleaseRequest,
+    CreateSalesFollowUpRequest,
+    MarketingBoardResponse,
+    MarketingCampaignItem,
+    UpdateMarketingCampaignRequest,
+    ImportGrowthPluginRequest,
+    SalesBoardResponse,
+    SalesDealItem,
+    SalesFollowUpItem,
+    UpdateSalesDealRequest,
+    UpdateVendorGrowthPluginRequest,
+    VendorGrowthPluginItem,
+    VendorGrowthPluginListResponse,
+    VendorGrowthModule,
     StandardPluginItem,
     StandardPluginListResponse,
     SubmitVersionRequest,
@@ -74,6 +101,7 @@ from marketplace.interface.api.schemas import (
     VendorStandardPluginListResponse,
     SuspendVendorRequest,
     SuspendVendorResponse,
+    UpdateGrowthPluginRequest,
     UpdateOfferingPriceRequest,
     UpdateProductRequest,
     UpdateStandardPluginRequest,
@@ -109,6 +137,18 @@ def get_catalog_service(
     authorization: Annotated[AuthorizationService, Depends(get_authorization_service)],
 ) -> CatalogService:
     return CatalogService(session, authorization)
+
+
+def get_growth_plugin_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> GrowthPluginService:
+    return GrowthPluginService(session)
+
+
+def get_vendor_growth_plugin_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> VendorGrowthPluginService:
+    return VendorGrowthPluginService(session)
 
 
 def _product(item) -> ProductResponse:
@@ -861,6 +901,362 @@ async def delete_standard_plugin(
 ) -> None:
     user, _session, _credential = auth
     await service.delete_standard_plugin(plugin_id=plugin_id, caller_user_id=user.id)
+
+
+def _growth_plugin_item(view) -> GrowthPluginItem:
+    return GrowthPluginItem(
+        key=view.key,
+        name=view.name,
+        description=view.description,
+        group_label=view.group_label,
+        lifecycle=view.lifecycle,
+        enabled=view.enabled,
+        modules=[GrowthPluginModule(**module) for module in view.modules],
+        config=view.config,
+        stats=view.stats,
+        guarantees=view.guarantees,
+        updated_at=view.updated_at,
+    )
+
+
+@router.get("/admin/growth-plugins", response_model=GrowthPluginListResponse)
+async def list_growth_plugins(
+    auth: CurrentAuthDep,
+    service: Annotated[GrowthPluginService, Depends(get_growth_plugin_service)],
+) -> GrowthPluginListResponse:
+    user, _session, _credential = auth
+    items, summary = await service.list_plugins(caller_user_id=user.id)
+    return GrowthPluginListResponse(
+        items=[_growth_plugin_item(item) for item in items],
+        summary=GrowthPluginSummary(
+            total_plugins=summary.total_plugins,
+            total_modules=summary.total_modules,
+            enabled_plugins=summary.enabled_plugins,
+            vendors_using=summary.vendors_using,
+        ),
+    )
+
+
+@router.patch("/admin/growth-plugins/{plugin_key}", response_model=GrowthPluginItem)
+async def update_growth_plugin(
+    plugin_key: str,
+    body: UpdateGrowthPluginRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[GrowthPluginService, Depends(get_growth_plugin_service)],
+) -> GrowthPluginItem:
+    user, _session, _credential = auth
+    view = await service.update_plugin(
+        plugin_key=plugin_key,
+        caller_user_id=user.id,
+        enabled=body.enabled,
+        modules=[module.model_dump() for module in body.modules] if body.modules is not None else None,
+        config=body.config,
+    )
+    return _growth_plugin_item(view)
+
+
+def _vendor_growth_item(view) -> VendorGrowthPluginItem:
+    return VendorGrowthPluginItem(
+        key=view.key,
+        name=view.name,
+        description=view.description,
+        group_label=view.group_label,
+        lifecycle=view.lifecycle,
+        platform_enabled=view.platform_enabled,
+        rating=view.rating,
+        price_label=view.price_label,
+        vendors_using=view.vendors_using,
+        total_vendors=view.total_vendors,
+        guarantees=view.guarantees,
+        modules=[GrowthPluginModule(**module) for module in view.modules],
+        installation_status=view.installation_status,
+        vendor_modules=[VendorGrowthModule(**module) for module in view.vendor_modules],
+        connection=view.connection,
+        imported_at=view.imported_at,
+        updated_at=view.updated_at,
+    )
+
+
+@router.get(
+    "/vendors/{vendor_id}/growth-plugins", response_model=VendorGrowthPluginListResponse
+)
+async def list_vendor_growth_plugins(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> VendorGrowthPluginListResponse:
+    user, _session, _credential = auth
+    items = await service.list_for_vendor(vendor_id=vendor_id, caller_user_id=user.id)
+    return VendorGrowthPluginListResponse(items=[_vendor_growth_item(item) for item in items])
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/{plugin_key}/import",
+    response_model=VendorGrowthPluginItem,
+)
+async def import_vendor_growth_plugin(
+    vendor_id: UUID,
+    plugin_key: str,
+    body: ImportGrowthPluginRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> VendorGrowthPluginItem:
+    user, _session, _credential = auth
+    view = await service.import_plugin(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        plugin_key=plugin_key,
+        consents=body.consents,
+        connection=body.connection,
+        modules=[module.model_dump() for module in body.modules] if body.modules else None,
+    )
+    return _vendor_growth_item(view)
+
+
+@router.patch(
+    "/vendors/{vendor_id}/growth-plugins/{plugin_key}",
+    response_model=VendorGrowthPluginItem,
+)
+async def update_vendor_growth_plugin(
+    vendor_id: UUID,
+    plugin_key: str,
+    body: UpdateVendorGrowthPluginRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> VendorGrowthPluginItem:
+    user, _session, _credential = auth
+    view = await service.update_installation(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        plugin_key=plugin_key,
+        modules=[module.model_dump() for module in body.modules] if body.modules is not None else None,
+        status=body.status,
+        connection=body.connection,
+    )
+    return _vendor_growth_item(view)
+
+
+@router.get(
+    "/vendors/{vendor_id}/growth-plugins/sales-pipeline/board",
+    response_model=SalesBoardResponse,
+)
+async def vendor_sales_pipeline_board(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> SalesBoardResponse:
+    user, _session, _credential = auth
+    board = await service.sales_board(vendor_id=vendor_id, caller_user_id=user.id)
+    return SalesBoardResponse(
+        stages=board.stages,
+        deals=[SalesDealItem(**deal) for deal in board.deals],
+        followups=[SalesFollowUpItem(**item) for item in board.followups],
+        stats=board.stats,
+        active_modules=board.active_modules,
+        updated_at=board.updated_at,
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/sales-pipeline/deals",
+    response_model=SalesDealItem,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_vendor_sales_deal(
+    vendor_id: UUID,
+    body: CreateSalesDealRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> SalesDealItem:
+    user, _session, _credential = auth
+    deal = await service.create_deal(
+        vendor_id=vendor_id, caller_user_id=user.id, body=body.model_dump()
+    )
+    return SalesDealItem(**deal)
+
+
+@router.patch(
+    "/vendors/{vendor_id}/growth-plugins/sales-pipeline/deals/{deal_id}",
+    response_model=SalesDealItem,
+)
+async def update_vendor_sales_deal(
+    vendor_id: UUID,
+    deal_id: UUID,
+    body: UpdateSalesDealRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> SalesDealItem:
+    user, _session, _credential = auth
+    deal = await service.update_deal(
+        vendor_id=vendor_id, caller_user_id=user.id, deal_id=deal_id, body=body.model_dump()
+    )
+    return SalesDealItem(**deal)
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/sales-pipeline/followups",
+    response_model=SalesFollowUpItem,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_vendor_sales_followup(
+    vendor_id: UUID,
+    body: CreateSalesFollowUpRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> SalesFollowUpItem:
+    user, _session, _credential = auth
+    item = await service.create_followup(
+        vendor_id=vendor_id, caller_user_id=user.id, body=body.model_dump()
+    )
+    return SalesFollowUpItem(**item)
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/sales-pipeline/followups/{followup_id}/complete",
+    response_model=SalesFollowUpItem,
+)
+async def complete_vendor_sales_followup(
+    vendor_id: UUID,
+    followup_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> SalesFollowUpItem:
+    user, _session, _credential = auth
+    item = await service.complete_followup(
+        vendor_id=vendor_id, caller_user_id=user.id, followup_id=followup_id
+    )
+    return SalesFollowUpItem(**item)
+
+
+@router.get(
+    "/vendors/{vendor_id}/growth-plugins/digital-marketing/board",
+    response_model=MarketingBoardResponse,
+)
+async def vendor_digital_marketing_board(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> MarketingBoardResponse:
+    user, _session, _credential = auth
+    board = await service.marketing_board(vendor_id=vendor_id, caller_user_id=user.id)
+    return MarketingBoardResponse(
+        campaigns=[MarketingCampaignItem(**c) for c in board.campaigns],
+        stats=board.stats,
+        race_funnel=board.race_funnel,
+        active_modules=board.active_modules,
+        daily_spend_cap_inr=board.daily_spend_cap_inr,
+        updated_at=board.updated_at,
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/digital-marketing/campaigns",
+    response_model=MarketingCampaignItem,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_vendor_marketing_campaign(
+    vendor_id: UUID,
+    body: CreateMarketingCampaignRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> MarketingCampaignItem:
+    user, _session, _credential = auth
+    campaign = await service.create_campaign(
+        vendor_id=vendor_id, caller_user_id=user.id, body=body.model_dump()
+    )
+    return MarketingCampaignItem(**campaign)
+
+
+@router.patch(
+    "/vendors/{vendor_id}/growth-plugins/digital-marketing/campaigns/{campaign_id}",
+    response_model=MarketingCampaignItem,
+)
+async def update_vendor_marketing_campaign(
+    vendor_id: UUID,
+    campaign_id: UUID,
+    body: UpdateMarketingCampaignRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> MarketingCampaignItem:
+    user, _session, _credential = auth
+    campaign = await service.update_campaign(
+        vendor_id=vendor_id, caller_user_id=user.id, campaign_id=campaign_id, body=body.model_dump()
+    )
+    return MarketingCampaignItem(**campaign)
+
+
+@router.get(
+    "/vendors/{vendor_id}/growth-plugins/publicity/board",
+    response_model=PublicityBoardResponse,
+)
+async def vendor_publicity_board(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> PublicityBoardResponse:
+    user, _session, _credential = auth
+    board = await service.publicity_board(vendor_id=vendor_id, caller_user_id=user.id)
+    return PublicityBoardResponse(
+        releases=[PressReleaseItem(**r) for r in board.releases],
+        stats=board.stats,
+        templates=board.templates,
+        distributions=board.distributions,
+        active_modules=board.active_modules,
+        ai_tokens_per_month=board.ai_tokens_per_month,
+        media_kit_format=board.media_kit_format,
+        updated_at=board.updated_at,
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/publicity/releases",
+    response_model=PressReleaseItem,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_vendor_press_release(
+    vendor_id: UUID,
+    body: CreatePressReleaseRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> PressReleaseItem:
+    user, _session, _credential = auth
+    release = await service.create_release(
+        vendor_id=vendor_id, caller_user_id=user.id, body=body.model_dump()
+    )
+    return PressReleaseItem(**release)
+
+
+@router.patch(
+    "/vendors/{vendor_id}/growth-plugins/publicity/releases/{release_id}",
+    response_model=PressReleaseItem,
+)
+async def update_vendor_press_release(
+    vendor_id: UUID,
+    release_id: UUID,
+    body: UpdatePressReleaseRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> PressReleaseItem:
+    user, _session, _credential = auth
+    release = await service.update_release(
+        vendor_id=vendor_id, caller_user_id=user.id, release_id=release_id, body=body.model_dump()
+    )
+    return PressReleaseItem(**release)
+
+
+@router.post(
+    "/vendors/{vendor_id}/growth-plugins/publicity/ai-draft",
+    response_model=AiDraftResponse,
+)
+async def vendor_publicity_ai_draft(
+    vendor_id: UUID,
+    body: AiDraftRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorGrowthPluginService, Depends(get_vendor_growth_plugin_service)],
+) -> AiDraftResponse:
+    user, _session, _credential = auth
+    draft = await service.ai_draft(vendor_id=vendor_id, caller_user_id=user.id, body=body.model_dump())
+    return AiDraftResponse(**draft)
 
 
 @router.get("/vendors/{vendor_id}/offerings", response_model=OfferingListResponse)

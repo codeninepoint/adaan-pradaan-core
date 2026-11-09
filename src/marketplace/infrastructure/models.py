@@ -472,6 +472,136 @@ class ProductServiceCityRow(Base):
     )
 
 
+class GrowthPluginRow(Base):
+    __tablename__ = "growth_plugins"
+    __table_args__ = {"schema": "marketplace"}
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text, default="")
+    group_label: Mapped[str] = mapped_column(String(32), default="")
+    lifecycle: Mapped[str] = mapped_column(String(16), default="live")
+    enabled: Mapped[bool] = mapped_column(default=True)
+    modules: Mapped[list] = mapped_column(JSONB, default=list)
+    config: Mapped[dict] = mapped_column(JSONB, default=dict)
+    stats: Mapped[dict] = mapped_column(JSONB, default=dict)
+    guarantees: Mapped[list] = mapped_column(JSONB, default=list)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class VendorGrowthPluginRow(Base):
+    __tablename__ = "vendor_growth_plugins"
+    __table_args__ = (
+        UniqueConstraint("vendor_id", "plugin_key", name="uq_vendor_growth_plugins_vendor_key"),
+        {"schema": "marketplace"},
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    plugin_key: Mapped[str] = mapped_column(
+        String(64), ForeignKey("marketplace.growth_plugins.key"), index=True
+    )
+    status: Mapped[str] = mapped_column(String(32), default="active")
+    modules: Mapped[list] = mapped_column(JSONB, default=list)
+    connection: Mapped[dict] = mapped_column(JSONB, default=dict)
+    consents: Mapped[dict] = mapped_column(JSONB, default=dict)
+    imported_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class SalesDealRow(Base):
+    __tablename__ = "sales_deals"
+    __table_args__ = {"schema": "marketplace"}
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    company: Mapped[str] = mapped_column(String(255))
+    contact_name: Mapped[str] = mapped_column(String(255), default="")
+    stage: Mapped[str] = mapped_column(String(64), default="new-lead", index=True)
+    value_inr: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class SalesFollowUpRow(Base):
+    __tablename__ = "sales_followups"
+    __table_args__ = {"schema": "marketplace"}
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    deal_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marketplace.sales_deals.id"), nullable=True, index=True
+    )
+    title: Mapped[str] = mapped_column(String(255))
+    detail: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String(32), default="pending")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class MarketingCampaignRow(Base):
+    __tablename__ = "marketing_campaigns"
+    __table_args__ = {"schema": "marketplace"}
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    channel: Mapped[str] = mapped_column(String(128), default="")
+    spend_inr: Mapped[Decimal] = mapped_column(Numeric(14, 2), default=0)
+    ctr_percent: Mapped[Decimal] = mapped_column(Numeric(6, 2), default=0)
+    conversions: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(32), default="draft")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class PressReleaseRow(Base):
+    __tablename__ = "press_releases"
+    __table_args__ = {"schema": "marketplace"}
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("vendor.profiles.id"), index=True
+    )
+    headline: Mapped[str] = mapped_column(String(512), default="")
+    template: Mapped[str] = mapped_column(String(64), default="product-launch")
+    distribution: Mapped[str] = mapped_column(String(64), default="media-contacts")
+    body: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String(32), default="draft")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class PayoutLedgerRow(Base):
     __tablename__ = "payouts"
     __table_args__ = (

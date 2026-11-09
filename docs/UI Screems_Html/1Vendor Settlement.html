@@ -1,0 +1,394 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><title>Vendor Settlement</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2336;--border:#2a2f45;
+  --fg:#f1f5f9;--fg2:#94a3b8;--fg3:#475569;
+  --tl:#38bdf8;--gl:#34d399;--al:#fbbf24;--rl:#f87171;--vl:#a78bfa;--pl:#fb923c;
+  color-scheme:dark;
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f0f2f7;--card:#fff;--card2:#f7f8fc;--border:#e2e6ef;
+  --fg:#111827;--fg2:#4b5563;--fg3:#9ca3af;color-scheme:light;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--fg);font-size:13px;min-height:100vh;display:flex}
+.sidebar{width:200px;flex-shrink:0;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px 0}
+.logo{padding:0 16px 16px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.logo-name{font-size:13px;font-weight:700}
+.logo-sub{font-size:10px;color:var(--gl);margin-top:1px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;font-size:12px;font-weight:500;color:var(--fg2);transition:.15s;border-left:2px solid transparent}
+.nav-item:hover{background:var(--card2);color:var(--fg)}
+.nav-item.active{background:var(--card2);color:var(--tl);border-left-color:var(--tl)}
+.alert-badge{margin-left:auto;background:#7c1d1d;color:var(--rl);border-radius:20px;font-size:9px;font-weight:700;padding:1px 6px;animation:pulse-bg 1s infinite}
+@keyframes pulse-bg{0%,100%{background:#7c1d1d}50%{background:#b91c1c}}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.topbar-title{font-size:14px;font-weight:700}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.badge-live{background:#1e3a1e;color:var(--gl);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:4px}
+.badge-live::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gl);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.content{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.page{display:none}.page.active{display:contents}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.kpi-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:2px}
+.kpi-lbl{font-size:10px;color:var(--fg3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.kpi-sub{font-size:10.5px;color:var(--fg2);margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px}
+.card-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-title{font-size:12px;font-weight:700}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border);background:var(--card2)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.pill-green{background:#1e3a1e;color:var(--gl)}
+.pill-red{background:#2d1414;color:var(--rl)}
+.pill-amber{background:#2d1f0a;color:var(--al)}
+.pill-blue{background:#1e2d45;color:var(--tl)}
+.btn{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--tl);color:#000}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--fg2)}
+.btn-outline:hover{border-color:var(--fg);color:var(--fg)}
+.mono{font-family:'DM Mono',monospace}
+.field-label{font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+
+/* RETURN ALERT — the star of the show */
+.return-alert{background:#1a0808;border:2px solid var(--rl);border-radius:14px;overflow:hidden;position:relative}
+.return-alert-head{background:#2d0f0f;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.return-timer{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--rl)}
+.return-timer-label{font-size:10px;color:#f87171;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.return-body{padding:16px;display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:start}
+.photo-box{width:120px;height:120px;border-radius:10px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:48px}
+.return-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px;border-top:1px solid #3d1414}
+.btn-accept{background:#166534;color:#86efac;border:none;border-radius:10px;padding:14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.btn-accept:hover{background:#14532d}
+.btn-contest{background:#1a0808;color:var(--rl);border:2px solid var(--rl);border-radius:10px;padding:14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.btn-contest:hover{background:#2d0f0f}
+.btn-accept-sub,.btn-contest-sub{font-size:10px;font-weight:400;opacity:.8}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-row{display:flex;gap:12px;align-items:flex-start;padding:8px 0;position:relative}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.tl-line{position:absolute;left:4px;top:18px;bottom:-8px;width:2px;background:var(--border)}
+.tl-row:last-child .tl-line{display:none}
+
+/* CHAT */
+.chat-bubble{border-radius:10px;padding:8px 12px;max-width:75%;font-size:12px;line-height:1.5}
+.chat-customer{background:#1e2d45;border-radius:10px 10px 10px 2px}
+.chat-vendor{background:var(--card2);border-radius:10px 10px 2px 10px;align-self:flex-end}
+.chat-label{font-size:9px;font-weight:700;margin-bottom:3px}
+
+.progress-ring-wrap{display:flex;align-items:center;justify-content:center}
+</style>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-name">Idli Dosa Co.</div>
+    <div class="logo-sub">● Open · Airoli</div>
+  </div>
+  <div class="nav-item active" onclick="showVPage('earnings')">💰 Live Earnings</div>
+  <div class="nav-item" onclick="showVPage('return-alert')" id="nav-return-alert" style="background:#1a0808;border-left:2px solid var(--rl)">🔴 Return Alert <span class="alert-badge">1</span></div>
+  <div class="nav-item" onclick="showVPage('orders')">📋 Orders</div>
+  <div class="nav-item" onclick="showVPage('history')">📒 Settlement History</div>
+  <div class="nav-item" onclick="showVPage('chat')">💬 Customer Chat</div>
+  <div class="nav-item" onclick="showVPage('bank')">🏦 Bank Account</div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="v-page-title">Live Earnings</div>
+      <div style="font-size:11px;color:var(--fg3)">30 Oct 2026 · Airoli</div>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-live">Live</div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- ═══ LIVE EARNINGS ═══ -->
+    <div class="page active" id="page-earnings">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-val" style="color:var(--gl)">₹2,385</div><div class="kpi-lbl">Settled Today</div><div class="kpi-sub">14 orders · via IMPS</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--al)">₹510</div><div class="kpi-lbl">Pending Window</div><div class="kpi-sub">3 orders out for delivery</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--rl)">₹170</div><div class="kpi-lbl">On Hold</div><div class="kpi-sub">1 return under review</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--tl)">12 min</div><div class="kpi-lbl">Next Transfer</div><div class="kpi-sub">Hourly batch · 16:00</div></div>
+      </div>
+
+      <!-- live order money tracker -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Money Tracker — Active Orders</span><span style="font-size:10.5px;color:var(--fg2);margin-left:auto">Updates every 30 sec</span></div>
+        <table class="tbl">
+          <thead><tr><th>Order</th><th>Items</th><th>Gross</th><th>Your Net</th><th>Status</th><th>Window</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono">#4524</td>
+              <td>Rava Idli × 2, Coffee</td>
+              <td class="mono">₹200</td>
+              <td class="mono" style="color:var(--al)">₹170.40</td>
+              <td><span class="pill pill-amber">Delivered · Window open</span></td>
+              <td class="mono" style="color:var(--rl);font-weight:700" id="win1">18:32 left</td>
+            </tr>
+            <tr>
+              <td class="mono">#4523</td>
+              <td>Masala Dosa, Sambar</td>
+              <td class="mono">₹160</td>
+              <td class="mono" style="color:var(--al)">₹136.32</td>
+              <td><span class="pill pill-amber">Delivered · Window open</span></td>
+              <td class="mono" style="color:var(--al)" id="win2">24:11 left</td>
+            </tr>
+            <tr>
+              <td class="mono">#4521</td>
+              <td>Masala Dosa, Coffee</td>
+              <td class="mono">₹200</td>
+              <td class="mono" style="color:var(--rl)">₹170.40</td>
+              <td><span class="pill pill-red">🔴 Return — On Hold</span></td>
+              <td class="mono" style="color:var(--fg3)">Pending decision</td>
+            </tr>
+            <tr>
+              <td class="mono">#4520</td>
+              <td>Vada × 3, Coffee</td>
+              <td class="mono">₹200</td>
+              <td class="mono" style="color:var(--gl)">₹170.40</td>
+              <td><span class="pill pill-green">✓ Settled · IMPS sent</span></td>
+              <td class="mono" style="color:var(--fg3)">15:10 — done</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- deductions breakdown -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">How Your Settlement Is Calculated — Example Order ₹200</span></div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:0">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Customer paid</span><span class="mono">₹ 200.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Platform commission (10%)</span><span class="mono" style="color:var(--rl)">− ₹ 20.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">GST on commission (18%)</span><span class="mono" style="color:var(--rl)">− ₹  3.60</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Payment gateway fee (2%)</span><span class="mono" style="color:var(--rl)">− ₹  4.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">TDS @ 1% (Sec 194-O)</span><span class="mono" style="color:var(--rl)">− ₹  2.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:700"><span>You receive</span><span class="mono" style="color:var(--gl)">₹ 170.40</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RETURN ALERT ═══ -->
+    <div class="page" id="page-return-alert">
+      <div class="return-alert" id="return-alert-card">
+        <div class="return-alert-head">
+          <div>
+            <div style="font-size:11px;color:var(--rl);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">🔴 Return Request — Respond Now</div>
+            <div style="font-size:10.5px;color:var(--fg2)">Order #4521 · ₹170.40 on hold · Customer: Priya S.</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="return-timer" id="return-timer">4:32</div>
+            <div class="return-timer-label">remaining</div>
+          </div>
+        </div>
+
+        <div class="return-body">
+          <div class="photo-box">🍽️</div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Customer's Complaint</div>
+            <div style="background:#2d1414;border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:10px;color:#fca5a5;line-height:1.6">
+              "Received plain Idli instead of Masala Dosa. Completely wrong item delivered."
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+              <span class="pill pill-red">Wrong Item</span>
+              <span class="pill pill-amber">Refund requested: ₹200</span>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Order Was</div>
+            <div style="font-size:12px;color:var(--fg2)">
+              Masala Dosa ₹120 · Filter Coffee ₹40 · Medu Vada ₹40<br>
+              <span style="font-size:10.5px;color:var(--fg3)">Placed 14:22 · Delivered 14:58 · Return raised 15:04</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:0 16px 14px;font-size:11px;color:var(--al);background:#1a1208;margin:0">
+          ⚠ If you don't respond in time, the return will be <strong>auto-accepted</strong> and ₹170.40 will be deducted.
+        </div>
+
+        <div class="return-actions" id="return-action-btns">
+          <button class="btn-accept" onclick="vendorAccept()">
+            <span style="font-size:20px">✅</span>
+            Yes, Our Mistake
+            <span class="btn-accept-sub">Refund approved. Settlement adjusted.</span>
+          </button>
+          <button class="btn-contest" onclick="vendorContest()">
+            <span style="font-size:20px">❌</span>
+            Contest This
+            <span class="btn-contest-sub">Escalates to platform admin.</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- contest reason box (hidden initially) -->
+      <div id="contest-reason-box" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:none;flex-direction:column;gap:10px">
+        <div class="field-label">Your Reason for Contesting</div>
+        <textarea style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--fg);font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:80px" placeholder="Explain why the customer's claim is incorrect. Platform admin will review your reason alongside the customer's photo."></textarea>
+        <button class="btn btn-primary" style="align-self:flex-end" onclick="submitContest()">Submit Contest →</button>
+      </div>
+    </div>
+
+    <!-- ═══ ORDERS ═══ -->
+    <div class="page" id="page-orders">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Today's Orders</span><span style="font-size:10.5px;color:var(--fg2);margin-left:auto">17 orders total</span></div>
+        <table class="tbl">
+          <thead><tr><th>Order</th><th>Time</th><th>Items</th><th>Amount</th><th>Settlement</th><th>Return</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">#4524</td><td>15:28</td><td>Rava Idli × 2, Coffee</td><td class="mono">₹200</td><td><span class="pill pill-amber">Window open</span></td><td>—</td></tr>
+            <tr><td class="mono">#4521</td><td>14:22</td><td>Masala Dosa, Coffee, Vada</td><td class="mono">₹200</td><td><span class="pill pill-red">On Hold</span></td><td><span class="pill pill-red">Contested</span></td></tr>
+            <tr><td class="mono">#4518</td><td>13:50</td><td>Idli × 3, Vada</td><td class="mono">₹200</td><td><span class="pill" style="background:#2d1414;color:var(--rl)">₹0 — Refund</span></td><td><span class="pill pill-red">Vendor accepted</span></td></tr>
+            <tr><td class="mono">#4512</td><td>13:40</td><td>Rava Idli, Coffee</td><td class="mono">₹160</td><td><span class="pill pill-green">₹136.32 settled</span></td><td>—</td></tr>
+            <tr><td class="mono">#4508</td><td>12:55</td><td>Dosa, Sambar, Coffee</td><td class="mono">₹240</td><td><span class="pill pill-green">₹204.48 settled</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ SETTLEMENT HISTORY ═══ -->
+    <div class="page" id="page-history">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Settlement History</span>
+          <button class="btn btn-outline" style="margin-left:auto;font-size:11px">Download PDF</button>
+        </div>
+        <div style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;border-bottom:1px solid var(--border)">
+          <div><div class="field-label">Oct 2026 Gross</div><div class="mono" style="font-size:15px">₹42,100</div></div>
+          <div><div class="field-label">Total Deductions</div><div class="mono" style="font-size:15px;color:var(--rl)">₹6,234</div></div>
+          <div><div class="field-label">Net Received</div><div class="mono" style="font-size:15px;color:var(--gl)">₹35,866</div></div>
+          <div><div class="field-label">TDS Deducted</div><div class="mono" style="font-size:15px;color:var(--al)">₹421</div></div>
+          <div><div class="field-label">Refund Adjustments</div><div class="mono" style="font-size:15px;color:var(--rl)">₹860</div></div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Date</th><th>Orders</th><th>Gross</th><th>Deductions</th><th>Refund Adj.</th><th>Net Paid</th><th>UTR</th></tr></thead>
+          <tbody>
+            <tr><td>30 Oct</td><td>17</td><td class="mono">₹3,200</td><td class="mono">₹474</td><td class="mono" style="color:var(--rl)">₹340</td><td class="mono" style="color:var(--gl)">₹2,386</td><td class="mono" style="font-size:10px;color:var(--fg3)">In progress</td></tr>
+            <tr><td>29 Oct</td><td>24</td><td class="mono">₹4,800</td><td class="mono">₹710</td><td class="mono" style="color:var(--rl)">₹0</td><td class="mono" style="color:var(--gl)">₹4,090</td><td class="mono" style="font-size:10px">RAZR2610291622</td></tr>
+            <tr><td>28 Oct</td><td>19</td><td class="mono">₹3,800</td><td class="mono">₹562</td><td class="mono" style="color:var(--rl)">₹200</td><td class="mono" style="color:var(--gl)">₹3,038</td><td class="mono" style="font-size:10px">RAZR2610281847</td></tr>
+            <tr><td>27 Oct</td><td>31</td><td class="mono">₹6,200</td><td class="mono">₹918</td><td class="mono" style="color:var(--rl)">₹0</td><td class="mono" style="color:var(--gl)">₹5,282</td><td class="mono" style="font-size:10px">RAZR2610271209</td></tr>
+          </tbody>
+        </table>
+        <div style="padding:10px 14px;background:var(--card2);font-size:11px;color:var(--fg3)">TDS certificate (Form 16A) available for download quarterly · Next: Jan 2027</div>
+      </div>
+    </div>
+
+    <!-- ═══ CHAT ═══ -->
+    <div class="page" id="page-chat">
+      <div style="background:#0d1929;border:1px solid #1e3a5f;border-radius:8px;padding:10px 14px;font-size:11.5px;color:#7dd3fc;margin-bottom:4px">
+        ℹ All customer messages are through this platform chat only. Sharing personal contact details is a policy violation.
+      </div>
+      <div class="card" style="flex:1;display:flex;flex-direction:column">
+        <div class="card-head" style="align-items:center">
+          <div style="width:28px;height:28px;border-radius:50%;background:#1e2d45;display:flex;align-items:center;justify-content:center;font-size:13px">👤</div>
+          <div><div style="font-size:12px;font-weight:600">Priya S.</div><div style="font-size:10px;color:var(--fg3)">Order #4521 · Locked after return</div></div>
+          <span style="margin-left:auto;font-size:10px;color:var(--rl);font-weight:700">🔒 Chat locked — return open</span>
+        </div>
+        <div style="flex:1;padding:14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:300px">
+          <div style="font-size:10px;color:var(--fg3);text-align:center">14:22 · Order #4521 placed</div>
+          <div class="chat-bubble chat-customer"><div class="chat-label" style="color:var(--tl)">Priya S.</div>Please add extra sambar if possible</div>
+          <div class="chat-bubble chat-vendor" style="align-self:flex-end"><div class="chat-label" style="color:var(--gl)">You (Idli Dosa Co.)</div>Sure! Extra sambar noted ✓</div>
+          <div style="font-size:10px;color:var(--fg3);text-align:center">14:58 · Delivered</div>
+          <div class="chat-bubble chat-customer"><div class="chat-label" style="color:var(--tl)">Priya S.</div>This is Idli not Masala Dosa! I ordered Masala Dosa</div>
+          <div class="chat-bubble chat-vendor" style="align-self:flex-end"><div class="chat-label" style="color:var(--gl)">You</div>We sent Masala Dosa only, ma'am</div>
+          <div style="font-size:10px;color:var(--rl);text-align:center">⚠ 15:04 · Customer raised return — chat locked for evidence</div>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;opacity:.4">
+          <input style="flex:1;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--fg);font-size:12px" placeholder="Chat locked during return review..." disabled>
+          <button class="btn btn-primary" disabled>Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BANK ═══ -->
+    <div class="page" id="page-bank">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Bank Account — IMPS Settlement</span></div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:11px;color:var(--fg3);margin-bottom:4px">Primary Settlement Account</div>
+              <div style="font-size:15px;font-weight:700">State Bank of India</div>
+              <div class="mono" style="font-size:13px;color:var(--fg2);margin-top:2px">•••• •••• •••• 4521</div>
+              <div style="font-size:11px;color:var(--fg3);margin-top:4px">IFSC: SBIN0001234 · Airoli Branch</div>
+            </div>
+            <span class="pill pill-green">✓ Verified</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--fg2)">Settlement transfers via <strong>IMPS</strong> — instant, 24×7. Each hourly batch creates one transfer. Average credit time: under 30 seconds after batch fires.</div>
+          <button class="btn btn-outline" style="align-self:flex-start">Update Bank Account</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#1e3a1e;color:var(--gl);padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;z-index:200"></div>
+
+<script>
+const vtitles={earnings:'Live Earnings',orders:'Today\'s Orders',history:'Settlement History',chat:'Customer Chat',bank:'Bank Account','return-alert':'⚠ Return Alert'};
+function showVPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('v-page-title').textContent=vtitles[id]||'Vendor';
+}
+
+// return timer countdown
+let rSecs=272;
+setInterval(()=>{
+  rSecs=Math.max(0,rSecs-1);
+  const m=Math.floor(rSecs/60),s=rSecs%60;
+  const el=document.getElementById('return-timer');
+  if(el)el.textContent=m+':'+(s<10?'0':'')+s;
+  if(rSecs===0&&el){el.textContent='0:00';el.style.color='#6b7280';autoTimeout();}
+},1000);
+
+// window timers
+let w1=1112,w2=1451;
+setInterval(()=>{
+  w1=Math.max(0,w1-1);w2=Math.max(0,w2-1);
+  const f=s=>{const m=Math.floor(s/60),sc=s%60;return m+':'+(sc<10?'0':'')+sc+' left'};
+  const e1=document.getElementById('win1'),e2=document.getElementById('win2');
+  if(e1)e1.textContent=f(w1);
+  if(e2)e2.textContent=f(w2);
+},1000);
+
+function vendorAccept(){
+  document.getElementById('return-action-btns').innerHTML='<div style="padding:10px;text-align:center;color:var(--gl);font-weight:700;font-size:13px;grid-column:1/-1">✅ Accepted — customer will be refunded. Settlement adjusted. Thank you for resolving quickly.</div>';
+  document.getElementById('nav-return-alert').style.background='';
+  document.getElementById('nav-return-alert').querySelector('.alert-badge').remove();
+  showToast('Return accepted — ₹170.40 adjusted from settlement');
+}
+
+function vendorContest(){
+  document.getElementById('return-action-btns').style.display='none';
+  const box=document.getElementById('contest-reason-box');
+  box.style.display='flex';
+}
+
+function submitContest(){
+  document.getElementById('contest-reason-box').innerHTML='<div style="color:var(--al);font-weight:700;font-size:12px">⏳ Escalated to platform admin. Decision expected within 5 minutes. You will be notified.</div>';
+  showToast('Contest submitted — admin reviewing now');
+}
+
+function autoTimeout(){
+  document.getElementById('return-alert-card').style.borderColor='var(--fg3)';
+  document.getElementById('return-action-btns').innerHTML='<div style="padding:10px;text-align:center;color:var(--fg3);font-size:12px;grid-column:1/-1">⏰ Time expired — return auto-accepted. ₹170.40 adjusted. Customer refunded.</div>';
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',3000);
+}
+</script>
+
+</body></html>

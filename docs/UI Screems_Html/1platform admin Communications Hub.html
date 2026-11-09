@@ -1,0 +1,989 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Communications Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2336;--border:#2a2f45;
+  --fg:#f1f5f9;--fg2:#94a3b8;--fg3:#475569;
+  --tl:#38bdf8;--gl:#34d399;--al:#fbbf24;--rl:#f87171;--vl:#a78bfa;--pl:#fb923c;
+  color-scheme:dark;
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f0f2f7;--card:#fff;--card2:#f7f8fc;--border:#e2e6ef;
+  --fg:#111827;--fg2:#4b5563;--fg3:#9ca3af;color-scheme:light;
+}}
+:root[data-theme="light"]{--bg:#f0f2f7;--card:#fff;--card2:#f7f8fc;--border:#e2e6ef;--fg:#111827;--fg2:#4b5563;--fg3:#9ca3af;color-scheme:light;}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;}
+
+/* ── SHELL ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:210px;min-width:210px;background:#0a0c14;border-right:1px solid #1a1f30;display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.logo{padding:16px 16px 12px;font-size:15px;font-weight:700;color:var(--tl);border-bottom:1px solid #1a1f30;letter-spacing:-.3px}
+.logo span{color:var(--gl)}
+.logo small{font-size:9px;font-weight:600;color:#334155;display:block;margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+.nav-sec{padding:12px 14px 4px;font-size:9px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:1.4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:1px 8px;border-radius:7px;font-size:12.5px;font-weight:500;color:#64748b;cursor:pointer;transition:.15s;user-select:none}
+.nav-item:hover{background:#131724;color:#94a3b8}
+.nav-item.active{background:#1e2336;color:#f1f5f9}
+.nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.8}
+.nav-badge{margin-left:auto;background:#1e3a1e;color:var(--gl);font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px}
+.nav-badge.warn{background:#2d1f0a;color:var(--al)}
+.nav-badge.info{background:#1e2d45;color:var(--tl)}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:50px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+.topbar-title{font-size:14px;font-weight:600}
+.tb-tag{padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.tag-admin{background:#2d1f0a;color:var(--al);border:1px solid #3d2f0a}
+.tag-vendor{background:#0a1f2d;color:var(--tl);border:1px solid #0a2d45}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-btn{padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--card2);color:var(--fg2);transition:.15s}
+.tb-btn:hover{color:var(--fg);border-color:var(--tl)}
+.tb-btn.primary{background:var(--tl);color:#0a1f2d;border-color:var(--tl)}
+.tb-btn.primary:hover{filter:brightness(1.1)}
+
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:8px 14px;font-size:12.5px;font-weight:600;font-family:inherit;background:none;border:none;color:var(--fg2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
+.tab-btn:hover{color:var(--fg)}
+.tab-btn.active{color:var(--tl);border-bottom-color:var(--tl)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.sec-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.sec-sub{font-size:12px;color:var(--fg2);margin-top:2px}
+.sec-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* ── STAT ROW ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.stat-val{font-size:22px;font-weight:700;letter-spacing:-.5px;font-family:'DM Mono',monospace}
+.stat-lbl{font-size:10.5px;color:var(--fg2);margin-top:2px;font-weight:500}
+.stat-sub{font-size:10px;color:var(--fg3);margin-top:4px}
+.c-tl{color:var(--tl)} .c-gl{color:var(--gl)} .c-al{color:var(--al)} .c-rl{color:var(--rl)} .c-vl{color:var(--vl)} .c-pl{color:var(--pl)}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--card2)}
+.mono{font-family:'DM Mono',monospace;font-size:11.5px}
+
+/* ── STATUS PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.pill-green{background:#1e3a1e;color:var(--gl);border:1px solid #2d5a2d}
+.pill-amber{background:#2d1f0a;color:var(--al);border:1px solid #3d2f0a}
+.pill-red{background:#2d1414;color:var(--rl);border:1px solid #5a2d2d}
+.pill-blue{background:#1e2d45;color:var(--tl);border:1px solid #1e3a5f}
+.pill-purple{background:#2d1f45;color:var(--vl);border:1px solid #3d2f5f}
+.pill-gray{background:#1a1f30;color:var(--fg2);border:1px solid var(--border)}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.card-sm{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:16px}
+
+/* ── CHANNEL ICONS ── */
+.ch-icon{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
+.ch-badge{width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.ch-sms{background:#2d1f0a;color:var(--al)}
+.ch-email{background:#1e2d45;color:var(--tl)}
+.ch-wa{background:#1e3a1e;color:var(--gl)}
+.ch-inapp{background:#2d1f45;color:var(--vl)}
+
+/* ── TEMPLATE CARD ── */
+.tpl-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;transition:.15s;cursor:pointer}
+.tpl-card:hover{border-color:var(--fg3)}
+.tpl-card.selected{border-color:var(--tl);background:#0d1f2e}
+.tpl-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.tpl-body{font-size:11.5px;color:var(--fg2);line-height:1.5;border-left:2px solid var(--border);padding-left:8px;font-family:'DM Mono',monospace}
+.tpl-foot{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+/* ── MODAL / DRAWER ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:22px 24px}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--fg2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.modal-close:hover{color:var(--fg)}
+
+/* ── FORM ELEMENTS ── */
+.form-group{margin-bottom:14px}
+label{display:block;font-size:11px;font-weight:700;color:var(--fg2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--fg);font-family:'DM Sans',sans-serif;font-size:12.5px;padding:8px 10px;outline:none;transition:.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--tl)}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+.form-hint{font-size:10.5px;color:var(--fg3);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.var-highlight{color:var(--al);font-family:'DM Mono',monospace}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:15px;top:30px;bottom:0;width:1px;background:var(--border)}
+.tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;z-index:1}
+.tl-dot-done{background:#1e3a1e;border:1px solid var(--gl)}
+.tl-dot-active{background:#1e2d45;border:1px solid var(--tl)}
+.tl-dot-wait{background:var(--card2);border:1px solid var(--border)}
+.tl-body{flex:1;min-width:0;padding-top:4px}
+.tl-title{font-size:12.5px;font-weight:600}
+.tl-sub{font-size:11.5px;color:var(--fg2);margin-top:2px;line-height:1.4}
+
+/* ── AUDIENCE BUILDER ── */
+.aud-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:20px;font-size:11.5px;font-weight:500;cursor:pointer;transition:.15s;user-select:none}
+.aud-chip:hover,.aud-chip.on{background:#1e2d45;border-color:var(--tl);color:var(--tl)}
+.aud-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+
+/* ── ALERT ── */
+.alert{border-radius:8px;padding:10px 14px;font-size:12px;line-height:1.5;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start}
+.alert-warn{background:#1f1500;border:1px solid #3d2f00;color:#fcd34d}
+.alert-info{background:#0d1f2e;border:1px solid #1e3a5f;color:#7dd3fc}
+.alert-ok{background:#0d1f0d;border:1px solid #1e3a1e;color:#86efac}
+.alert-icon{flex-shrink:0;font-size:14px;margin-top:1px}
+
+/* ── PROGRESS BAR ── */
+.prog-wrap{background:var(--card2);border-radius:4px;height:4px;overflow:hidden;margin-top:6px}
+.prog-bar{height:100%;border-radius:4px}
+
+/* ── DELIVERY CHART ── */
+.funnel-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.funnel-row:last-child{border-bottom:none}
+.funnel-label{width:80px;color:var(--fg2);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.funnel-bar-wrap{flex:1;background:var(--card2);border-radius:4px;height:14px;overflow:hidden}
+.funnel-bar{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:700;color:#fff}
+.funnel-num{width:50px;text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:var(--fg2)}
+
+/* ── SWITCHER ── */
+.view-switcher{display:flex;gap:0;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:20px;width:fit-content}
+.view-btn{padding:6px 16px;border-radius:6px;font-size:11.5px;font-weight:600;font-family:inherit;background:none;border:none;color:var(--fg2);cursor:pointer;transition:.15s}
+.view-btn.active{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+/* ── INFO CHIP ── */
+.info-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;border:1px solid;white-space:nowrap}
+</style>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">Adan<span>Pradan</span><small>Communications Hub</small></div>
+
+  <div class="nav-sec">Platform Admin</div>
+  <div class="nav-item active" onclick="switchView('admin','nav-tpl-lib')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+    Template Library
+    <span class="nav-badge warn">3 Pending</span>
+  </div>
+  <div class="nav-item" onclick="switchView('admin','nav-dlt')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM7 4h2v5H7V4zm0 6h2v2H7v-2z"/></svg>
+    DLT Approvals
+    <span class="nav-badge warn">2</span>
+  </div>
+  <div class="nav-item" onclick="switchView('admin','nav-admin-log')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z"/></svg>
+    Usage Logs
+  </div>
+  <div class="nav-item" onclick="switchView('admin','nav-admin-consent')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L2 4v4c0 3.3 2.6 6.4 6 7.2C11.4 14.4 14 11.3 14 8V4L8 1z"/></svg>
+    Consent & Opt-outs
+  </div>
+
+  <div class="nav-sec">Vendor Portal</div>
+  <div class="nav-item" onclick="switchView('vendor','nav-v-comms')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 2H2C1.4 2 1 2.4 1 3v8c0 .6.4 1 1 1h3l3 3 3-3h3c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1z"/></svg>
+    Communications
+    <span class="nav-badge info">New</span>
+  </div>
+  <div class="nav-item" onclick="switchView('vendor','nav-v-tpl')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v2h8V4H4zm0 4v1h8V8H4zm0 3v1h5v-1H4z"/></svg>
+    Template Library
+  </div>
+  <div class="nav-item" onclick="switchView('vendor','nav-v-compose')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 1.5l1 1-9 9-1.5.5.5-1.5 9-9zM2 12h12v2H2v-2z"/></svg>
+    Compose & Send
+  </div>
+  <div class="nav-item" onclick="switchView('vendor','nav-v-logs')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M8 5v3l2 2"/></svg>
+    Delivery Logs
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Platform Admin — Template Library</div>
+    <span class="tb-tag tag-admin" id="role-tag">Platform Admin</span>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme==='light'?'dark':'light'">☀ / ☾</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══════════════════════════════════════════════
+       ADMIN — TEMPLATE LIBRARY
+  ══════════════════════════════════════════════ -->
+  <div id="nav-tpl-lib" class="view-section active-section">
+    <div class="view-switcher">
+      <button class="view-btn active" onclick="tabSwitch(this,'tl-all')">All Templates</button>
+      <button class="view-btn" onclick="tabSwitch(this,'tl-pending')">Pending Approval <span style="color:var(--al);font-size:10px">(3)</span></button>
+      <button class="view-btn" onclick="tabSwitch(this,'tl-create')">+ Create New</button>
+    </div>
+
+    <!-- TAB: All Templates -->
+    <div id="tl-all" class="tab-pane active-pane">
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-val c-gl">24</div><div class="stat-lbl">Live Templates</div><div class="stat-sub">Across all channels</div></div>
+        <div class="stat-card"><div class="stat-val c-al">3</div><div class="stat-lbl">Pending DLT / Meta</div><div class="stat-sub">Awaiting external approval</div></div>
+        <div class="stat-card"><div class="stat-val c-tl">9</div><div class="stat-lbl">SMS (DLT)</div><div class="stat-sub">Entity: XXXXXXXX</div></div>
+        <div class="stat-card"><div class="stat-val c-gl">7</div><div class="stat-lbl">WhatsApp HSM</div><div class="stat-sub">WABA approved</div></div>
+        <div class="stat-card"><div class="stat-val c-vl">5</div><div class="stat-lbl">Email Templates</div></div>
+        <div class="stat-card"><div class="stat-val c-pl">3</div><div class="stat-lbl">In-App Templates</div></div>
+      </div>
+
+      <div class="sec-hd">
+        <div><div class="sec-title">Master Template Library</div><div class="sec-sub">Platform-owned templates. Vendors pick from these — they cannot create from scratch.</div></div>
+        <div class="sec-actions">
+          <button class="tb-btn primary" onclick="openModal('modal-create-tpl')">+ Create Template</button>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Template Name</th>
+              <th>Channel</th>
+              <th>Plugin</th>
+              <th>Type</th>
+              <th>Approval Status</th>
+              <th>Used by Vendors</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div style="font-weight:600;font-size:12.5px">Promo Code Blast</div><div class="mono" style="font-size:10px;color:var(--fg3)">CRAFTD_PROMO_01</div></td>
+              <td><span class="ch-icon"><span class="ch-badge ch-sms">📱</span> SMS</span></td>
+              <td><span class="pill pill-amber">Sales</span></td>
+              <td><span class="pill pill-purple">Marketing</span></td>
+              <td><span class="pill pill-green"><span class="dot"></span> DLT Approved</span></td>
+              <td>12 vendors</td>
+              <td><button class="tb-btn" onclick="openModal('modal-view-tpl')">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:12.5px">Order Confirmed</div><div class="mono" style="font-size:10px;color:var(--fg3)">CRAFTD_ORDER_01</div></td>
+              <td><span class="ch-icon"><span class="ch-badge ch-sms">📱</span> SMS</span></td>
+              <td><span class="pill pill-amber">Sales</span></td>
+              <td><span class="pill pill-blue">Transactional</span></td>
+              <td><span class="pill pill-green"><span class="dot"></span> DLT Approved</span></td>
+              <td>31 vendors</td>
+              <td><button class="tb-btn">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:12.5px">Campaign Launch</div><div class="mono" style="font-size:10px;color:var(--fg3)">WA_CAM_LAUNCH_01</div></td>
+              <td><span class="ch-icon"><span class="ch-badge ch-wa">💬</span> WhatsApp</span></td>
+              <td><span class="pill pill-blue">Marketing</span></td>
+              <td><span class="pill pill-purple">Marketing</span></td>
+              <td><span class="pill pill-green"><span class="dot"></span> Meta Approved</span></td>
+              <td>8 vendors</td>
+              <td><button class="tb-btn">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:12.5px">Influencer Brief</div><div class="mono" style="font-size:10px;color:var(--fg3)">WA_INF_BRIEF_01</div></td>
+              <td><span class="ch-icon"><span class="ch-badge ch-wa">💬</span> WhatsApp</span></td>
+              <td><span class="pill pill-purple">Publicity</span></td>
+              <td><span class="pill pill-blue">Utility</span></td>
+              <td><span class="pill pill-amber"><span class="dot"></span> Meta Pending</span></td>
+              <td>—</td>
+              <td><button class="tb-btn">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:12.5px">Lead Follow-up</div><div class="mono" style="font-size:10px;color:var(--fg3)">EMAIL_LEAD_FU_01</div></td>
+              <td><span class="ch-icon"><span class="ch-badge ch-email">✉</span> Email</span></td>
+              <td><span class="pill pill-amber">Sales</span></td>
+              <td><span class="pill pill-purple">Marketing</span></td>
+              <td><span class="pill pill-green"><span class="dot"></span> Internal Approved</span></td>
+              <td>19 vendors</td>
+              <td><button class="tb-btn">View</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;font-size:12.5px">Deal Stage Update</div><div class="mono" style="font-size:10px;color:var(--fg3)">INAPP_DEAL_01</div></td>
+              <td><span class="ch-icon"><span class="ch-badge ch-inapp">🔔</span> In-App</span></td>
+              <td><span class="pill pill-amber">Sales</span></td>
+              <td><span class="pill pill-blue">Transactional</span></td>
+              <td><span class="pill pill-green"><span class="dot"></span> Internal Approved</span></td>
+              <td>24 vendors</td>
+              <td><button class="tb-btn">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: Pending Approval -->
+    <div id="tl-pending" class="tab-pane" style="display:none">
+      <div class="alert alert-warn"><span class="alert-icon">⚠</span><div>3 templates are awaiting external regulatory approval. DLT (SMS) templates require TRAI blockchain registration — typically 1–3 business days. WhatsApp HSM templates require Meta review — typically 24–72 hours. Templates in "Pending" state cannot be used by vendors until approved.</div></div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="ch-badge ch-sms">📱</span>
+              <span style="font-weight:600;font-size:13px">Festival Sale Announcement</span>
+              <span class="pill pill-amber"><span class="dot"></span> DLT Pending</span>
+            </div>
+            <div class="tpl-body" style="margin-bottom:8px">Dear <span class="var-highlight">{#var#}</span>, Celebrate <span class="var-highlight">{#var#}</span> with exclusive deals on <span class="var-highlight">{#var#}</span>. Use code <span class="var-highlight">{#var#}</span> for <span class="var-highlight">{#var#}</span>% off. Shop: <span class="var-highlight">{#var#}</span>. Reply STOP to opt out. -CRAFTD</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="pill pill-gray">Promotional</span>
+              <span class="pill pill-amber">Sales Plugin</span>
+              <span class="mono" style="font-size:10px;color:var(--fg3)">Submitted: 24 Oct 2026</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="tb-btn">Track on DLT Portal</button>
+          </div>
+        </div>
+        <!-- DLT tracking timeline -->
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">DLT Registration Progress</div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot tl-dot-done">✓</div>
+              <div class="tl-body"><div class="tl-title">Entity Registration</div><div class="tl-sub">Entity ID XXXXXXXX registered on DLT. Completed Oct 2026.</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-dot-done">✓</div>
+              <div class="tl-body"><div class="tl-title">Sender Header Approved</div><div class="tl-sub">Header CRAFTD approved. All SMS sent from this alphanumeric ID.</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-dot-active">⏳</div>
+              <div class="tl-body"><div class="tl-title c-tl">Template Approval — In Progress</div><div class="tl-sub">Template submitted Oct 24. Avg review: 1–3 days. Expected: Oct 27.</div><div class="prog-wrap" style="margin-top:6px;max-width:200px"><div class="prog-bar" style="width:65%;background:var(--tl)"></div></div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot tl-dot-wait">—</div>
+              <div class="tl-body"><div class="tl-title" style="color:var(--fg3)">Live — Available to Vendors</div><div class="tl-sub">Template unlocked in vendor library after approval.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="ch-badge ch-wa">💬</span>
+          <span style="font-weight:600;font-size:13px">Influencer Campaign Brief</span>
+          <span class="pill pill-amber"><span class="dot"></span> Meta HSM Pending</span>
+        </div>
+        <div class="tpl-body" style="margin-bottom:8px">Hi <span class="var-highlight">{{1}}</span>! 🎉 We'd love to collaborate with you for <span class="var-highlight">{{2}}</span>. Here's what we need: <span class="var-highlight">{{3}}</span>. Deliverables due by <span class="var-highlight">{{4}}</span>. Payout: ₹<span class="var-highlight">{{5}}</span>. Interested?</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="pill pill-gray">Utility HSM</span>
+          <span class="pill pill-purple">Publicity Plugin</span>
+          <span class="mono" style="font-size:10px;color:var(--fg3)">Submitted: 25 Oct 2026</span>
+          <span class="pill pill-amber">+2 Quick Reply Buttons</span>
+        </div>
+        <div class="alert alert-info" style="margin-top:10px;margin-bottom:0">
+          <span class="alert-icon">ℹ</span>
+          <div>Meta reviews typically complete within 24–72 hours. If rejected, Meta will give a reason code — common reasons: variable content too generic, missing fallback for variables, URL not from registered domain.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Create New -->
+    <div id="tl-create" class="tab-pane" style="display:none">
+      <div class="alert alert-info"><span class="alert-icon">ℹ</span><div><strong>Platform Admin only.</strong> Only platform admins create new templates. After creation, SMS/WhatsApp templates go for external approval (DLT / Meta). Email and In-App templates go through internal review. Once approved, the template appears in vendors' library instantly.</div></div>
+      <div class="card">
+        <div class="form-group">
+          <label>Channel *</label>
+          <select id="ch-select" onchange="updateChannelFields()">
+            <option value="">Select channel...</option>
+            <option value="sms">📱 SMS (DLT-registered)</option>
+            <option value="wa">💬 WhatsApp (Meta HSM)</option>
+            <option value="email">✉ Email</option>
+            <option value="inapp">🔔 In-App Notification</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Template Name *</label>
+            <input type="text" placeholder="e.g. Festival Promo SMS">
+          </div>
+          <div class="form-group">
+            <label>Plugin *</label>
+            <select><option>Sales Pipeline</option><option>Digital Marketing</option><option>Publicity</option><option>All Plugins</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type *</label>
+            <select><option>Marketing / Promotional</option><option>Transactional</option><option>Utility</option><option>Service</option></select>
+          </div>
+          <div class="form-group" id="dlt-header-group" style="display:none">
+            <label>DLT Sender Header</label>
+            <input type="text" value="CRAFTD" readonly style="color:var(--fg3)">
+            <div class="form-hint">Fixed. Registered with TRAI.</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Message Body *</label>
+          <textarea id="tpl-body-input" placeholder="Type your message. Use {#var#} for SMS variables, {{1}} {{2}} for WhatsApp HSM variables." oninput="updatePreview()"></textarea>
+          <div class="form-hint">SMS: 160 chars max per message segment. Use {#var#} placeholders for dynamic content. WhatsApp: Use {{1}}, {{2}}... numbered variables.</div>
+        </div>
+        <div id="sms-warning" class="alert alert-warn" style="display:none"><span class="alert-icon">⚠</span><div>SMS Promotional templates cannot contain URLs unless the domain is pre-registered with DLT. Transactional templates can include tracked links. No competitor mentions allowed.</div></div>
+        <div id="wa-buttons-group" class="form-group" style="display:none">
+          <label>WhatsApp Buttons (optional)</label>
+          <select><option>No buttons</option><option>Quick Reply: Interested / Not Now</option><option>CTA: Visit Website + Call Now</option><option>Quick Reply: Yes / No / Maybe</option></select>
+        </div>
+        <div id="tpl-preview" style="display:none;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Live Preview</div>
+          <div id="tpl-preview-body" class="mono" style="font-size:12px;line-height:1.6;color:var(--fg2)"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="tb-btn">Save Draft</button>
+          <button class="tb-btn primary" onclick="alert('Template submitted! DLT/Meta approval initiated. Vendors will see it once approved.')">Submit for Approval →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       ADMIN — DLT APPROVALS SECTION
+  ══════════════════════════════════════════════ -->
+  <div id="nav-dlt" class="view-section" style="display:none">
+    <div class="sec-hd">
+      <div><div class="sec-title">DLT Compliance Center</div><div class="sec-sub">TRAI blockchain registration status for SMS. One entity ID covers all vendors on the platform.</div></div>
+    </div>
+
+    <div class="alert alert-ok"><span class="alert-icon">✓</span><div><strong>Entity Registration: Active.</strong> Entity ID registered on Vodafone/Airtel DLT. Annual renewal due June 2027. ₹5,900+GST paid.</div></div>
+
+    <div class="card-grid">
+      <div class="card-sm">
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Entity Details</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Entity Name</span><span class="mono">ADANPRADAN TECH LLP</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Entity ID</span><span class="mono c-tl">XXXXXXXX</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Registered on</span><span class="mono">Vodafone DLT</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Renewal</span><span class="mono c-gl">Jun 2027</span></div>
+        </div>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Sender Headers</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span class="mono" style="font-size:14px;font-weight:700;color:var(--tl)">CRAFTD</span><span class="pill pill-green">Active</span></div>
+          <div style="color:var(--fg3);font-size:11px">All vendor SMS goes from this header. Recipients see CRAFTD in sender field.</div>
+          <div style="color:var(--fg3);font-size:11px">Custom per-vendor headers: possible, ₹500+GST/header/year extra.</div>
+        </div>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Template Stats</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Total registered</span><span class="mono">9</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Promotional</span><span class="mono">6</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Transactional</span><span class="mono">3</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Pending</span><span class="mono c-al">2</span></div>
+        </div>
+      </div>
+      <div class="card-sm">
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">WhatsApp WABA</div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Business Account</span><span class="pill pill-green">Verified</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">BSP</span><span class="mono">AiSensy</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">HSM Templates</span><span class="mono">7 live, 1 pending</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Free conv/month</span><span class="mono c-gl">1,000</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-hd"><div class="sec-title">Pending DLT Template Registrations</div></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Template</th><th>Type</th><th>DLT Reference</th><th>Submitted</th><th>Expected</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><div style="font-weight:600">Festival Sale Announcement</div></td>
+            <td><span class="pill pill-purple">Promotional</span></td>
+            <td><span class="mono">DLT-2026-10-9281</span></td>
+            <td>24 Oct</td>
+            <td>27 Oct</td>
+            <td><span class="pill pill-amber"><span class="dot"></span> Under Review</span></td>
+            <td><button class="tb-btn">Track</button></td>
+          </tr>
+          <tr>
+            <td><div style="font-weight:600">Wholesale Inquiry Reply</div></td>
+            <td><span class="pill pill-blue">Transactional</span></td>
+            <td><span class="mono">DLT-2026-10-9315</span></td>
+            <td>25 Oct</td>
+            <td>28 Oct</td>
+            <td><span class="pill pill-amber"><span class="dot"></span> Under Review</span></td>
+            <td><button class="tb-btn">Track</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       ADMIN — USAGE LOGS
+  ══════════════════════════════════════════════ -->
+  <div id="nav-admin-log" class="view-section" style="display:none">
+    <div class="sec-hd">
+      <div><div class="sec-title">Platform Usage Logs</div><div class="sec-sub">All messages sent across all vendors, all channels. Full audit trail.</div></div>
+      <div class="sec-actions"><button class="tb-btn">Export CSV</button></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val c-tl">14,820</div><div class="stat-lbl">Messages This Month</div></div>
+      <div class="stat-card"><div class="stat-val c-gl">6,210</div><div class="stat-lbl">SMS Sent</div></div>
+      <div class="stat-card"><div class="stat-val c-gl">4,380</div><div class="stat-lbl">WhatsApp</div></div>
+      <div class="stat-card"><div class="stat-val c-tl">3,190</div><div class="stat-lbl">Email</div></div>
+      <div class="stat-card"><div class="stat-val c-vl">1,040</div><div class="stat-lbl">In-App</div></div>
+      <div class="stat-card"><div class="stat-val c-rl">124</div><div class="stat-lbl">Failed / Opted-out</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Vendor</th><th>Channel</th><th>Template</th><th>Audience</th><th>Sent</th><th>Delivered</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">27 Oct 14:02</td><td>Crafted Roots Co.</td><td><span class="ch-badge ch-wa">💬</span> WhatsApp</td><td>Campaign Launch</td><td>Segment: Diwali</td><td>480</td><td>471</td><td><span class="pill pill-green">Done</span></td></tr>
+          <tr><td class="mono">27 Oct 13:45</td><td>Spice Route Foods</td><td><span class="ch-badge ch-sms">📱</span> SMS</td><td>Promo Code Blast</td><td>Tag: Wholesale</td><td>220</td><td>198</td><td><span class="pill pill-green">Done</span></td></tr>
+          <tr><td class="mono">27 Oct 12:30</td><td>Loom & Fabric</td><td><span class="ch-badge ch-email">✉</span> Email</td><td>Lead Follow-up</td><td>Leads: Oct batch</td><td>85</td><td>81</td><td><span class="pill pill-green">Done</span></td></tr>
+          <tr><td class="mono">27 Oct 11:00</td><td>Crafted Roots Co.</td><td><span class="ch-badge ch-sms">📱</span> SMS</td><td>Order Confirmed</td><td>Buyers: 1-click</td><td>12</td><td>12</td><td><span class="pill pill-green">Done</span></td></tr>
+          <tr><td class="mono">26 Oct 18:20</td><td>Aranya Naturals</td><td><span class="ch-badge ch-inapp">🔔</span> In-App</td><td>Deal Stage Update</td><td>Lead: single</td><td>1</td><td>1</td><td><span class="pill pill-green">Done</span></td></tr>
+          <tr><td class="mono">26 Oct 17:10</td><td>Nomad Leathers</td><td><span class="ch-badge ch-sms">📱</span> SMS</td><td>Festival Sale</td><td>All customers</td><td>340</td><td>—</td><td><span class="pill pill-amber"><span class="dot"></span> DLT Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-warn" style="margin-top:14px"><span class="alert-icon">⚠</span><div>1 vendor (Nomad Leathers) attempted to use a template still awaiting DLT approval. Message queued — will send automatically once template is approved, or vendor can cancel.</div></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       ADMIN — CONSENT & OPT-OUTS
+  ══════════════════════════════════════════════ -->
+  <div id="nav-admin-consent" class="view-section" style="display:none">
+    <div class="sec-hd"><div class="sec-title">Consent & Opt-out Registry</div><div class="sec-sub">Central opt-out table. Enforced automatically across all 4 channels for all vendors.</div></div>
+    <div class="alert alert-ok"><span class="alert-icon">✓</span><div>All send flows automatically suppress opted-out contacts per channel. No vendor can override a contact's opt-out. NDNC/DND scrub runs before every promotional SMS batch.</div></div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val c-rl">342</div><div class="stat-lbl">SMS Opt-outs</div></div>
+      <div class="stat-card"><div class="stat-val c-rl">128</div><div class="stat-lbl">WhatsApp Opt-outs</div></div>
+      <div class="stat-card"><div class="stat-val c-rl">87</div><div class="stat-lbl">Email Unsubs</div></div>
+      <div class="stat-card"><div class="stat-val c-gl">4</div><div class="stat-lbl">DND Scrub Today</div><div class="stat-sub">Numbers scrubbed from batch</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       VENDOR — COMMUNICATIONS HUB
+  ══════════════════════════════════════════════ -->
+  <div id="nav-v-comms" class="view-section" style="display:none">
+    <div class="sec-hd">
+      <div><div class="sec-title">Communications</div><div class="sec-sub">Send messages across all channels — SMS, Email, WhatsApp, In-App — using platform-approved templates.</div></div>
+      <div class="sec-actions"><button class="tb-btn primary" onclick="switchView('vendor','nav-v-compose')">+ Compose Message</button></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val c-tl">1,248</div><div class="stat-lbl">Sent This Month</div></div>
+      <div class="stat-card"><div class="stat-val c-gl">94.2%</div><div class="stat-lbl">Delivery Rate</div></div>
+      <div class="stat-card"><div class="stat-val c-al">3</div><div class="stat-lbl">Active Campaigns</div></div>
+      <div class="stat-card"><div class="stat-val c-vl">18</div><div class="stat-lbl">Templates Available</div></div>
+    </div>
+    <!-- Recent Activity -->
+    <div class="sec-title" style="margin-bottom:12px;font-size:14px">Recent Sends</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>When</th><th>Channel</th><th>Template Used</th><th>Audience</th><th>Sent</th><th>Delivered</th><th>Read / Clicked</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Today 14:02</td><td><span class="ch-badge ch-wa">💬</span></td><td>Campaign Launch</td><td>Diwali Segment</td><td>480</td><td>471 <span style="color:var(--gl);font-size:10px">(98%)</span></td><td>210 <span style="color:var(--tl);font-size:10px">(44%)</span></td><td><button class="tb-btn" onclick="openModal('modal-delivery')">Details</button></td></tr>
+          <tr><td class="mono">Yesterday</td><td><span class="ch-badge ch-sms">📱</span></td><td>Promo Code Blast</td><td>Wholesale leads</td><td>120</td><td>108 <span style="color:var(--gl);font-size:10px">(90%)</span></td><td>—</td><td><button class="tb-btn">Details</button></td></tr>
+          <tr><td class="mono">Oct 25</td><td><span class="ch-badge ch-email">✉</span></td><td>Lead Follow-up</td><td>Oct enquiries</td><td>45</td><td>43 <span style="color:var(--gl);font-size:10px">(95%)</span></td><td>19 <span style="color:var(--tl);font-size:10px">(42%)</span></td><td><button class="tb-btn">Details</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       VENDOR — TEMPLATE LIBRARY (read-only view)
+  ══════════════════════════════════════════════ -->
+  <div id="nav-v-tpl" class="view-section" style="display:none">
+    <div class="sec-hd">
+      <div><div class="sec-title">Available Templates</div><div class="sec-sub">Platform-approved templates you can use. Variables in <span style="color:var(--al)">amber</span> are filled by you at send time.</div></div>
+      <div class="sec-actions">
+        <button class="tb-btn">Request Custom Template</button>
+      </div>
+    </div>
+    <div class="alert alert-info"><span class="alert-icon">ℹ</span><div>Templates are created and approved by the platform admin. SMS and WhatsApp templates are pre-registered with TRAI/Meta — you can use them immediately with no compliance wait. If you need a template that doesn't exist, use "Request Custom Template" and the admin team will get it approved.</div></div>
+
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="aud-chip on" onclick="filterTpl(this,'all')">All (18)</button>
+      <button class="aud-chip" onclick="filterTpl(this,'sms')">📱 SMS (9)</button>
+      <button class="aud-chip" onclick="filterTpl(this,'wa')">💬 WhatsApp (7)</button>
+      <button class="aud-chip" onclick="filterTpl(this,'email')">✉ Email (5)</button>
+      <button class="aud-chip" onclick="filterTpl(this,'inapp')">🔔 In-App (3)</button>
+    </div>
+
+    <div class="card-grid" id="vendor-tpl-grid">
+      <div class="tpl-card" data-ch="sms" onclick="selectTpl(this)">
+        <div class="tpl-name">Promo Code Blast <span class="pill pill-green" style="font-size:9px;margin-left:4px">DLT ✓</span></div>
+        <div class="tpl-body">Dear <span class="var-highlight">{name}</span>, enjoy <span class="var-highlight">{discount}</span>% off on <span class="var-highlight">{product}</span>! Use code <span class="var-highlight">{code}</span>. Shop: <span class="var-highlight">{link}</span>. Reply STOP to opt out. -CRAFTD</div>
+        <div class="tpl-foot">
+          <span class="ch-badge ch-sms">📱</span><span class="pill pill-amber">Sales</span><span class="pill pill-purple">Marketing</span>
+          <button class="tb-btn" style="margin-left:auto" onclick="event.stopPropagation();switchView('vendor','nav-v-compose')">Use →</button>
+        </div>
+      </div>
+      <div class="tpl-card" data-ch="wa" onclick="selectTpl(this)">
+        <div class="tpl-name">Campaign Launch <span class="pill pill-green" style="font-size:9px;margin-left:4px">Meta ✓</span></div>
+        <div class="tpl-body">Hi <span class="var-highlight">{{name}}</span>! 🎉 <span class="var-highlight">{{brand}}</span> is launching <span class="var-highlight">{{product}}</span>. Exclusive early access for you: <span class="var-highlight">{{link}}</span></div>
+        <div class="tpl-foot">
+          <span class="ch-badge ch-wa">💬</span><span class="pill pill-blue">Marketing</span>
+          <button class="tb-btn" style="margin-left:auto" onclick="event.stopPropagation();switchView('vendor','nav-v-compose')">Use →</button>
+        </div>
+      </div>
+      <div class="tpl-card" data-ch="email" onclick="selectTpl(this)">
+        <div class="tpl-name">Lead Follow-up</div>
+        <div class="tpl-body">Subject: Following up on your enquiry about <span class="var-highlight">{product}</span><br>Hi <span class="var-highlight">{name}</span>, wanted to share more about our <span class="var-highlight">{offer}</span>...</div>
+        <div class="tpl-foot">
+          <span class="ch-badge ch-email">✉</span><span class="pill pill-amber">Sales</span>
+          <button class="tb-btn" style="margin-left:auto" onclick="event.stopPropagation();switchView('vendor','nav-v-compose')">Use →</button>
+        </div>
+      </div>
+      <div class="tpl-card" data-ch="wa" onclick="selectTpl(this)">
+        <div class="tpl-name">Influencer Brief <span class="pill pill-amber" style="font-size:9px;margin-left:4px">Meta Pending</span></div>
+        <div class="tpl-body">Hi <span class="var-highlight">{{name}}</span>! We'd love to collaborate for <span class="var-highlight">{{campaign}}</span>. Deliverables: <span class="var-highlight">{{tasks}}</span>. Due: <span class="var-highlight">{{date}}</span>. Payout: ₹<span class="var-highlight">{{amount}}</span>.</div>
+        <div class="tpl-foot">
+          <span class="ch-badge ch-wa">💬</span><span class="pill pill-purple">Publicity</span>
+          <span style="font-size:10px;color:var(--fg3)">Available after Meta approval</span>
+        </div>
+      </div>
+      <div class="tpl-card" data-ch="inapp" onclick="selectTpl(this)">
+        <div class="tpl-name">Deal Stage Update</div>
+        <div class="tpl-body">Your deal "<span class="var-highlight">{deal_name}</span>" moved to <span class="var-highlight">{stage}</span>. Next step: <span class="var-highlight">{action}</span>.</div>
+        <div class="tpl-foot">
+          <span class="ch-badge ch-inapp">🔔</span><span class="pill pill-amber">Sales</span>
+          <button class="tb-btn" style="margin-left:auto" onclick="event.stopPropagation();switchView('vendor','nav-v-compose')">Use →</button>
+        </div>
+      </div>
+      <div class="tpl-card" data-ch="sms" onclick="selectTpl(this)">
+        <div class="tpl-name">Order Confirmed <span class="pill pill-green" style="font-size:9px;margin-left:4px">DLT ✓</span></div>
+        <div class="tpl-body">Hi <span class="var-highlight">{name}</span>, your order #<span class="var-highlight">{order_id}</span> for <span class="var-highlight">{product}</span> is confirmed. Track: <span class="var-highlight">{link}</span>. -CRAFTD</div>
+        <div class="tpl-foot">
+          <span class="ch-badge ch-sms">📱</span><span class="pill pill-blue">Transactional</span>
+          <button class="tb-btn" style="margin-left:auto" onclick="event.stopPropagation();switchView('vendor','nav-v-compose')">Use →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       VENDOR — COMPOSE & SEND
+  ══════════════════════════════════════════════ -->
+  <div id="nav-v-compose" class="view-section" style="display:none">
+    <div class="sec-hd"><div class="sec-title">Compose & Send</div><div class="sec-sub">Pick a template, choose your audience, send or schedule.</div></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <!-- Left: Compose form -->
+      <div>
+        <div class="card" style="margin-bottom:0">
+          <div class="form-group">
+            <label>Step 1 — Select Channel</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="aud-chip on" style="justify-content:center" onclick="toggleChannel(this,'sms')">📱 SMS</button>
+              <button class="aud-chip" style="justify-content:center" onclick="toggleChannel(this,'wa')">💬 WhatsApp</button>
+              <button class="aud-chip" style="justify-content:center" onclick="toggleChannel(this,'email')">✉ Email</button>
+              <button class="aud-chip" style="justify-content:center" onclick="toggleChannel(this,'inapp')">🔔 In-App</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Step 2 — Pick Template</label>
+            <select>
+              <option>Promo Code Blast — Sales [DLT ✓]</option>
+              <option>Order Confirmed — Sales [DLT ✓]</option>
+              <option>Festival Sale — Pending DLT</option>
+            </select>
+            <div class="form-hint">Only approved templates shown. Pending templates are greyed out.</div>
+          </div>
+          <div class="form-group">
+            <label>Step 3 — Fill Variables</label>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px"><span class="var-highlight" style="width:70px;font-size:11px">{name}</span><input type="text" placeholder="e.g. Priya" style="flex:1"></div>
+              <div style="display:flex;align-items:center;gap:8px"><span class="var-highlight" style="width:70px;font-size:11px">{discount}</span><input type="text" placeholder="e.g. 20" style="flex:1"></div>
+              <div style="display:flex;align-items:center;gap:8px"><span class="var-highlight" style="width:70px;font-size:11px">{product}</span><input type="text" placeholder="e.g. Clay Diyas" style="flex:1"></div>
+              <div style="display:flex;align-items:center;gap:8px"><span class="var-highlight" style="width:70px;font-size:11px">{code}</span><input type="text" placeholder="e.g. DIWALI20" style="flex:1"></div>
+              <div style="display:flex;align-items:center;gap:8px"><span class="var-highlight" style="width:70px;font-size:11px">{link}</span><input type="text" placeholder="e.g. adanpradan.com/cr" style="flex:1"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Step 4 — Choose Audience</label>
+            <div class="aud-chips">
+              <span class="aud-chip on" onclick="this.classList.toggle('on')">Single Contact</span>
+              <span class="aud-chip" onclick="this.classList.toggle('on')">By Tag / Segment</span>
+              <span class="aud-chip" onclick="this.classList.toggle('on')">All Buyers</span>
+              <span class="aud-chip" onclick="this.classList.toggle('on')">New / Uncontacted</span>
+              <span class="aud-chip" onclick="this.classList.toggle('on')">Partner Contacts</span>
+            </div>
+            <input type="text" placeholder="Search contacts or tags...">
+          </div>
+          <div class="form-group">
+            <label>Step 5 — Schedule</label>
+            <div style="display:flex;gap:8px">
+              <button class="aud-chip on">Send Now</button>
+              <button class="aud-chip">Schedule for Later</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button class="tb-btn">Preview</button>
+            <button class="tb-btn primary" onclick="openModal('modal-confirm-send')">Send Message →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Live Preview + Compliance -->
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Message Preview</div>
+          <div style="background:#0d1a0d;border:1px solid #1e3a1e;border-radius:8px;padding:12px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.7;color:#d4fad4;margin-bottom:8px">
+            Dear Priya, enjoy 20% off on Clay Diyas! Use code DIWALI20. Shop: adanpradan.com/cr. Reply STOP to opt out. -CRAFTD
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--fg3)">
+            <span>142 chars · 1 segment</span>
+            <span class="pill pill-green" style="font-size:9px">Within SMS limit</span>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Audience & Compliance Check</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Matched contacts</span><span class="mono c-tl">1</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">DND scrub removed</span><span class="mono c-rl">0</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--fg2)">Opted out (SMS)</span><span class="mono c-rl">0</span></div>
+            <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px"><span style="font-weight:600">Will receive</span><span class="mono c-gl">1</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Compliance Status</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="pill pill-green" style="font-size:9px">✓</span><span>DLT Template Approved</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="pill pill-green" style="font-size:9px">✓</span><span>Sender Header: CRAFTD</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="pill pill-green" style="font-size:9px">✓</span><span>NDNC Scrub: Passed</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="pill pill-green" style="font-size:9px">✓</span><span>Opt-out footer present</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       VENDOR — DELIVERY LOGS
+  ══════════════════════════════════════════════ -->
+  <div id="nav-v-logs" class="view-section" style="display:none">
+    <div class="sec-hd">
+      <div><div class="sec-title">Delivery Logs</div><div class="sec-sub">Full record of every message you sent — delivered, failed, read, replied.</div></div>
+      <div class="sec-actions"><button class="tb-btn">Export</button></div>
+    </div>
+
+    <!-- Funnel for last campaign -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Last Campaign — WhatsApp · Diwali Segment · 27 Oct</div>
+      <div class="funnel-row"><div class="funnel-label">Targeted</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%;background:#334155">500</div></div><div class="funnel-num">500</div></div>
+      <div class="funnel-row"><div class="funnel-label">Sent</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:96%;background:#1d4ed8">480</div></div><div class="funnel-num">480</div></div>
+      <div class="funnel-row"><div class="funnel-label">Delivered</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:94%;background:#0369a1">471</div></div><div class="funnel-num">471</div></div>
+      <div class="funnel-row"><div class="funnel-label">Read</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:44%;background:#0d9488">210</div></div><div class="funnel-num">210</div></div>
+      <div class="funnel-row"><div class="funnel-label">Replied</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:12%;background:#059669">58</div></div><div class="funnel-num">58</div></div>
+      <div class="funnel-row"><div class="funnel-label">Opted Out</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:2%;background:#b91c1c">9</div></div><div class="funnel-num">9</div></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Contact</th><th>Channel</th><th>Template</th><th>Sent</th><th>Delivered</th><th>Read</th><th>Replied</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Priya Sharma</td><td><span class="ch-badge ch-wa">💬</span></td><td>Campaign Launch</td><td class="mono">14:02</td><td class="mono">14:02</td><td class="mono">14:08</td><td class="mono">14:10</td><td><span class="pill pill-green">Replied</span></td></tr>
+          <tr><td>Rahul Verma</td><td><span class="ch-badge ch-wa">💬</span></td><td>Campaign Launch</td><td class="mono">14:02</td><td class="mono">14:03</td><td class="mono">14:45</td><td>—</td><td><span class="pill pill-blue">Read</span></td></tr>
+          <tr><td>Ananya Iyer</td><td><span class="ch-badge ch-wa">💬</span></td><td>Campaign Launch</td><td class="mono">14:02</td><td class="mono">14:02</td><td>—</td><td>—</td><td><span class="pill pill-gray">Delivered</span></td></tr>
+          <tr><td>Sunita Rao</td><td><span class="ch-badge ch-wa">💬</span></td><td>Campaign Launch</td><td class="mono">14:02</td><td>—</td><td>—</td><td>—</td><td><span class="pill pill-red">Not Delivered</span></td></tr>
+          <tr><td>Kavya Nair</td><td><span class="ch-badge ch-sms">📱</span></td><td>Promo Code Blast</td><td class="mono">13:45</td><td class="mono">13:45</td><td>—</td><td>—</td><td><span class="pill pill-green">Delivered</span></td></tr>
+          <tr><td>+2 others</td><td><span class="ch-badge ch-wa">💬</span></td><td>Campaign Launch</td><td class="mono">14:02</td><td class="mono">14:02</td><td>—</td><td>—</td><td><span class="pill pill-red">Opted Out</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+</div><!-- end .app -->
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════ -->
+
+<!-- Create Template Modal -->
+<div class="modal-overlay" id="modal-create-tpl">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">Create New Template (Admin)</div>
+      <button class="modal-close" onclick="closeModal('modal-create-tpl')">✕</button>
+    </div>
+    <div class="alert alert-warn"><span class="alert-icon">⚠</span><div>SMS + WhatsApp templates will be submitted for external approval (DLT / Meta). They will not be available to vendors until approved. Estimated: 24–72 hrs.</div></div>
+    <div class="form-group"><label>Channel</label><select><option>SMS (DLT)</option><option>WhatsApp HSM</option><option>Email</option><option>In-App</option></select></div>
+    <div class="form-group"><label>Template Name</label><input type="text" placeholder="Internal name for this template"></div>
+    <div class="form-group"><label>Message Body</label><textarea placeholder="Use {#var#} for SMS, {{1}} for WhatsApp..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="tb-btn" onclick="closeModal('modal-create-tpl')">Cancel</button>
+      <button class="tb-btn primary">Submit for Approval →</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Template Modal -->
+<div class="modal-overlay" id="modal-view-tpl">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">Promo Code Blast</div>
+      <button class="modal-close" onclick="closeModal('modal-view-tpl')">✕</button>
+    </div>
+    <div class="card-sm" style="margin-bottom:12px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="ch-badge ch-sms">📱</span><span class="pill pill-green">DLT Approved</span><span class="pill pill-purple">Promotional</span>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">DLT Template Body (exact)</div>
+      <div class="mono" style="font-size:12px;line-height:1.7;color:var(--fg2);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px">Dear {#var#}, enjoy {#var#}% off on {#var#}! Use code {#var#}. Shop: {#var#}. Reply STOP to opt out. -CRAFTD</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Vendor Variable Mapping</div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;margin-bottom:12px">
+      <div style="display:flex;gap:8px;align-items:center"><span class="var-highlight">{#var#} 1</span>→<span style="color:var(--fg2)">Customer name</span></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="var-highlight">{#var#} 2</span>→<span style="color:var(--fg2)">Discount percentage</span></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="var-highlight">{#var#} 3</span>→<span style="color:var(--fg2)">Product name</span></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="var-highlight">{#var#} 4</span>→<span style="color:var(--fg2)">Promo code</span></div>
+      <div style="display:flex;gap:8px;align-items:center"><span class="var-highlight">{#var#} 5</span>→<span style="color:var(--fg2)">Short URL (pre-registered domain)</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--fg3);margin-bottom:12px">Used by <strong style="color:var(--fg)">12 vendors</strong> · 3,840 messages sent this month</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="tb-btn" onclick="closeModal('modal-view-tpl')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Send Modal -->
+<div class="modal-overlay" id="modal-confirm-send">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">Confirm Send</div>
+      <button class="modal-close" onclick="closeModal('modal-confirm-send')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Channel</span><span>📱 SMS</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Template</span><span>Promo Code Blast</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Recipients (after DND scrub)</span><span class="c-gl">1</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--fg2)">Estimated cost</span><span>~₹0.25</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--fg2)">Scheduled</span><span>Send Now</span></div>
+    </div>
+    <div class="alert alert-ok"><span class="alert-icon">✓</span><div>All compliance checks passed. DLT template approved. NDNC scrub complete. No opted-out contacts in audience.</div></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="tb-btn" onclick="closeModal('modal-confirm-send')">Cancel</button>
+      <button class="tb-btn primary" onclick="closeModal('modal-confirm-send');alert('Message sent successfully! Track in Delivery Logs.')">Confirm Send →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delivery Details Modal -->
+<div class="modal-overlay" id="modal-delivery">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">Campaign Details — Diwali WhatsApp</div>
+      <button class="modal-close" onclick="closeModal('modal-delivery')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;margin-bottom:14px">
+      <div class="funnel-row"><div class="funnel-label">Sent</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:96%;background:#1d4ed8">480</div></div><div class="funnel-num">480</div></div>
+      <div class="funnel-row"><div class="funnel-label">Delivered</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:94%;background:#0369a1">471</div></div><div class="funnel-num">471</div></div>
+      <div class="funnel-row"><div class="funnel-label">Read</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:44%;background:#0d9488">210</div></div><div class="funnel-num">210</div></div>
+      <div class="funnel-row"><div class="funnel-label">Replied</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:12%;background:#059669">58</div></div><div class="funnel-num">58</div></div>
+    </div>
+    <button class="tb-btn" onclick="closeModal('modal-delivery')">Close</button>
+  </div>
+</div>
+
+<script>
+// ── View & Tab switching ──
+function switchView(role, navId){
+  document.querySelectorAll('.view-section').forEach(s=>s.style.display='none');
+  document.getElementById(navId).style.display='block';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const titles = {
+    'nav-tpl-lib':'Platform Admin — Template Library',
+    'nav-dlt':'Platform Admin — DLT Compliance Center',
+    'nav-admin-log':'Platform Admin — Usage Logs',
+    'nav-admin-consent':'Platform Admin — Consent & Opt-outs',
+    'nav-v-comms':'Vendor — Communications Hub',
+    'nav-v-tpl':'Vendor — Template Library',
+    'nav-v-compose':'Vendor — Compose & Send',
+    'nav-v-logs':'Vendor — Delivery Logs'
+  };
+  document.getElementById('page-title').textContent = titles[navId]||navId;
+  const isAdmin = navId.startsWith('nav-tpl')||navId.startsWith('nav-dlt')||navId.startsWith('nav-admin');
+  const tag = document.getElementById('role-tag');
+  tag.textContent = isAdmin ? 'Platform Admin' : 'Vendor';
+  tag.className = 'tb-tag ' + (isAdmin ? 'tag-admin' : 'tag-vendor');
+}
+
+function tabSwitch(btn, paneId){
+  const wrap = btn.closest('.view-switcher');
+  wrap.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const parent = btn.closest('.view-section')||document.getElementById('nav-tpl-lib');
+  parent.querySelectorAll('.tab-pane').forEach(p=>{p.style.display='none'});
+  document.getElementById(paneId).style.display='block';
+}
+
+// ── Modals ──
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')});
+});
+
+// ── Template preview ──
+function updatePreview(){
+  const body = document.getElementById('tpl-body-input').value;
+  const preview = document.getElementById('tpl-preview');
+  const previewBody = document.getElementById('tpl-preview-body');
+  if(body.trim()){
+    preview.style.display='block';
+    previewBody.innerHTML = body.replace(/\{#var#\}/g,'<span style="color:var(--al)">[variable]</span>').replace(/\{\{(\d+)\}\}/g,'<span style="color:var(--al)">[var $1]</span>');
+  } else {
+    preview.style.display='none';
+  }
+}
+
+function updateChannelFields(){
+  const ch = document.getElementById('ch-select').value;
+  document.getElementById('dlt-header-group').style.display = ch==='sms'?'block':'none';
+  document.getElementById('wa-buttons-group').style.display = ch==='wa'?'block':'none';
+  document.getElementById('sms-warning').style.display = ch==='sms'?'flex':'none';
+}
+
+// ── Template filter ──
+function filterTpl(btn, ch){
+  document.querySelectorAll('.aud-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('#vendor-tpl-grid .tpl-card').forEach(c=>{
+    c.style.display = (ch==='all'||c.dataset.ch===ch)?'block':'none';
+  });
+}
+
+function selectTpl(card){
+  document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+}
+
+function toggleChannel(btn){
+  document.querySelectorAll('.form-group .aud-chip').forEach(c=>{
+    if(c.closest('.form-group')===btn.closest('.form-group')) c.classList.remove('on');
+  });
+  btn.classList.add('on');
+}
+</script>
+
+</body></html>

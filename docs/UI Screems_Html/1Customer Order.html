@@ -1,0 +1,461 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><title>Customer Order</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2336;--border:#2a2f45;
+  --fg:#f1f5f9;--fg2:#94a3b8;--fg3:#475569;
+  --tl:#38bdf8;--gl:#34d399;--al:#fbbf24;--rl:#f87171;--vl:#a78bfa;
+  color-scheme:dark;
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f0f2f7;--card:#fff;--card2:#f7f8fc;--border:#e2e6ef;
+  --fg:#111827;--fg2:#4b5563;--fg3:#9ca3af;color-scheme:light;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--fg);font-size:13px;min-height:100vh;display:flex;flex-direction:column;max-width:420px;margin:0 auto}
+
+/* APP BAR */
+.app-bar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.app-logo{font-size:14px;font-weight:700}
+.app-logo span{color:var(--gl)}
+.back-btn{background:none;border:none;color:var(--fg2);cursor:pointer;font-size:18px;padding:0}
+
+/* BOTTOM NAV */
+.bottom-nav{background:var(--card);border-top:1px solid var(--border);display:flex;position:sticky;bottom:0}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;cursor:pointer;font-size:9px;font-weight:600;color:var(--fg3);gap:3px;transition:.15s}
+.bnav-item.active{color:var(--tl)}
+.bnav-item svg{width:18px;height:18px}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.page{display:none}.page.active{display:contents}
+
+/* ORDER CARD */
+.order-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.order-header{padding:14px;border-bottom:1px solid var(--border)}
+.order-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.order-meta{font-size:11px;color:var(--fg2)}
+
+/* TRACKER */
+.tracker{padding:16px;display:flex;flex-direction:column;gap:0}
+.track-step{display:flex;gap:12px;align-items:flex-start;padding-bottom:16px;position:relative}
+.track-step:last-child{padding-bottom:0}
+.track-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;position:relative;z-index:1}
+.track-dot.done{background:#166534;color:var(--gl)}
+.track-dot.active{background:#1e3a5f;color:var(--tl);box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+.track-dot.pending{background:var(--card2);color:var(--fg3)}
+.track-line{position:absolute;left:10px;top:22px;bottom:0;width:2px;background:var(--border)}
+.track-step.done .track-line{background:var(--gl)}
+.track-step:last-child .track-line{display:none}
+.track-text{font-size:12.5px;font-weight:600;margin-bottom:1px}
+.track-sub{font-size:11px;color:var(--fg2)}
+
+/* RETURN WINDOW */
+.return-window{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.return-window-open{border-color:var(--al)}
+.rw-head{padding:12px 14px;display:flex;align-items:center;gap:10px}
+.rw-timer{font-family:'DM Mono',monospace;font-size:20px;font-weight:700}
+.rw-progress{height:5px;background:var(--card2);border-radius:3px;margin:0 14px 12px;overflow:hidden}
+.rw-bar{height:100%;border-radius:3px;background:var(--al);transition:width 1s linear}
+
+/* RETURN FORM */
+.return-form{background:var(--card);border:1px solid var(--rl);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.category-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cat-btn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:11.5px;font-weight:500;cursor:pointer;text-align:left;color:var(--fg2);transition:.15s}
+.cat-btn.selected{background:#1e2d45;border-color:var(--tl);color:var(--tl)}
+.photo-upload{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.15s}
+.photo-upload:hover{border-color:var(--tl)}
+.photo-uploaded{border:1px solid var(--gl);background:#0d1f0d;border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px}
+.field-input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--fg);font-size:12px;font-family:'DM Sans',sans-serif}
+textarea.field-input{resize:vertical;min-height:70px}
+.field-input:focus{outline:none;border-color:var(--tl)}
+.char-count{font-size:10px;color:var(--fg3);text-align:right;margin-top:2px}
+
+/* REFUND STATUS */
+.refund-status{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.rs-head{padding:14px;background:#0d1f0d;border-bottom:1px solid #1e3a1e}
+
+/* BILL */
+.bill-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.bill-row:last-child{border-bottom:none;font-weight:700;font-size:13.5px}
+
+/* BUTTONS */
+.btn{padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:.15s;width:100%;text-align:center}
+.btn-primary{background:var(--tl);color:#000}
+.btn-danger{background:#b91c1c;color:#fff}
+.btn-outline{background:none;border:2px solid var(--border);color:var(--fg2)}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.pill-green{background:#1e3a1e;color:var(--gl)}
+.pill-red{background:#2d1414;color:var(--rl)}
+.pill-amber{background:#2d1f0a;color:var(--al)}
+
+/* CHAT */
+.chat-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.chat-messages{padding:14px;display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+.bubble{border-radius:12px;padding:8px 12px;max-width:80%;font-size:12px;line-height:1.5}
+.bubble-out{background:#1e2d45;color:var(--fg);border-radius:12px 12px 2px 12px;align-self:flex-end}
+.bubble-in{background:var(--card2);border-radius:12px 12px 12px 2px}
+.bubble-label{font-size:9px;font-weight:700;margin-bottom:3px}
+.chat-input-row{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px}
+.chat-input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:8px 14px;color:var(--fg);font-size:12px;font-family:'DM Sans',sans-serif}
+.chat-input:focus{outline:none;border-color:var(--tl)}
+.send-btn{width:34px;height:34px;border-radius:50%;background:var(--tl);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+.mono{font-family:'DM Mono',monospace}
+.sec-title{font-size:12px;font-weight:700;margin-bottom:8px}
+</style>
+
+<!-- APP BAR -->
+<div class="app-bar">
+  <button class="back-btn" onclick="showCPage('home')">←</button>
+  <div class="app-logo">Adan<span>Pradan</span></div>
+  <div style="margin-left:auto;font-size:12px;color:var(--fg2)">Priya S.</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ═══ HOME PAGE ═══ -->
+  <div class="page active" id="cpage-home">
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">Active Orders</div>
+
+    <!-- Active order card -->
+    <div class="order-card" style="border-color:var(--al)">
+      <div class="order-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="order-title">Order #4521</div>
+            <div class="order-meta">Idli Dosa Co. · Airoli · Placed 14:22</div>
+          </div>
+          <span class="pill pill-amber">⏳ In Return Window</span>
+        </div>
+      </div>
+      <!-- tracker -->
+      <div class="tracker">
+        <div class="track-step done">
+          <div class="track-dot done">✓</div>
+          <div class="track-line"></div>
+          <div><div class="track-text">Order Placed</div><div class="track-sub">14:22 · Payment ₹200 confirmed</div></div>
+        </div>
+        <div class="track-step done">
+          <div class="track-dot done">✓</div>
+          <div class="track-line"></div>
+          <div><div class="track-text">Preparing</div><div class="track-sub">14:30 · Vendor confirmed</div></div>
+        </div>
+        <div class="track-step done">
+          <div class="track-dot done">✓</div>
+          <div class="track-line"></div>
+          <div><div class="track-text">Out for Delivery</div><div class="track-sub">14:50 · On the way</div></div>
+        </div>
+        <div class="track-step active">
+          <div class="track-dot active">🕐</div>
+          <div class="track-line"></div>
+          <div><div class="track-text" style="color:var(--al)">Delivered — Return Window Open</div><div class="track-sub">14:58 · 30-min window closes at 15:28</div></div>
+        </div>
+        <div class="track-step pending">
+          <div class="track-dot pending">○</div>
+          <div><div class="track-text" style="color:var(--fg3)">Order Complete</div><div class="track-sub">After return window closes</div></div>
+        </div>
+      </div>
+      <div style="padding:0 14px 14px;display:flex;gap:8px">
+        <button class="btn btn-danger" style="font-size:12px;padding:9px" onclick="showCPage('return')">Raise a Return</button>
+        <button class="btn btn-outline" style="font-size:12px;padding:9px" onclick="showCPage('chat')">Chat with Vendor</button>
+      </div>
+    </div>
+
+    <!-- Past order -->
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px;margin-top:6px">Past Orders</div>
+    <div class="order-card">
+      <div class="order-header">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="order-title">Order #4510</div>
+            <div class="order-meta">Idli Dosa Co. · 29 Oct · ₹160</div>
+          </div>
+          <span class="pill pill-green">✓ Complete</span>
+        </div>
+      </div>
+      <div style="padding:10px 14px;font-size:12px;color:var(--fg2)">Rava Idli × 2, Filter Coffee — delivered, no issues</div>
+    </div>
+
+    <div class="order-card">
+      <div class="order-header">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="order-title">Order #4498</div>
+            <div class="order-meta">Idli Dosa Co. · 28 Oct · ₹120</div>
+          </div>
+          <span class="pill pill-green">✓ Refunded</span>
+        </div>
+      </div>
+      <div style="padding:10px 14px;font-size:12px;color:var(--fg2)">Masala Dosa — return accepted by vendor. ₹120 refunded to UPI.</div>
+    </div>
+  </div>
+
+  <!-- ═══ RETURN WINDOW PAGE ═══ -->
+  <div class="page" id="cpage-return">
+    <!-- countdown -->
+    <div class="return-window return-window-open">
+      <div class="rw-head">
+        <div>
+          <div style="font-size:11px;color:var(--al);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Return Window</div>
+          <div style="font-size:11px;color:var(--fg2)">Order #4521 · closes at 15:28</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div class="rw-timer" style="color:var(--al)" id="cust-timer">18:34</div>
+          <div style="font-size:9px;color:var(--fg3)">remaining</div>
+        </div>
+      </div>
+      <div class="rw-progress">
+        <div class="rw-bar" id="rw-bar" style="width:62%"></div>
+      </div>
+    </div>
+
+    <!-- bill summary -->
+    <div class="order-card">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700">Your Order — #4521</div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:0">
+        <div class="bill-row"><span>Masala Dosa</span><span class="mono">₹120</span></div>
+        <div class="bill-row"><span>Filter Coffee</span><span class="mono">₹ 40</span></div>
+        <div class="bill-row"><span>Medu Vada</span><span class="mono">₹ 40</span></div>
+        <div class="bill-row" style="padding-top:10px"><span>Total Paid</span><span class="mono">₹200</span></div>
+      </div>
+    </div>
+
+    <!-- return form -->
+    <div class="return-form">
+      <div style="font-size:13px;font-weight:700;color:var(--rl)">Raise a Return</div>
+      <div style="font-size:11px;color:var(--fg3)">Select issue, upload photo, and describe. All fields required.</div>
+
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">What went wrong?</div>
+        <div class="category-grid">
+          <button class="cat-btn selected" id="cat-wrong" onclick="selectCat(this)">❌ Wrong item</button>
+          <button class="cat-btn" id="cat-missing" onclick="selectCat(this)">📦 Missing item</button>
+          <button class="cat-btn" id="cat-quality" onclick="selectCat(this)">🤢 Quality issue</button>
+          <button class="cat-btn" id="cat-quantity" onclick="selectCat(this)">⚖ Short quantity</button>
+          <button class="cat-btn" id="cat-foreign" onclick="selectCat(this)" style="grid-column:1/-1">⚠ Foreign object</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Photo of the item <span style="color:var(--rl)">*</span></div>
+        <div class="photo-upload" id="photo-upload-box" onclick="simulateUpload()">
+          <div style="font-size:24px;margin-bottom:6px">📷</div>
+          <div style="font-size:12px;font-weight:600;color:var(--fg2)">Tap to take photo or upload</div>
+          <div style="font-size:10.5px;color:var(--fg3);margin-top:2px">Mandatory — no photo = return not valid</div>
+        </div>
+        <div id="photo-uploaded-box" style="display:none" class="photo-uploaded">
+          <span style="font-size:24px">🖼</span>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--gl)">Photo uploaded ✓</div>
+            <div style="font-size:10.5px;color:var(--fg3)">item_photo_4521.jpg · 1.2 MB</div>
+          </div>
+          <button onclick="removePhoto()" style="margin-left:auto;background:none;border:none;color:var(--rl);cursor:pointer;font-size:16px">✕</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Describe the issue <span style="color:var(--rl)">*</span></div>
+        <textarea class="field-input" id="return-comment" placeholder="e.g. I ordered Masala Dosa but received plain Idli. The item is completely different." maxlength="300" oninput="updateChar()"></textarea>
+        <div class="char-count" id="char-count">0 / 20 minimum</div>
+      </div>
+
+      <button class="btn btn-danger" onclick="submitReturn()">Submit Return Request</button>
+      <div style="font-size:10.5px;color:var(--fg3);text-align:center">Vendor has 5 minutes to respond. You'll be notified immediately.</div>
+    </div>
+  </div>
+
+  <!-- ═══ RETURN SUBMITTED PAGE ═══ -->
+  <div class="page" id="cpage-return-submitted">
+    <div style="text-align:center;padding:20px 0 10px">
+      <div style="font-size:48px;margin-bottom:12px">📬</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Return Request Submitted</div>
+      <div style="font-size:12px;color:var(--fg2)">Order #4521 · ₹200 at stake</div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700">What happens next</div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1e3a5f;color:var(--tl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+          <div><div style="font-size:12.5px;font-weight:600">Vendor Notified</div><div style="font-size:11px;color:var(--fg2)">Idli Dosa Co. has 5 minutes to accept or contest your return.</div></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1e3a5f;color:var(--tl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+          <div><div style="font-size:12.5px;font-weight:600">If Accepted</div><div style="font-size:11px;color:var(--fg2)">Full refund of ₹200 to your original payment method in 2–5 business days.</div></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:24px;height:24px;border-radius:50%;background:#1e3a5f;color:var(--tl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+          <div><div style="font-size:12.5px;font-weight:600">If Contested</div><div style="font-size:11px;color:var(--fg2)">Platform admin reviews within 5 min. You'll get a notification.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- live status -->
+    <div style="background:var(--card);border:1px solid var(--al);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:28px">⏳</div>
+      <div>
+        <div style="font-size:12.5px;font-weight:700;color:var(--al)">Waiting for vendor response</div>
+        <div style="font-size:11px;color:var(--fg2)" id="vendor-wait-timer">Usually resolves in 2–5 minutes</div>
+      </div>
+    </div>
+
+    <!-- simulate vendor accept -->
+    <button class="btn btn-outline" style="font-size:12px" onclick="simulateVendorAccept()">[ Demo: Simulate Vendor Accepts ]</button>
+  </div>
+
+  <!-- ═══ REFUND APPROVED PAGE ═══ -->
+  <div class="page" id="cpage-refund-approved">
+    <div style="text-align:center;padding:20px 0 10px">
+      <div style="font-size:56px;margin-bottom:12px">✅</div>
+      <div style="font-size:18px;font-weight:700;color:var(--gl);margin-bottom:6px">Refund Approved!</div>
+      <div style="font-size:12px;color:var(--fg2)">Your return was accepted by Idli Dosa Co.</div>
+    </div>
+
+    <div class="refund-status">
+      <div class="rs-head">
+        <div style="font-size:12px;font-weight:700;color:var(--gl)">Refund Details</div>
+      </div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:0">
+        <div class="bill-row"><span style="color:var(--fg2)">Order</span><span class="mono">#4521</span></div>
+        <div class="bill-row"><span style="color:var(--fg2)">Refund amount</span><span class="mono" style="color:var(--gl)">₹200.00</span></div>
+        <div class="bill-row"><span style="color:var(--fg2)">To</span><span>UPI / original method</span></div>
+        <div class="bill-row"><span style="color:var(--fg2)">Expected by</span><span>2–5 business days</span></div>
+        <div class="bill-row"><span style="color:var(--fg2)">Refund reference</span><span class="mono" style="font-size:11px">RFD2610301847</span></div>
+      </div>
+    </div>
+
+    <div style="background:#0d1f0d;border:1px solid #1e3a1e;border-radius:10px;padding:12px 14px;font-size:12px;color:#86efac">
+      ✓ Your complaint has been noted. Vendor has been informed. Thank you for helping us maintain quality.
+    </div>
+
+    <button class="btn btn-outline" onclick="showCPage('home')">Back to Orders</button>
+  </div>
+
+  <!-- ═══ CHAT PAGE ═══ -->
+  <div class="page" id="cpage-chat">
+    <div style="font-size:11px;color:var(--fg3);text-align:center;padding:4px 0 8px">Messages go through AdanPradan. Your number is never shared.</div>
+    <div class="chat-wrap">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#1e3a1e;display:flex;align-items:center;justify-content:center;font-size:13px">🏪</div>
+        <div><div style="font-size:12px;font-weight:600">Idli Dosa Co.</div><div style="font-size:10px;color:var(--fg3)">Order #4521</div></div>
+        <span style="margin-left:auto;font-size:9px;background:#1e3a1e;color:var(--gl);padding:1px 6px;border-radius:8px">Online</span>
+      </div>
+      <div class="chat-messages" id="chat-msgs">
+        <div style="font-size:10px;color:var(--fg3);text-align:center">14:22 · Order placed</div>
+        <div class="bubble bubble-out"><div class="bubble-label" style="color:var(--tl)">You</div>Please add extra sambar if possible</div>
+        <div class="bubble bubble-in"><div class="bubble-label" style="color:var(--gl)">Idli Dosa Co.</div>Sure! Extra sambar noted ✓</div>
+        <div style="font-size:10px;color:var(--fg3);text-align:center">14:58 · Delivered</div>
+        <div class="bubble bubble-out"><div class="bubble-label" style="color:var(--tl)">You</div>This is Idli not Masala Dosa! I ordered Masala Dosa</div>
+        <div class="bubble bubble-in"><div class="bubble-label" style="color:var(--gl)">Idli Dosa Co.</div>We sent Masala Dosa only ma'am</div>
+        <div style="font-size:10px;color:var(--rl);text-align:center">⚠ Return raised — chat locked for evidence</div>
+      </div>
+      <div class="chat-input-row" style="opacity:.4">
+        <input class="chat-input" placeholder="Chat locked during return review..." disabled>
+        <button class="send-btn" disabled>↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ WINDOW CLOSED PAGE ═══ -->
+  <div class="page" id="cpage-window-closed">
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:48px;margin-bottom:12px">🔒</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Return Window Closed</div>
+      <div style="font-size:12px;color:var(--fg2)">Order #4521 · Window expired at 15:28</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:12.5px;color:var(--fg2);line-height:1.7">
+      The 30-minute return window for this food order has closed. Returns are only accepted within 30 minutes of delivery to ensure freshness and fairness.<br><br>
+      If you experienced a serious issue (foreign object, food safety concern), please contact our support team.
+    </div>
+    <button class="btn btn-outline" onclick="showCPage('home')">Back to Orders</button>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bnav-item active" onclick="showCPage('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    Orders
+  </div>
+  <div class="bnav-item" onclick="showCPage('chat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Chat
+  </div>
+  <div class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="1"/></svg>
+    Payments
+  </div>
+  <div class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Account
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1e3a1e;color:var(--gl);padding:10px 18px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;z-index:200;white-space:nowrap"></div>
+
+<script>
+function showCPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('cpage-'+id).classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+}
+
+// customer return window countdown (18:34 remaining = 1114 secs)
+let cSecs=1114,totalSecs=1800;
+setInterval(()=>{
+  cSecs=Math.max(0,cSecs-1);
+  const m=Math.floor(cSecs/60),s=cSecs%60;
+  const el=document.getElementById('cust-timer');
+  if(el)el.textContent=m+':'+(s<10?'0':'')+s;
+  const bar=document.getElementById('rw-bar');
+  if(bar){const pct=Math.round((cSecs/totalSecs)*100);bar.style.width=pct+'%';if(cSecs<300)bar.style.background='var(--rl)';}
+  if(cSecs===0&&el){showCPage('window-closed');}
+},1000);
+
+function selectCat(btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function simulateUpload(){
+  document.getElementById('photo-upload-box').style.display='none';
+  document.getElementById('photo-uploaded-box').style.display='flex';
+}
+function removePhoto(){
+  document.getElementById('photo-upload-box').style.display='block';
+  document.getElementById('photo-uploaded-box').style.display='none';
+}
+function updateChar(){
+  const val=document.getElementById('return-comment').value.length;
+  const el=document.getElementById('char-count');
+  if(el)el.textContent=val+(val>=20?' / 300':' / 20 minimum ('+Math.max(0,20-val)+' more needed)');
+  if(el)el.style.color=val>=20?'var(--gl)':'var(--rl)';
+}
+
+function submitReturn(){
+  const comment=document.getElementById('return-comment').value;
+  const uploaded=document.getElementById('photo-uploaded-box').style.display!=='none';
+  if(!uploaded){showToast('Please upload a photo first');return;}
+  if(comment.length<20){showToast('Please describe the issue (min 20 chars)');return;}
+  showCPage('return-submitted');
+}
+
+function simulateVendorAccept(){
+  setTimeout(()=>{
+    document.getElementById('vendor-wait-timer').textContent='Vendor responded!';
+    setTimeout(()=>showCPage('refund-approved'),800);
+  },1000);
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2800);
+}
+</script>
+
+</body></html>

@@ -217,6 +217,234 @@ class UpdateStandardPluginRequest(BaseModel):
     requirements: list | None = None
 
 
+class GrowthPluginModule(BaseModel):
+    key: str
+    label: str
+    description: str = ""
+    enabled: bool = True
+    badge: str | None = None
+
+
+class GrowthPluginStat(BaseModel):
+    key: str
+    label: str
+    value: str
+
+
+class GrowthPluginItem(BaseModel):
+    key: str
+    name: str
+    description: str = ""
+    group_label: str = ""
+    lifecycle: str = "live"
+    enabled: bool = True
+    modules: list[GrowthPluginModule] = Field(default_factory=list)
+    config: dict = Field(default_factory=dict)
+    stats: dict = Field(default_factory=dict)
+    guarantees: list[str] = Field(default_factory=list)
+    updated_at: str | None = None
+
+
+class GrowthPluginSummary(BaseModel):
+    total_plugins: int
+    total_modules: int
+    enabled_plugins: int
+    vendors_using: int
+
+
+class GrowthPluginListResponse(BaseModel):
+    items: list[GrowthPluginItem]
+    summary: GrowthPluginSummary
+
+
+class UpdateGrowthPluginRequest(BaseModel):
+    enabled: bool | None = None
+    modules: list[GrowthPluginModule] | None = None
+    config: dict | None = None
+
+
+class VendorGrowthModule(BaseModel):
+    key: str
+    label: str
+    description: str = ""
+    badge: str | None = None
+    platform_enabled: bool = True
+    enabled: bool = True
+
+
+class VendorGrowthPluginItem(BaseModel):
+    key: str
+    name: str
+    description: str = ""
+    group_label: str = ""
+    lifecycle: str = "live"
+    platform_enabled: bool = True
+    rating: float = 0
+    price_label: str = "Free"
+    vendors_using: int = 0
+    total_vendors: int = 0
+    guarantees: list[str] = Field(default_factory=list)
+    modules: list[GrowthPluginModule] = Field(default_factory=list)
+    installation_status: str = "not_imported"
+    vendor_modules: list[VendorGrowthModule] = Field(default_factory=list)
+    connection: dict = Field(default_factory=dict)
+    imported_at: str | None = None
+    updated_at: str | None = None
+
+
+class VendorGrowthPluginListResponse(BaseModel):
+    items: list[VendorGrowthPluginItem]
+
+
+class ImportGrowthPluginRequest(BaseModel):
+    consents: dict = Field(default_factory=dict)
+    connection: dict = Field(default_factory=dict)
+    modules: list[GrowthPluginModule] | None = None
+
+
+class UpdateVendorGrowthPluginRequest(BaseModel):
+    modules: list[GrowthPluginModule] | None = None
+    status: str | None = None
+    connection: dict | None = None
+
+
+class SalesDealItem(BaseModel):
+    deal_id: str
+    company: str
+    contact_name: str = ""
+    stage: str
+    value_inr: float = 0
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class SalesFollowUpItem(BaseModel):
+    followup_id: str
+    deal_id: str | None = None
+    title: str
+    detail: str = ""
+    status: str = "pending"
+
+
+class SalesBoardResponse(BaseModel):
+    stages: list[dict] = Field(default_factory=list)
+    deals: list[SalesDealItem] = Field(default_factory=list)
+    followups: list[SalesFollowUpItem] = Field(default_factory=list)
+    stats: dict = Field(default_factory=dict)
+    active_modules: int = 0
+    updated_at: str | None = None
+
+
+class CreateSalesDealRequest(BaseModel):
+    company: str
+    contact_name: str = ""
+    stage: str | None = None
+    value_inr: float = 0
+
+
+class UpdateSalesDealRequest(BaseModel):
+    company: str | None = None
+    contact_name: str | None = None
+    stage: str | None = None
+    value_inr: float | None = None
+
+
+class MarketingCampaignItem(BaseModel):
+    campaign_id: str
+    name: str
+    channel: str = ""
+    spend_inr: float = 0
+    ctr_percent: float = 0
+    conversions: int = 0
+    status: str = "draft"
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class MarketingBoardResponse(BaseModel):
+    campaigns: list[MarketingCampaignItem] = Field(default_factory=list)
+    stats: dict = Field(default_factory=dict)
+    race_funnel: list[dict] = Field(default_factory=list)
+    active_modules: int = 0
+    daily_spend_cap_inr: float = 0
+    updated_at: str | None = None
+
+
+class CreateMarketingCampaignRequest(BaseModel):
+    name: str
+    channel: str = ""
+    spend_inr: float = 0
+    ctr_percent: float = 0
+    conversions: int = 0
+    status: str = "draft"
+
+
+class UpdateMarketingCampaignRequest(BaseModel):
+    name: str | None = None
+    channel: str | None = None
+    spend_inr: float | None = None
+    ctr_percent: float | None = None
+    conversions: int | None = None
+    status: str | None = None
+
+
+class PressReleaseItem(BaseModel):
+    release_id: str
+    headline: str = ""
+    template: str = "product-launch"
+    template_label: str = ""
+    distribution: str = "media-contacts"
+    distribution_label: str = ""
+    body: str = ""
+    status: str = "draft"
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class PublicityBoardResponse(BaseModel):
+    releases: list[PressReleaseItem] = Field(default_factory=list)
+    stats: dict = Field(default_factory=dict)
+    templates: list[dict] = Field(default_factory=list)
+    distributions: list[dict] = Field(default_factory=list)
+    active_modules: int = 0
+    ai_tokens_per_month: int = 0
+    media_kit_format: str = ""
+    updated_at: str | None = None
+
+
+class CreatePressReleaseRequest(BaseModel):
+    headline: str = ""
+    template: str = "product-launch"
+    distribution: str = "media-contacts"
+    body: str = ""
+    status: str = "draft"
+
+
+class UpdatePressReleaseRequest(BaseModel):
+    headline: str | None = None
+    template: str | None = None
+    distribution: str | None = None
+    body: str | None = None
+    status: str | None = None
+
+
+class AiDraftRequest(BaseModel):
+    template: str = "product-launch"
+    topic: str = ""
+
+
+class AiDraftResponse(BaseModel):
+    headline: str
+    body: str
+    template: str
+
+
+class CreateSalesFollowUpRequest(BaseModel):
+    title: str
+    detail: str = ""
+    deal_id: str | None = None
+
+
 class ClaimResponse(BaseModel):
     version_id: str
     claimed_by: str

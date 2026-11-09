@@ -1,0 +1,1072 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vendor Plugin Portal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#0f1117;--card:#181c27;--card2:#1e2336;--border:#2a2f45;
+  --fg:#f1f5f9;--fg2:#94a3b8;--fg3:#475569;
+  --tl:#38bdf8;--gl:#34d399;--al:#fbbf24;--rl:#f87171;--vl:#a78bfa;--pl:#fb923c;
+  color-scheme:dark;
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f0f2f7;--card:#fff;--card2:#f7f8fc;--border:#e2e6ef;
+  --fg:#111827;--fg2:#4b5563;--fg3:#9ca3af;color-scheme:light;
+}}
+:root[data-theme="light"]{--bg:#f0f2f7;--card:#fff;--card2:#f7f8fc;--border:#e2e6ef;--fg:#111827;--fg2:#4b5563;--fg3:#9ca3af;color-scheme:light;}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px));}
+
+/* ── APP SHELL ─────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:212px;min-width:212px;background:#0a0c14;border-right:1px solid #1a1f30;display:flex;flex-direction:column;overflow-y:auto}
+.logo{padding:18px 16px 14px;font-size:16px;font-weight:700;color:var(--tl);border-bottom:1px solid #1a1f30;letter-spacing:-.3px}
+.logo span{color:var(--gl)}
+.vendor-badge{margin:10px 12px;padding:8px 10px;background:#1a1f30;border-radius:8px;border:1px solid #2a2f45}
+.vendor-name{font-size:12px;font-weight:600;color:var(--fg)}
+.vendor-plan{font-size:10px;color:var(--gl);font-weight:600;margin-top:1px}
+.nav-sec{padding:12px 14px 4px;font-size:9px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:1.4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:1px 8px;border-radius:7px;font-size:12.5px;font-weight:500;color:#64748b;cursor:pointer;transition:.15s;user-select:none}
+.nav-item:hover{background:#131724;color:#94a3b8}
+.nav-item.active{background:#1e2336;color:#f1f5f9}
+.nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.8}
+.nav-pip{margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--gl)}
+.nav-count{margin-left:auto;background:#1e3a5f;color:var(--tl);font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:52px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.topbar-title{font-size:14px;font-weight:600}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tb-btn{padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--card2);color:var(--fg2);transition:.15s}
+.tb-btn:hover{color:var(--fg);border-color:var(--tl)}
+.avatar{width:28px;height:28px;border-radius:50%;background:#1e2d45;border:2px solid var(--tl);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--tl)}
+
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ── PAGE SECTIONS ─────────────────── */
+.page{display:none}
+.page.active{display:block}
+
+/* PLUGIN STORE */
+.store-header{margin-bottom:18px}
+.store-title{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.store-sub{font-size:12.5px;color:var(--fg2);margin-top:2px}
+.store-banner{background:linear-gradient(135deg,#0d2139 0%,#0d1a30 60%,#1a0d2e 100%);border:1px solid #1e3a5f;border-radius:12px;padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px}
+.banner-icon{width:44px;height:44px;border-radius:10px;background:#0f3460;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.banner-text h3{font-size:14px;font-weight:700;color:var(--tl)}
+.banner-text p{font-size:12px;color:#7aa7c7;margin-top:2px;line-height:1.5}
+.badge-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.badge-std{background:#1e3a1e;color:var(--gl);border:1px solid #2d5a2d}
+.badge-free{background:#1e2d45;color:var(--tl);border:1px solid #1e3a5f}
+.badge-auto{background:#2d1f45;color:var(--vl);border:1px solid #3d2f5f}
+
+.plugin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.plugin-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s}
+.plugin-card:hover{border-color:var(--fg3)}
+.plugin-card-top{padding:16px 16px 12px}
+.plugin-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.plugin-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.plugin-icon-sp{background:#2d1f0a}
+.plugin-icon-dm{background:#0a1f2d}
+.plugin-icon-pub{background:#1f0a2d}
+.plugin-meta{flex:1;min-width:0}
+.plugin-name{font-size:14px;font-weight:700;letter-spacing:-.2px}
+.plugin-tagline{font-size:11.5px;color:var(--fg2);margin-top:1px}
+.std-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;background:#1e3a1e;border:1px solid #2d5a2d;border-radius:20px;font-size:9.5px;font-weight:700;color:var(--gl);margin-top:4px}
+.plugin-modules{margin-bottom:12px}
+.modules-label{font-size:10px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.module-tags{display:flex;flex-wrap:wrap;gap:4px}
+.mod-tag{padding:2px 7px;background:var(--card2);border:1px solid var(--border);border-radius:20px;font-size:10.5px;color:var(--fg2)}
+.plugin-stats{display:flex;gap:14px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:12px}
+.pstat{text-align:center;flex:1}
+.pstat-val{font-size:14px;font-weight:700}
+.pstat-lbl{font-size:9.5px;color:var(--fg3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.plugin-actions{display:flex;gap:8px}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--tl);color:#0a1929;flex:1}
+.btn-primary:hover{opacity:.9}
+.btn-outline{background:var(--card2);border:1px solid var(--border);color:var(--fg2)}
+.btn-outline:hover{border-color:var(--fg2);color:var(--fg)}
+.btn-gl{background:var(--gl);color:#0a1a0a}
+.btn-al{background:var(--al);color:#1a0a00}
+.btn-vl{background:var(--vl);color:#0a0014}
+.btn.imported{background:#1e3a1e;border:1px solid var(--gl);color:var(--gl);cursor:default;pointer-events:none}
+
+/* ── IMPORT WIZARD ────────────────── */
+.wizard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.2s}
+.wizard-overlay.open{opacity:1;pointer-events:all}
+.wizard-box{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;overflow:hidden;transform:translateY(20px);transition:.2s}
+.wizard-overlay.open .wizard-box{transform:translateY(0)}
+.wiz-head{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.wiz-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.wiz-title{font-size:15px;font-weight:700}
+.wiz-sub{font-size:11.5px;color:var(--fg2);margin-top:1px}
+.wiz-close{margin-left:auto;background:none;border:none;color:var(--fg3);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:4px}
+.wiz-close:hover{color:var(--fg)}
+
+.wiz-progress{padding:16px 20px 0;display:flex;align-items:center;gap:0}
+.wiz-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.wiz-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:60%;width:80%;height:2px;background:var(--border)}
+.wiz-step.done:not(:last-child)::after{background:var(--gl)}
+.wiz-dot{width:22px;height:22px;border-radius:50%;background:var(--card2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--fg3);z-index:1}
+.wiz-step.done .wiz-dot{background:var(--gl);border-color:var(--gl);color:#0a1a0a}
+.wiz-step.active .wiz-dot{background:var(--tl);border-color:var(--tl);color:#0a1929}
+.wiz-step-lbl{font-size:9px;font-weight:600;color:var(--fg3);margin-top:4px;text-align:center;text-transform:uppercase;letter-spacing:.5px}
+.wiz-step.active .wiz-step-lbl{color:var(--tl)}
+.wiz-step.done .wiz-step-lbl{color:var(--gl)}
+
+.wiz-body{padding:20px}
+.wiz-screen{display:none}
+.wiz-screen.active{display:block}
+.policy-block{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.policy-title{font-size:12.5px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.policy-body{font-size:11.5px;color:var(--fg2);line-height:1.6}
+.policy-check{display:flex;align-items:flex-start;gap:8px;margin-top:10px}
+.policy-check input{margin-top:2px;accent-color:var(--tl)}
+.policy-check label{font-size:11.5px;color:var(--fg2)}
+.field-group{margin-bottom:14px}
+.field-label{font-size:11px;font-weight:600;color:var(--fg2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.field-input{width:100%;padding:8px 10px;background:var(--card2);border:1px solid var(--border);border-radius:7px;font-size:12.5px;font-family:inherit;color:var(--fg);outline:none;transition:.15s}
+.field-input:focus{border-color:var(--tl)}
+.module-toggle-list{display:flex;flex-direction:column;gap:8px}
+.mod-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px}
+.mod-toggle-info{flex:1}
+.mod-toggle-name{font-size:12.5px;font-weight:600}
+.mod-toggle-desc{font-size:11px;color:var(--fg2);margin-top:1px}
+.toggle{width:36px;height:20px;border-radius:10px;background:var(--border);position:relative;cursor:pointer;transition:.2s;flex-shrink:0}
+.toggle.on{background:var(--gl)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on::after{left:18px}
+
+.wiz-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.wiz-back{background:none;border:1px solid var(--border);color:var(--fg2);padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:.15s}
+.wiz-back:hover{color:var(--fg)}
+.wiz-next{padding:7px 20px;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:var(--tl);color:#0a1929;transition:.15s}
+.wiz-next:hover{opacity:.9}
+.wiz-next:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── ACTIVE PLUGIN PAGES ──────────── */
+.plugin-page-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.plugin-page-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.plugin-page-title{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.plugin-page-sub{font-size:12px;color:var(--fg2);margin-top:1px}
+.pp-actions{margin-left:auto;display:flex;gap:8px}
+
+/* KPI row */
+.kpi-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.kpi{flex:1;min-width:110px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.kpi-val{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi-lbl{font-size:10px;color:var(--fg3);text-transform:uppercase;letter-spacing:.6px;margin-top:2px;font-weight:600}
+.kpi-delta{font-size:10.5px;margin-top:4px;font-weight:600}
+.kpi-delta.up{color:var(--gl)} .kpi-delta.dn{color:var(--rl)}
+
+/* SALES PIPELINE — Kanban */
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;min-height:340px;overflow-x:auto}
+.kanban-col{background:var(--card2);border:1px solid var(--border);border-radius:10px;min-width:170px;display:flex;flex-direction:column}
+.kcol-head{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.kcol-name{font-size:11.5px;font-weight:700}
+.kcol-count{background:var(--border);color:var(--fg2);font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px}
+.kcol-body{padding:8px;flex:1;display:flex;flex-direction:column;gap:6px}
+.deal-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:.15s}
+.deal-card:hover{border-color:var(--fg3)}
+.deal-name{font-size:12px;font-weight:600}
+.deal-company{font-size:11px;color:var(--fg3);margin-top:1px}
+.deal-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.deal-val{font-size:12px;font-weight:700;color:var(--al)}
+.deal-stage-dot{width:7px;height:7px;border-radius:50%}
+.follow-up-list{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.fu-head{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.fu-item{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px}
+.fu-item:last-child{border:none}
+.fu-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.fu-text{flex:1}
+.fu-name{font-weight:600}
+.fu-time{font-size:10.5px;color:var(--fg3);margin-top:1px}
+.fu-btn{padding:3px 9px;border-radius:5px;font-size:10.5px;font-weight:600;font-family:inherit;background:var(--card2);border:1px solid var(--border);color:var(--fg2);cursor:pointer}
+
+/* DIGITAL MARKETING */
+.campaign-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+.campaign-table th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--fg3);border-bottom:1px solid var(--border);background:var(--card2)}
+.campaign-table td{padding:9px 12px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.campaign-table tr:hover td{background:var(--card2)}
+.campaign-table tr:last-child td{border:none}
+.status-pill{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.st-live{background:#1e3a1e;color:var(--gl)}
+.st-paused{background:#2d2010;color:var(--al)}
+.st-draft{background:#1e2336;color:var(--fg3)}
+.race-funnel{display:flex;gap:8px;margin-bottom:16px}
+.race-stage{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px}
+.race-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.race-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.race-sub{font-size:10.5px;color:var(--fg3);margin-top:2px}
+.race-bar{height:3px;border-radius:2px;margin-top:8px}
+.promo-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px}
+.promo-input-wrap{flex:1}
+.promo-code-display{font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--tl);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;letter-spacing:2px;margin-bottom:10px}
+
+/* PUBLICITY */
+.pr-editor{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.pr-toolbar{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
+.pr-tool{padding:4px 8px;border-radius:5px;font-size:11px;font-weight:600;font-family:inherit;background:var(--card2);border:1px solid var(--border);color:var(--fg2);cursor:pointer}
+.pr-tool:hover{color:var(--fg)}
+.pr-area{width:100%;padding:14px;font-size:13px;font-family:'DM Sans',sans-serif;background:transparent;border:none;color:var(--fg);resize:vertical;min-height:160px;outline:none;line-height:1.7}
+.media-kit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px}
+.mk-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+.mk-icon{font-size:22px;margin-bottom:4px}
+.mk-name{font-size:11px;font-weight:600}
+.mk-size{font-size:10px;color:var(--fg3);margin-top:1px}
+.influencer-list{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.inf-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)}
+.inf-row:last-child{border:none}
+.inf-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.inf-name{font-size:12.5px;font-weight:600;flex:1}
+.inf-reach{font-size:11px;color:var(--fg2)}
+.inf-badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+
+/* SETTINGS PAGE */
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.settings-section-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border:none}
+.settings-row-info{flex:1}
+.settings-row-name{font-size:12.5px;font-weight:600}
+.settings-row-desc{font-size:11px;color:var(--fg2);margin-top:1px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);background:#1e2336;border:1px solid var(--gl);border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;color:var(--gl);z-index:999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:16px;width:fit-content}
+.tab-btn{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;border:none;background:none;color:var(--fg3);cursor:pointer;transition:.15s}
+.tab-btn.active{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--fg3);margin-bottom:16px}
+.bc-sep{opacity:.4}
+.bc-link{color:var(--fg2);cursor:pointer;transition:.15s}
+.bc-link:hover{color:var(--fg)}
+.bc-cur{color:var(--fg);font-weight:600}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-size:13px;font-weight:700}
+
+@media(max-width:640px){
+  .sidebar{display:none}
+  .kanban{grid-template-columns:repeat(2,1fr)}
+  .race-funnel{flex-wrap:wrap}
+  .campaign-table{font-size:11px}
+}
+</style>
+
+<div class="app">
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo">Adan<span>Pradan</span></div>
+  <div class="vendor-badge">
+    <div class="vendor-name">🏪 Crafted Roots Co.</div>
+    <div class="vendor-plan">✦ Pro Vendor</div>
+  </div>
+  <div class="nav-sec">Overview</div>
+  <div class="nav-item" onclick="showPage('dashboard')">
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+    Dashboard
+  </div>
+  <div class="nav-item active" onclick="showPage('store')" id="nav-store">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 4l1.5 8h9L14 4M6 4V2.5a2 2 0 014 0V4"/></svg>
+    Plugin Store
+    <span class="nav-count">3</span>
+  </div>
+  <div class="nav-sec">Active Plugins</div>
+  <div class="nav-item" onclick="showPage('sales')" id="nav-sales">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 11l4-4 3 3 4-5 3 2"/></svg>
+    Sales Pipeline
+    <span class="nav-pip" id="pip-sales" hidden></span>
+  </div>
+  <div class="nav-item" onclick="showPage('marketing')" id="nav-marketing">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M5 8h6M8 5v6"/></svg>
+    Digital Marketing
+    <span class="nav-pip" id="pip-marketing" hidden></span>
+  </div>
+  <div class="nav-item" onclick="showPage('publicity')" id="nav-publicity">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h1l3 3H2V5zM6 5h3l2 2-2 2H6V5zM9 5l4-2v9l-4-2"/></svg>
+    Publicity
+    <span class="nav-pip" id="pip-publicity" hidden></span>
+  </div>
+  <div class="nav-sec">Settings</div>
+  <div class="nav-item" onclick="showPage('plugin-settings')">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"/></svg>
+    Plugin Settings
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Plugin Store</div>
+    <div class="topbar-right">
+      <button class="tb-btn" onclick="showPage('store')">🔌 Browse Plugins</button>
+      <div class="avatar">CR</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══════════ PLUGIN STORE ═══════════ -->
+    <div class="page active" id="page-store">
+      <div class="store-header">
+        <div class="store-title">Standard Plugins</div>
+        <div class="store-sub">Platform-built, zero-code modules ready to activate for your storefront</div>
+      </div>
+
+      <div class="store-banner">
+        <div class="banner-icon">✦</div>
+        <div class="banner-text">
+          <h3>Standard Plugin Guarantee</h3>
+          <p>All Standard Plugins are built and maintained by AdanPradan. Automatic updates, uptime guarantee, full data portability, and no vendor lock-in.</p>
+          <div class="badge-row">
+            <span class="badge badge-std">✓ Platform-Maintained</span>
+            <span class="badge badge-free">Free to Import</span>
+            <span class="badge badge-auto">Auto-Updates</span>
+            <span class="badge badge-std">99.9% Uptime SLA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="plugin-grid">
+
+        <!-- SALES PIPELINE -->
+        <div class="plugin-card" id="card-sp">
+          <div class="plugin-card-top">
+            <div class="plugin-header">
+              <div class="plugin-icon plugin-icon-sp">📊</div>
+              <div class="plugin-meta">
+                <div class="plugin-name">Sales Pipeline</div>
+                <div class="plugin-tagline">Lead-to-close CRM & revenue tracking</div>
+                <div class="std-badge">✦ Standard</div>
+              </div>
+            </div>
+            <div class="plugin-modules">
+              <div class="modules-label">6 Modules Included</div>
+              <div class="module-tags">
+                <span class="mod-tag">Deal Tracker</span>
+                <span class="mod-tag">Lead Capture</span>
+                <span class="mod-tag">Promo Engine</span>
+                <span class="mod-tag">Revenue Forecast</span>
+                <span class="mod-tag">Follow-ups</span>
+                <span class="mod-tag">Affiliate Mgr</span>
+              </div>
+            </div>
+            <div class="plugin-stats">
+              <div class="pstat"><div class="pstat-val" style="color:var(--al)">2.8k</div><div class="pstat-lbl">Vendors Using</div></div>
+              <div class="pstat"><div class="pstat-val" style="color:var(--gl)">4.8★</div><div class="pstat-lbl">Rating</div></div>
+              <div class="pstat"><div class="pstat-val" style="color:var(--tl)">Free</div><div class="pstat-lbl">Price</div></div>
+            </div>
+            <div class="plugin-actions">
+              <button class="btn btn-outline" onclick="openDetails('sp')">Details</button>
+              <button class="btn btn-al" id="import-sp" onclick="openWizard('sp','Sales Pipeline','📊','plugin-icon-sp')">Import Plugin</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIGITAL MARKETING -->
+        <div class="plugin-card" id="card-dm">
+          <div class="plugin-card-top">
+            <div class="plugin-header">
+              <div class="plugin-icon plugin-icon-dm">📣</div>
+              <div class="plugin-meta">
+                <div class="plugin-name">Digital Marketing</div>
+                <div class="plugin-tagline">Campaigns, RACE funnel & listing boosts</div>
+                <div class="std-badge">✦ Standard</div>
+              </div>
+            </div>
+            <div class="plugin-modules">
+              <div class="modules-label">7 Modules Included</div>
+              <div class="module-tags">
+                <span class="mod-tag">Campaign Mgr</span>
+                <span class="mod-tag">Promo Codes</span>
+                <span class="mod-tag">Listing Boost</span>
+                <span class="mod-tag">RACE Analytics</span>
+                <span class="mod-tag">Ad Budget</span>
+                <span class="mod-tag">Email Seq.</span>
+                <span class="mod-tag">Opt-out Mgr</span>
+              </div>
+            </div>
+            <div class="plugin-stats">
+              <div class="pstat"><div class="pstat-val" style="color:var(--tl)">3.1k</div><div class="pstat-lbl">Vendors Using</div></div>
+              <div class="pstat"><div class="pstat-val" style="color:var(--gl)">4.9★</div><div class="pstat-lbl">Rating</div></div>
+              <div class="pstat"><div class="pstat-val" style="color:var(--tl)">Free</div><div class="pstat-lbl">Price</div></div>
+            </div>
+            <div class="plugin-actions">
+              <button class="btn btn-outline" onclick="openDetails('dm')">Details</button>
+              <button class="btn btn-primary" id="import-dm" onclick="openWizard('dm','Digital Marketing','📣','plugin-icon-dm')">Import Plugin</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PUBLICITY -->
+        <div class="plugin-card" id="card-pub">
+          <div class="plugin-card-top">
+            <div class="plugin-header">
+              <div class="plugin-icon plugin-icon-pub">📰</div>
+              <div class="plugin-meta">
+                <div class="plugin-name">Publicity</div>
+                <div class="plugin-tagline">Press releases, media kits & influencer briefs</div>
+                <div class="std-badge">✦ Standard</div>
+              </div>
+            </div>
+            <div class="plugin-modules">
+              <div class="modules-label">5 Modules Included</div>
+              <div class="module-tags">
+                <span class="mod-tag">Press Release</span>
+                <span class="mod-tag">Media Kit</span>
+                <span class="mod-tag">Brand Story</span>
+                <span class="mod-tag">Influencer Brief</span>
+                <span class="mod-tag">Coverage Tracker</span>
+              </div>
+            </div>
+            <div class="plugin-stats">
+              <div class="pstat"><div class="pstat-val" style="color:var(--vl)">1.4k</div><div class="pstat-lbl">Vendors Using</div></div>
+              <div class="pstat"><div class="pstat-val" style="color:var(--gl)">4.7★</div><div class="pstat-lbl">Rating</div></div>
+              <div class="pstat"><div class="pstat-val" style="color:var(--tl)">Free</div><div class="pstat-lbl">Price</div></div>
+            </div>
+            <div class="plugin-actions">
+              <button class="btn btn-outline" onclick="openDetails('pub')">Details</button>
+              <button class="btn btn-vl" id="import-pub" onclick="openWizard('pub','Publicity','📰','plugin-icon-pub')">Import Plugin</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /plugin-grid -->
+    </div><!-- /store -->
+
+    <!-- ═══════════ DASHBOARD ═══════════ -->
+    <div class="page" id="page-dashboard">
+      <div class="page-hd" style="margin-bottom:16px">
+        <div style="font-size:18px;font-weight:700">Good morning, Crafted Roots Co. 👋</div>
+        <div style="font-size:12px;color:var(--fg2);margin-top:2px">Monday, 19 Oct 2026 — Here's what's happening today</div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-val" style="color:var(--al)">₹2.4L</div><div class="kpi-lbl">Pipeline Value</div><div class="kpi-delta up">↑ 18% this week</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--tl)">12</div><div class="kpi-lbl">Active Campaigns</div><div class="kpi-delta up">↑ 3 new</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--vl)">4</div><div class="kpi-lbl">Press Releases</div><div class="kpi-delta up">2 pending review</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--gl)">89%</div><div class="kpi-lbl">Lead Conv. Rate</div><div class="kpi-delta up">↑ 4pts</div></div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--fg2);font-size:13px">
+        <div style="font-size:20px;margin-bottom:8px">🔌</div>
+        Import plugins from the <span style="color:var(--tl);cursor:pointer;font-weight:600" onclick="showPage('store')">Plugin Store</span> to unlock full dashboard widgets.
+      </div>
+    </div>
+
+    <!-- ═══════════ SALES PIPELINE ═══════════ -->
+    <div class="page" id="page-sales">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="showPage('store')">Plugin Store</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-cur">Sales Pipeline</span>
+      </div>
+      <div class="plugin-page-header">
+        <div class="plugin-page-icon plugin-icon-sp">📊</div>
+        <div>
+          <div class="plugin-page-title">Sales Pipeline</div>
+          <div class="plugin-page-sub">6 active modules · Last updated 2 hrs ago</div>
+        </div>
+        <div class="pp-actions">
+          <button class="btn btn-outline" onclick="showPage('plugin-settings')">⚙ Settings</button>
+          <button class="btn btn-al">+ Add Deal</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'sp-kanban')">Kanban Board</button>
+        <button class="tab-btn" onclick="switchTab(this,'sp-forecast')">Revenue Forecast</button>
+        <button class="tab-btn" onclick="switchTab(this,'sp-leads')">Lead Capture</button>
+        <button class="tab-btn" onclick="switchTab(this,'sp-affiliate')">Affiliates</button>
+      </div>
+
+      <!-- Kanban -->
+      <div class="tab-content active" id="sp-kanban">
+        <div class="kpi-row">
+          <div class="kpi"><div class="kpi-val" style="color:var(--al)">₹2,40,000</div><div class="kpi-lbl">Total Pipeline</div></div>
+          <div class="kpi"><div class="kpi-val" style="color:var(--gl)">7</div><div class="kpi-lbl">Deals Open</div></div>
+          <div class="kpi"><div class="kpi-val" style="color:var(--tl)">₹65,000</div><div class="kpi-lbl">Closing This Month</div></div>
+          <div class="kpi"><div class="kpi-val" style="color:var(--vl)">42d</div><div class="kpi-lbl">Avg. Cycle</div></div>
+        </div>
+        <div class="kanban">
+          <div class="kanban-col">
+            <div class="kcol-head"><span class="kcol-name" style="color:var(--fg3)">New Lead</span><span class="kcol-count">2</span></div>
+            <div class="kcol-body">
+              <div class="deal-card"><div class="deal-name">Rohan Mehta</div><div class="deal-company">GreenLeaf Traders</div><div class="deal-bottom"><span class="deal-val">₹18k</span><span class="deal-stage-dot" style="background:var(--fg3)"></span></div></div>
+              <div class="deal-card"><div class="deal-name">Priya Foods</div><div class="deal-company">Organic First</div><div class="deal-bottom"><span class="deal-val">₹32k</span><span class="deal-stage-dot" style="background:var(--fg3)"></span></div></div>
+            </div>
+          </div>
+          <div class="kanban-col">
+            <div class="kcol-head"><span class="kcol-name" style="color:var(--tl)">Contacted</span><span class="kcol-count">2</span></div>
+            <div class="kcol-body">
+              <div class="deal-card"><div class="deal-name">Asha Nair</div><div class="deal-company">Spice Route</div><div class="deal-bottom"><span class="deal-val">₹45k</span><span class="deal-stage-dot" style="background:var(--tl)"></span></div></div>
+              <div class="deal-card"><div class="deal-name">DevKart</div><div class="deal-company">B2B Wholesale</div><div class="deal-bottom"><span class="deal-val">₹28k</span><span class="deal-stage-dot" style="background:var(--tl)"></span></div></div>
+            </div>
+          </div>
+          <div class="kanban-col">
+            <div class="kcol-head"><span class="kcol-name" style="color:var(--vl)">Proposal Sent</span><span class="kcol-count">1</span></div>
+            <div class="kcol-body">
+              <div class="deal-card"><div class="deal-name">Meera Crafts</div><div class="deal-company">Handmade Exports</div><div class="deal-bottom"><span class="deal-val">₹72k</span><span class="deal-stage-dot" style="background:var(--vl)"></span></div></div>
+            </div>
+          </div>
+          <div class="kanban-col">
+            <div class="kcol-head"><span class="kcol-name" style="color:var(--al)">Negotiation</span><span class="kcol-count">1</span></div>
+            <div class="kcol-body">
+              <div class="deal-card"><div class="deal-name">RetailX</div><div class="deal-company">Franchise Group</div><div class="deal-bottom"><span class="deal-val">₹1.2L</span><span class="deal-stage-dot" style="background:var(--al)"></span></div></div>
+            </div>
+          </div>
+          <div class="kanban-col">
+            <div class="kcol-head"><span class="kcol-name" style="color:var(--gl)">Won ✓</span><span class="kcol-count">1</span></div>
+            <div class="kcol-body">
+              <div class="deal-card"><div class="deal-name">Arjun Foods</div><div class="deal-company">Export Partner</div><div class="deal-bottom"><span class="deal-val">₹95k</span><span class="deal-stage-dot" style="background:var(--gl)"></span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="follow-up-list" style="margin-top:14px">
+          <div class="fu-head">⏰ Today's Follow-ups <span style="margin-left:auto;font-size:11px;color:var(--fg3);font-weight:400">3 due</span></div>
+          <div class="fu-item">
+            <div class="fu-icon" style="background:#1e3a1e">📞</div>
+            <div class="fu-text"><div class="fu-name">Call Asha Nair — Spice Route</div><div class="fu-time">Proposal discussion · 11:00 AM</div></div>
+            <button class="fu-btn">Done</button>
+          </div>
+          <div class="fu-item">
+            <div class="fu-icon" style="background:#1e2d45">✉</div>
+            <div class="fu-text"><div class="fu-name">Follow-up email — RetailX</div><div class="fu-time">Negotiation update · 2:00 PM</div></div>
+            <button class="fu-btn">Done</button>
+          </div>
+          <div class="fu-item">
+            <div class="fu-icon" style="background:#2d1f45">📋</div>
+            <div class="fu-text"><div class="fu-name">Send catalogue — Priya Foods</div><div class="fu-time">First contact · 4:30 PM</div></div>
+            <button class="fu-btn">Done</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="sp-forecast">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center">
+          <div style="font-size:13px;color:var(--fg2);margin-bottom:12px">Weighted Revenue Forecast — Q4 2026</div>
+          <div style="font-size:32px;font-weight:700;color:var(--al)">₹3,24,000</div>
+          <div style="font-size:12px;color:var(--fg3);margin-top:4px">Based on deal probability × value across all stages</div>
+          <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+            <div style="flex:1;min-width:100px;padding:10px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><div style="font-size:14px;font-weight:700;color:var(--gl)">₹95k</div><div style="font-size:10px;color:var(--fg3);margin-top:2px">CLOSED (100%)</div></div>
+            <div style="flex:1;min-width:100px;padding:10px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><div style="font-size:14px;font-weight:700;color:var(--al)">₹1.08L</div><div style="font-size:10px;color:var(--fg3);margin-top:2px">NEGOTIATION (90%)</div></div>
+            <div style="flex:1;min-width:100px;padding:10px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><div style="font-size:14px;font-weight:700;color:var(--vl)">₹50.4k</div><div style="font-size:10px;color:var(--fg3);margin-top:2px">PROPOSAL (70%)</div></div>
+            <div style="flex:1;min-width:100px;padding:10px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><div style="font-size:14px;font-weight:700;color:var(--tl)">₹36.5k</div><div style="font-size:10px;color:var(--fg3);margin-top:2px">CONTACTED (50%)</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="sp-leads">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div class="sec-head"><div class="sec-title">Lead Capture Form Builder</div><button class="btn btn-al" style="font-size:11px;padding:5px 12px">+ New Form</button></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><span style="font-size:18px">📋</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Product Enquiry Form</div><div style="font-size:11px;color:var(--fg2)">48 submissions · Linked to CRM pipeline</div></div><span style="font-size:10px;background:#1e3a1e;color:var(--gl);padding:2px 7px;border-radius:20px;font-weight:700">Live</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><span style="font-size:18px">📋</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Bulk Order Request</div><div style="font-size:11px;color:var(--fg2)">12 submissions · Qualifies by MOQ</div></div><span style="font-size:10px;background:#1e3a1e;color:var(--gl);padding:2px 7px;border-radius:20px;font-weight:700">Live</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="sp-affiliate">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div class="sec-head"><div class="sec-title">Affiliate Partners</div><button class="btn btn-al" style="font-size:11px;padding:5px 12px">Invite Partner</button></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><span style="font-size:18px">🤝</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">NaturalLiving Blog</div><div style="font-size:11px;color:var(--fg2)">Commission: 8% · Referrals: 23 · Earnings: ₹12,480</div></div><span style="font-size:10px;background:#1e3a1e;color:var(--gl);padding:2px 7px;border-radius:20px;font-weight:700">Active</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px"><span style="font-size:18px">🤝</span><div style="flex:1"><div style="font-size:12.5px;font-weight:600">EcoHomeShopper</div><div style="font-size:11px;color:var(--fg2)">Commission: 10% · Referrals: 41 · Earnings: ₹28,700</div></div><span style="font-size:10px;background:#1e3a1e;color:var(--gl);padding:2px 7px;border-radius:20px;font-weight:700">Active</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sales -->
+
+    <!-- ═══════════ DIGITAL MARKETING ═══════════ -->
+    <div class="page" id="page-marketing">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="showPage('store')">Plugin Store</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-cur">Digital Marketing</span>
+      </div>
+      <div class="plugin-page-header">
+        <div class="plugin-page-icon plugin-icon-dm">📣</div>
+        <div>
+          <div class="plugin-page-title">Digital Marketing</div>
+          <div class="plugin-page-sub">7 active modules · RACE funnel live</div>
+        </div>
+        <div class="pp-actions">
+          <button class="btn btn-outline" onclick="showPage('plugin-settings')">⚙ Settings</button>
+          <button class="btn btn-primary">+ New Campaign</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'dm-campaigns')">Campaigns</button>
+        <button class="tab-btn" onclick="switchTab(this,'dm-race')">RACE Funnel</button>
+        <button class="tab-btn" onclick="switchTab(this,'dm-promo')">Promo Codes</button>
+        <button class="tab-btn" onclick="switchTab(this,'dm-boost')">Listing Boost</button>
+      </div>
+
+      <div class="tab-content active" id="dm-campaigns">
+        <div class="kpi-row">
+          <div class="kpi"><div class="kpi-val" style="color:var(--tl)">₹48,000</div><div class="kpi-lbl">Total Ad Spend</div><div class="kpi-delta up">Budget: ₹60k</div></div>
+          <div class="kpi"><div class="kpi-val" style="color:var(--gl)">3.2%</div><div class="kpi-lbl">Avg. CTR</div><div class="kpi-delta up">↑ 0.4pts</div></div>
+          <div class="kpi"><div class="kpi-val" style="color:var(--al)">284</div><div class="kpi-lbl">Conversions</div><div class="kpi-delta up">↑ 22%</div></div>
+          <div class="kpi"><div class="kpi-val" style="color:var(--vl)">₹169</div><div class="kpi-lbl">Cost per Conv.</div><div class="kpi-delta dn">↓ ₹18</div></div>
+        </div>
+        <table class="campaign-table">
+          <thead><tr><th>Campaign</th><th>Channel</th><th>Spend</th><th>CTR</th><th>Conv.</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Diwali Collection Drop</strong></td><td>Instagram + Meta</td><td>₹18,400</td><td>4.1%</td><td>112</td><td><span class="status-pill st-live">Live</span></td></tr>
+            <tr><td><strong>Wholesale B2B Oct</strong></td><td>Google Ads</td><td>₹12,200</td><td>2.8%</td><td>67</td><td><span class="status-pill st-live">Live</span></td></tr>
+            <tr><td><strong>Organic Range Launch</strong></td><td>Email + WhatsApp</td><td>₹6,800</td><td>5.2%</td><td>89</td><td><span class="status-pill st-live">Live</span></td></tr>
+            <tr><td><strong>Winter Skin Care</strong></td><td>Pinterest + FB</td><td>₹4,200</td><td>1.9%</td><td>16</td><td><span class="status-pill st-paused">Paused</span></td></tr>
+            <tr><td><strong>New Year Bundle</strong></td><td>Meta + YouTube</td><td>—</td><td>—</td><td>—</td><td><span class="status-pill st-draft">Draft</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-content" id="dm-race">
+        <div class="race-funnel">
+          <div class="race-stage"><div class="race-label" style="color:var(--tl)">Reach</div><div class="race-val">84,200</div><div class="race-sub">Impressions this month</div><div class="race-bar" style="background:var(--tl);width:100%"></div></div>
+          <div class="race-stage"><div class="race-label" style="color:var(--vl)">Act</div><div class="race-val">6,340</div><div class="race-sub">Profile visits &amp; clicks</div><div class="race-bar" style="background:var(--vl);width:75%"></div></div>
+          <div class="race-stage"><div class="race-label" style="color:var(--al)">Convert</div><div class="race-val">284</div><div class="race-sub">Purchases completed</div><div class="race-bar" style="background:var(--al);width:45%"></div></div>
+          <div class="race-stage"><div class="race-label" style="color:var(--gl)">Engage</div><div class="race-val">198</div><div class="race-sub">Repeat buyers &amp; reviews</div><div class="race-bar" style="background:var(--gl);width:30%"></div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div style="font-size:12px;color:var(--fg2);margin-bottom:10px;font-weight:600">Funnel Drop-off Analysis</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--fg3);width:90px">Reach→Act</span><div style="flex:1;height:6px;background:var(--card2);border-radius:3px"><div style="height:100%;background:var(--vl);border-radius:3px;width:7.5%"></div></div><span style="color:var(--vl);font-weight:700;min-width:40px">7.5%</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--fg3);width:90px">Act→Convert</span><div style="flex:1;height:6px;background:var(--card2);border-radius:3px"><div style="height:100%;background:var(--al);border-radius:3px;width:4.5%"></div></div><span style="color:var(--al);font-weight:700;min-width:40px">4.5%</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--fg3);width:90px">Convert→Eng.</span><div style="flex:1;height:6px;background:var(--card2);border-radius:3px"><div style="height:100%;background:var(--gl);border-radius:3px;width:70%"></div></div><span style="color:var(--gl);font-weight:700;min-width:40px">69.7%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="dm-promo">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px">
+          <div class="sec-head"><div class="sec-title">Generate Promo Code</div></div>
+          <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:120px"><div class="field-label">Discount %</div><input type="number" class="field-input" value="15" id="promo-pct"></div>
+            <div style="flex:1;min-width:120px"><div class="field-label">Expiry (days)</div><input type="number" class="field-input" value="7" id="promo-exp"></div>
+            <div style="flex:1;min-width:120px"><div class="field-label">Usage Limit</div><input type="number" class="field-input" value="100" id="promo-limit"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-bottom:12px" onclick="genPromo()">⚡ Generate Code</button>
+          <div class="promo-code-display" id="promo-display">CRAFTED15</div>
+          <button class="btn btn-outline" onclick="copyPromo()">📋 Copy Code</button>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700">Active Promo Codes</div>
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--tl);min-width:110px">DIWALI20</span><span style="flex:1;color:var(--fg2)">20% off · 34/200 used</span><span style="color:var(--gl);font-weight:600;font-size:11px">Active</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:12px"><span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--tl);min-width:110px">CRAFTED15</span><span style="flex:1;color:var(--fg2)">15% off · 12/100 used</span><span style="color:var(--gl);font-weight:600;font-size:11px">Active</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="dm-boost">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
+          <div class="sec-head"><div class="sec-title">Listing Boost Scheduler</div><button class="btn btn-primary" style="font-size:11px;padding:5px 12px">+ Schedule Boost</button></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:12px"><div style="flex:1"><div style="font-weight:600">Handmade Clay Diyas (set of 12)</div><div style="color:var(--fg2);margin-top:1px">Boosted · 3x visibility · Ends 25 Oct</div></div><span style="color:var(--gl);font-weight:700;font-size:11px">🚀 Boosting</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-size:12px"><div style="flex:1"><div style="font-weight:600">Organic Neem Gift Box</div><div style="color:var(--fg2);margin-top:1px">Scheduled · Starts 20 Oct, 2x visibility</div></div><span style="color:var(--al);font-weight:700;font-size:11px">⏳ Scheduled</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /marketing -->
+
+    <!-- ═══════════ PUBLICITY ═══════════ -->
+    <div class="page" id="page-publicity">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="showPage('store')">Plugin Store</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-cur">Publicity</span>
+      </div>
+      <div class="plugin-page-header">
+        <div class="plugin-page-icon plugin-icon-pub">📰</div>
+        <div>
+          <div class="plugin-page-title">Publicity</div>
+          <div class="plugin-page-sub">5 active modules · 4 press releases sent</div>
+        </div>
+        <div class="pp-actions">
+          <button class="btn btn-outline" onclick="showPage('plugin-settings')">⚙ Settings</button>
+          <button class="btn btn-vl">+ New Release</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'pub-pr')">Press Release</button>
+        <button class="tab-btn" onclick="switchTab(this,'pub-media')">Media Kit</button>
+        <button class="tab-btn" onclick="switchTab(this,'pub-inf')">Influencers</button>
+        <button class="tab-btn" onclick="switchTab(this,'pub-coverage')">Coverage</button>
+      </div>
+
+      <div class="tab-content active" id="pub-pr">
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px"><div class="field-label">Template</div><select class="field-input"><option>Product Launch</option><option>Festival Campaign</option><option>Partnership Announcement</option><option>Award / Recognition</option></select></div>
+          <div style="flex:1;min-width:160px"><div class="field-label">Distribution</div><select class="field-input"><option>Media Contacts List</option><option>PR Newswire</option><option>Manual Upload</option></select></div>
+        </div>
+        <div class="pr-editor">
+          <div class="pr-toolbar">
+            <button class="pr-tool">H1</button><button class="pr-tool">H2</button><button class="pr-tool">B</button><button class="pr-tool">I</button><button class="pr-tool">Quote</button><button class="pr-tool">Link</button><button class="pr-tool" style="margin-left:auto;color:var(--vl);border-color:var(--vl)">✦ AI Draft</button>
+          </div>
+          <textarea class="pr-area" id="pr-text">FOR IMMEDIATE RELEASE
+
+Crafted Roots Co. Launches New Diwali Artisan Collection Celebrating Sustainable Craft
+
+Mumbai, 19 October 2026 — Crafted Roots Co., a leading artisan marketplace vendor on AdanPradan, today announced the launch of its exclusive Diwali Artisan Collection, featuring 32 handcrafted items made by rural artisans across Maharashtra and Rajasthan.
+
+The collection includes handmade clay diyas, organic natural-dye fabrics, and sustainable packaging gift sets — all ethically sourced and certified Fair Trade.
+
+"We believe every purchase should tell a story," said the founder of Crafted Roots Co. "This Diwali, we're connecting urban consumers with the hands that made their gifts."
+
+The collection is available now on AdanPradan. Limited inventory.
+
+###
+Contact: press@craftedroots.co | +91 98765 43210</textarea>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-vl" onclick="showToast('Press release saved as draft')">Save Draft</button>
+          <button class="btn btn-outline" onclick="showToast('Preview opened in new tab')">Preview</button>
+          <button class="btn btn-outline" onclick="showToast('Sent to 48 media contacts!')">📤 Distribute</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="pub-media">
+        <div class="sec-head" style="margin-bottom:10px"><div class="sec-title">Brand Media Kit</div><button class="btn btn-vl" style="font-size:11px;padding:5px 12px">Download All</button></div>
+        <div class="media-kit-grid">
+          <div class="mk-card"><div class="mk-icon">🖼</div><div class="mk-name">Brand Logo Pack</div><div class="mk-size">PNG · SVG · 2.4 MB</div></div>
+          <div class="mk-card"><div class="mk-icon">🎨</div><div class="mk-name">Brand Colour Guide</div><div class="mk-size">PDF · 840 KB</div></div>
+          <div class="mk-card"><div class="mk-icon">📝</div><div class="mk-name">Company Boilerplate</div><div class="mk-size">DOCX · 12 KB</div></div>
+          <div class="mk-card"><div class="mk-icon">📷</div><div class="mk-name">Product Photography</div><div class="mk-size">ZIP · 48 MB</div></div>
+          <div class="mk-card"><div class="mk-icon">📊</div><div class="mk-name">Fact Sheet 2026</div><div class="mk-size">PDF · 320 KB</div></div>
+          <div class="mk-card"><div class="mk-icon">🎬</div><div class="mk-name">Brand Story Video</div><div class="mk-size">MP4 · 180 MB</div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div class="field-label" style="margin-bottom:8px">Brand Story (short)</div>
+          <textarea class="field-input" style="resize:vertical;min-height:80px;line-height:1.6">Crafted Roots Co. was founded in 2021 to bridge the gap between skilled rural artisans and conscious urban buyers. We work with over 200 artisans across India, ensuring fair wages, ethical sourcing, and authentic craft traditions.</textarea>
+        </div>
+      </div>
+
+      <div class="tab-content" id="pub-inf">
+        <div class="sec-head" style="margin-bottom:10px"><div class="sec-title">Influencer Briefs</div><button class="btn btn-vl" style="font-size:11px;padding:5px 12px">+ New Brief</button></div>
+        <div class="influencer-list">
+          <div class="inf-row">
+            <div class="inf-avatar" style="background:#1f1245">🌿</div>
+            <div class="inf-name">@sustainableliving.in</div>
+            <div class="inf-reach">2.1M · Instagram</div>
+            <span class="inf-badge" style="background:#1e3a1e;color:var(--gl)">Brief Sent</span>
+          </div>
+          <div class="inf-row">
+            <div class="inf-avatar" style="background:#1e2d0a">🎨</div>
+            <div class="inf-name">@crafts_of_india</div>
+            <div class="inf-reach">840K · YouTube</div>
+            <span class="inf-badge" style="background:#2d1f45;color:var(--vl)">Negotiating</span>
+          </div>
+          <div class="inf-row">
+            <div class="inf-avatar" style="background:#2d1f0a">✨</div>
+            <div class="inf-name">@festivehomeby_riya</div>
+            <div class="inf-reach">320K · Instagram</div>
+            <span class="inf-badge" style="background:#1e2d45;color:var(--tl)">In Review</span>
+          </div>
+          <div class="inf-row">
+            <div class="inf-avatar" style="background:#0a1e2d">📦</div>
+            <div class="inf-name">@unboxingindia</div>
+            <div class="inf-reach">1.4M · YouTube</div>
+            <span class="inf-badge" style="background:#1e3a1e;color:var(--gl)">Content Live</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="pub-coverage">
+        <div class="sec-head" style="margin-bottom:10px"><div class="sec-title">Media Coverage Tracker</div></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px"><div style="flex:1"><div style="font-weight:600;color:var(--tl)">YourStory — "Top Sustainable Brands Diwali 2026"</div><div style="color:var(--fg2);margin-top:3px">Mentioned Crafted Roots in top 10 list · 14 Oct 2026</div></div><span style="color:var(--gl);font-weight:700;font-size:11px">High Reach</span></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px"><div style="flex:1"><div style="font-weight:600;color:var(--vl)">Times of India Lifestyle</div><div style="color:var(--fg2);margin-top:3px">Feature interview with founder · 8 Oct 2026</div></div><span style="color:var(--al);font-weight:700;font-size:11px">Medium Reach</span></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px"><div style="flex:1"><div style="font-weight:600;color:var(--tl)">Etsy India Newsletter</div><div style="color:var(--fg2);margin-top:3px">Product spotlight in curated picks · 2 Oct 2026</div></div><span style="color:var(--fg3);font-weight:700;font-size:11px">Niche</span></div>
+        </div>
+      </div>
+    </div><!-- /publicity -->
+
+    <!-- ═══════════ PLUGIN SETTINGS ═══════════ -->
+    <div class="page" id="page-plugin-settings">
+      <div class="breadcrumb"><span class="bc-cur">Plugin Settings</span></div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Plugin Settings</div>
+      <div style="font-size:12px;color:var(--fg2);margin-bottom:16px">Control which modules are active for your storefront</div>
+
+      <div class="settings-section">
+        <div class="settings-section-head">📊 Sales Pipeline <span style="margin-left:auto;font-size:10px;font-weight:600;color:var(--al);background:#2d1f0a;padding:2px 7px;border-radius:20px" id="sp-status-label">Not Imported</span></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Deal Tracker (Kanban)</div><div class="settings-row-desc">Visualize all active deals by stage</div></div><div class="toggle" id="tog-sp-kanban" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Lead Capture</div><div class="settings-row-desc">Embeddable forms for inbound leads</div></div><div class="toggle" id="tog-sp-leads" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Promo Code Engine</div><div class="settings-row-desc">Generate &amp; track discount codes</div></div><div class="toggle" id="tog-sp-promo" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Revenue Forecast</div><div class="settings-row-desc">Weighted pipeline projections</div></div><div class="toggle" id="tog-sp-fc" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Follow-up Reminders</div><div class="settings-row-desc">Time-based task alerts for deals</div></div><div class="toggle" id="tog-sp-fu" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Affiliate Manager</div><div class="settings-row-desc">Invite &amp; track referral partners</div></div><div class="toggle" id="tog-sp-aff" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-head">📣 Digital Marketing <span style="margin-left:auto;font-size:10px;font-weight:600;color:var(--tl);background:#0d1e30;padding:2px 7px;border-radius:20px" id="dm-status-label">Not Imported</span></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Campaign Manager</div><div class="settings-row-desc">Multi-channel ad campaigns</div></div><div class="toggle" id="tog-dm-camp" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">RACE Funnel Analytics</div><div class="settings-row-desc">Reach → Act → Convert → Engage</div></div><div class="toggle" id="tog-dm-race" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Listing Boost Scheduler</div><div class="settings-row-desc">Schedule paid visibility boosts</div></div><div class="toggle" id="tog-dm-boost" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Opt-out Compliance</div><div class="settings-row-desc">Auto honour unsubscribe requests</div></div><div class="toggle on" id="tog-dm-opt" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-head">📰 Publicity <span style="margin-left:auto;font-size:10px;font-weight:600;color:var(--vl);background:#1a0d2e;padding:2px 7px;border-radius:20px" id="pub-status-label">Not Imported</span></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Press Release Editor</div><div class="settings-row-desc">Template-based release authoring</div></div><div class="toggle" id="tog-pub-pr" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Media Kit Builder</div><div class="settings-row-desc">Assets for press &amp; media inquiries</div></div><div class="toggle" id="tog-pub-mk" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Influencer Brief</div><div class="settings-row-desc">Creator collaboration briefing tool</div></div><div class="toggle" id="tog-pub-inf" onclick="this.classList.toggle('on')"></div></div>
+        <div class="settings-row"><div class="settings-row-info"><div class="settings-row-name">Coverage Tracker</div><div class="settings-row-desc">Log &amp; rate media mentions</div></div><div class="toggle" id="tog-pub-cov" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div><!-- /plugin-settings -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ════ IMPORT WIZARD ════ -->
+<div class="wizard-overlay" id="wizard" onclick="wizardOverlayClick(event)">
+<div class="wizard-box" onclick="event.stopPropagation()">
+  <div class="wiz-head">
+    <div class="wiz-icon" id="wiz-icon">📊</div>
+    <div><div class="wiz-title" id="wiz-title">Import Plugin</div><div class="wiz-sub" id="wiz-sub">Complete 4 quick steps to activate</div></div>
+    <button class="wiz-close" onclick="closeWizard()">✕</button>
+  </div>
+  <div class="wiz-progress">
+    <div class="wiz-step active" id="ws1"><div class="wiz-dot">1</div><div class="wiz-step-lbl">Data</div></div>
+    <div class="wiz-step" id="ws2"><div class="wiz-dot">2</div><div class="wiz-step-lbl">Connect</div></div>
+    <div class="wiz-step" id="ws3"><div class="wiz-dot">3</div><div class="wiz-step-lbl">Modules</div></div>
+    <div class="wiz-step" id="ws4"><div class="wiz-dot">4</div><div class="wiz-step-lbl">Confirm</div></div>
+  </div>
+  <div class="wiz-body">
+    <!-- Step 1 -->
+    <div class="wiz-screen active" id="wiz-s1">
+      <div class="policy-block">
+        <div class="policy-title">🔒 Data Processing Consent</div>
+        <div class="policy-body">This plugin will process your lead, sales, and customer data within the AdanPradan platform. Data is not shared with third parties. You retain full ownership and can export at any time.</div>
+        <div class="policy-check"><input type="checkbox" id="chk1" onchange="checkWiz()"><label for="chk1">I consent to AdanPradan processing my business data as described above</label></div>
+      </div>
+      <div class="policy-block">
+        <div class="policy-title">📤 Third-Party Data Transfer</div>
+        <div class="policy-body">Some modules (e.g. Ad integrations) may transfer campaign data to Meta, Google, or WhatsApp APIs. You control which channels are connected.</div>
+        <div class="policy-check"><input type="checkbox" id="chk2" onchange="checkWiz()"><label for="chk2">I understand and accept third-party data transfer terms where applicable</label></div>
+      </div>
+    </div>
+    <!-- Step 2 -->
+    <div class="wiz-screen" id="wiz-s2">
+      <div class="field-group"><div class="field-label">Business Display Name</div><input type="text" class="field-input" value="Crafted Roots Co."></div>
+      <div class="field-group"><div class="field-label">Primary Contact Email</div><input type="email" class="field-input" value="hello@craftedroots.co"></div>
+      <div class="field-group"><div class="field-label">GST / Business ID (optional)</div><input type="text" class="field-input" placeholder="27AAPFC1234F1Z5"></div>
+      <div class="policy-block" style="border-color:var(--al);margin-top:4px">
+        <div class="policy-title" style="color:var(--al)">📋 Affiliate Programme Terms</div>
+        <div class="policy-body">If you use the Affiliate Manager module, all commission payouts follow the AdanPradan Affiliate Policy v2.4. Minimum payout threshold: ₹500.</div>
+        <div class="policy-check"><input type="checkbox" id="chk3"><label for="chk3">I accept the Affiliate Programme Terms</label></div>
+      </div>
+    </div>
+    <!-- Step 3 -->
+    <div class="wiz-screen" id="wiz-s3">
+      <div style="font-size:12.5px;color:var(--fg2);margin-bottom:10px">Choose which modules to activate. You can change this anytime in Plugin Settings.</div>
+      <div class="module-toggle-list" id="wiz-modules"></div>
+    </div>
+    <!-- Step 4 -->
+    <div class="wiz-screen" id="wiz-s4">
+      <div style="text-align:center;padding:10px 0 16px">
+        <div style="font-size:36px;margin-bottom:8px">✦</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px" id="wiz-confirm-name">Sales Pipeline</div>
+        <div style="font-size:12px;color:var(--fg2)">Everything is set up. Click <strong>Activate Plugin</strong> to add it to your vendor portal. You'll see it in your sidebar instantly.</div>
+      </div>
+      <div class="policy-block">
+        <div class="policy-title">✓ Summary</div>
+        <div class="policy-body" id="wiz-summary-text">Activating with all modules enabled. Policies accepted. No additional cost — this is a Standard Plugin.</div>
+      </div>
+      <div class="policy-check" style="margin-top:8px"><input type="checkbox" id="chk4"><label for="chk4">I confirm I have read and agree to all terms presented in this wizard</label></div>
+    </div>
+  </div>
+  <div class="wiz-footer">
+    <button class="wiz-back" id="wiz-back-btn" onclick="wizBack()" hidden>← Back</button>
+    <div></div>
+    <button class="wiz-next" id="wiz-next-btn" onclick="wizNext()" disabled>Next →</button>
+  </div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const PLUGINS = {
+  sp:{name:'Sales Pipeline',icon:'📊',cls:'plugin-icon-sp',page:'sales',navId:'nav-sales',pipId:'pip-sales',statusId:'sp-status-label',color:'var(--al)',modules:[
+    {name:'Deal Tracker',desc:'Kanban board for all deals'},
+    {name:'Lead Capture',desc:'Embeddable forms & auto-routing'},
+    {name:'Promo Code Engine',desc:'Generate & manage discounts'},
+    {name:'Revenue Forecast',desc:'Weighted stage projections'},
+    {name:'Follow-up Reminders',desc:'Automated task reminders'},
+    {name:'Affiliate Manager',desc:'Partner referral tracking'}
+  ]},
+  dm:{name:'Digital Marketing',icon:'📣',cls:'plugin-icon-dm',page:'marketing',navId:'nav-marketing',pipId:'pip-marketing',statusId:'dm-status-label',color:'var(--tl)',modules:[
+    {name:'Campaign Manager',desc:'Multi-channel ad campaigns'},
+    {name:'RACE Funnel Analytics',desc:'Reach→Act→Convert→Engage'},
+    {name:'Promo Code Gen',desc:'Marketing-linked discount codes'},
+    {name:'Listing Boost',desc:'Schedule paid visibility boosts'},
+    {name:'Email Sequencer',desc:'Automated nurture sequences'},
+    {name:'Opt-out Compliance',desc:'Auto honour unsubscribe'},
+    {name:'Ad Budget Tracker',desc:'Spend vs. budget alerts'}
+  ]},
+  pub:{name:'Publicity',icon:'📰',cls:'plugin-icon-pub',page:'publicity',navId:'nav-publicity',pipId:'pip-publicity',statusId:'pub-status-label',color:'var(--vl)',modules:[
+    {name:'Press Release Editor',desc:'Template-based release authoring'},
+    {name:'Media Kit Builder',desc:'Assets for press inquiries'},
+    {name:'Brand Story Editor',desc:'Company narrative pages'},
+    {name:'Influencer Brief',desc:'Creator collaboration briefings'},
+    {name:'Coverage Tracker',desc:'Log & rate media mentions'}
+  ]}
+};
+
+let currentPlugin = null, wizStep = 1;
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const nm = document.getElementById('nav-'+id);
+  if(nm) nm.classList.add('active');
+  document.getElementById('topbar-title').textContent = {
+    store:'Plugin Store', dashboard:'Dashboard',
+    sales:'Sales Pipeline', marketing:'Digital Marketing',
+    publicity:'Publicity', 'plugin-settings':'Plugin Settings'
+  }[id] || 'Vendor Portal';
+}
+
+function openWizard(pid, name, icon, cls){
+  currentPlugin = pid;
+  wizStep = 1;
+  document.getElementById('wiz-title').textContent = 'Import: '+name;
+  document.getElementById('wiz-icon').textContent = icon;
+  document.getElementById('wiz-icon').className = 'wiz-icon '+cls;
+  document.getElementById('wiz-confirm-name').textContent = name;
+  // populate modules
+  const p = PLUGINS[pid];
+  const ml = document.getElementById('wiz-modules');
+  ml.innerHTML = p.modules.map(m=>`
+    <div class="mod-toggle-row">
+      <div class="mod-toggle-info"><div class="mod-toggle-name">${m.name}</div><div class="mod-toggle-desc">${m.desc}</div></div>
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+    </div>`).join('');
+  // reset screens & steps
+  document.querySelectorAll('.wiz-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('wiz-s1').classList.add('active');
+  document.querySelectorAll('.wiz-step').forEach((s,i)=>{s.classList.remove('active','done');if(i===0)s.classList.add('active')});
+  document.getElementById('wiz-back-btn').hidden = true;
+  document.getElementById('wiz-next-btn').textContent = 'Next →';
+  document.getElementById('wiz-next-btn').disabled = true;
+  // uncheck boxes
+  ['chk1','chk2','chk3','chk4'].forEach(id=>{try{document.getElementById(id).checked=false}catch(e){}});
+  document.getElementById('wizard').classList.add('open');
+  checkWiz();
+}
+
+function closeWizard(){document.getElementById('wizard').classList.remove('open');}
+function wizardOverlayClick(e){if(e.target===document.getElementById('wizard'))closeWizard();}
+
+function checkWiz(){
+  const btn = document.getElementById('wiz-next-btn');
+  if(wizStep===1) btn.disabled = !(document.getElementById('chk1')?.checked && document.getElementById('chk2')?.checked);
+  else if(wizStep===4) btn.disabled = !document.getElementById('chk4')?.checked;
+  else btn.disabled = false;
+}
+
+function wizNext(){
+  if(wizStep===4){activatePlugin();return;}
+  document.querySelectorAll('.wiz-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('wiz-s'+(wizStep+1)).classList.add('active');
+  // steps
+  const steps = document.querySelectorAll('.wiz-step');
+  steps[wizStep-1].classList.remove('active');steps[wizStep-1].classList.add('done');
+  steps[wizStep-1].querySelector('.wiz-dot').textContent='✓';
+  steps[wizStep].classList.add('active');
+  wizStep++;
+  document.getElementById('wiz-back-btn').hidden = (wizStep===1);
+  document.getElementById('wiz-next-btn').textContent = wizStep===4 ? '✦ Activate Plugin' : 'Next →';
+  checkWiz();
+}
+
+function wizBack(){
+  if(wizStep<=1)return;
+  document.querySelectorAll('.wiz-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('wiz-s'+(wizStep-1)).classList.add('active');
+  const steps=document.querySelectorAll('.wiz-step');
+  steps[wizStep-1].classList.remove('active');
+  steps[wizStep-2].classList.remove('done');steps[wizStep-2].classList.add('active');
+  steps[wizStep-2].querySelector('.wiz-dot').textContent=wizStep-1;
+  wizStep--;
+  document.getElementById('wiz-back-btn').hidden=(wizStep===1);
+  document.getElementById('wiz-next-btn').textContent='Next →';
+  checkWiz();
+}
+
+function activatePlugin(){
+  const p = PLUGINS[currentPlugin];
+  closeWizard();
+  // mark import button
+  const importBtn = document.getElementById('import-'+currentPlugin);
+  if(importBtn){importBtn.textContent='✓ Imported';importBtn.className='btn imported';}
+  // show nav pip
+  const pip = document.getElementById(p.pipId);
+  if(pip) pip.hidden=false;
+  // update settings label
+  const lbl = document.getElementById(p.statusId);
+  if(lbl){lbl.textContent='Active';lbl.style.background='#1e3a1e';lbl.style.color='var(--gl)';}
+  // enable toggles in settings
+  showToast('✓ '+p.name+' activated! Opening plugin…');
+  setTimeout(()=>showPage(p.page),700);
+}
+
+function openDetails(pid){
+  const p = PLUGINS[pid];
+  showToast('Details: '+p.name+' — '+p.modules.length+' modules');
+}
+
+function switchTab(btn,id){
+  const bar = btn.closest('.tab-bar');
+  bar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // find parent page, hide all tab-contents inside it, show the target
+  const page = bar.closest('.page');
+  page.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+}
+
+function genPromo(){
+  const pct = document.getElementById('promo-pct').value||15;
+  const prefix = ['CRAFTED','ROOTS','ARTISAN','DIWALI','FEST','LAUNCH'][Math.floor(Math.random()*6)];
+  document.getElementById('promo-display').textContent = prefix+pct;
+  showToast('Promo code generated!');
+}
+
+function copyPromo(){
+  const code = document.getElementById('promo-display').textContent;
+  navigator.clipboard.writeText(code).then(()=>showToast('Copied: '+code)).catch(()=>{
+    const el = document.getElementById('promo-display');
+    const sel = window.getSelection(); const rng = document.createRange();
+    rng.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(rng);
+    showToast('Select & copy: '+code);
+  });
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// listen for checkbox changes in wizard
+document.querySelectorAll('.wiz-body').forEach(b=>b.addEventListener('change',checkWiz));
+</script>
+
+</body></html>
