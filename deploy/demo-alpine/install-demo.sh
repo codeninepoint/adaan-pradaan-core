@@ -121,8 +121,8 @@ curl -fsSLO "${BASE_URL}/${CORE_TGZ}"
 curl -fsSLO "${BASE_URL}/${UI_TGZ}"
 curl -fsSLO "${BASE_URL}/${OPS_TGZ}"
 curl -fsSLO "${BASE_URL}/SHA256SUMS"
-# Verify only the files we downloaded (Release may list both libc variants)
-grep -E " (${CORE_TGZ}|${UI_TGZ}|${OPS_TGZ}|install-demo\\.sh)\$" SHA256SUMS > SHA256SUMS.local
+# Verify only the tarballs we downloaded (not install-demo.sh — already running locally)
+grep -E " (${CORE_TGZ}|${UI_TGZ}|${OPS_TGZ})\$" SHA256SUMS > SHA256SUMS.local
 sha256sum -c SHA256SUMS.local
 
 echo "==> Unpacking to ${PREFIX}"
