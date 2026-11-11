@@ -531,6 +531,12 @@ class CommerceService:
         payment_method: str,
         request_id: str | None,
     ) -> OrderPlaced:
+        from shared.settings import settings
+
+        if settings.payments_provider_normalized == "cashfree":
+            raise ValidationError(
+                "use POST /api/v1/tenants/{tenant_id}/checkout/sessions for Cashfree payments"
+            )
         await self._require_permission(
             caller_principal_id, tenant_id, "resource.create", request_id
         )
@@ -816,6 +822,26 @@ class CommerceService:
         order = await self._session.get(OrderRow, order_id)
         if order is None:
             raise NotFoundError("order not found")
+        refund_amount = fulfilment.refund_amount
+        if refund_amount is not None and refund_amount > 0:
+            from payments.application.payment_service import PaymentService
+
+            payments = PaymentService(self._session, self._authorization)
+            try:
+                await payments.create_refund(
+                    order_id=order_id,
+                    amount=Decimal(str(refund_amount)),
+                    reason=f"vendor reject refund slice {vendor_id}",
+                    actor_user_id=caller_user_id,
+                    refund_method="original",
+                )
+            except NotFoundError:
+                # Orders placed via stub place_order may have no payment intent.
+                pass
+            else:
+                # create_refund commits; refresh local rows
+                await self._session.refresh(fulfilment)
+                await self._session.refresh(order)
         fulfilment.refund_status = "refunded"
         fulfilment.updated_at = utcnow()
         await audit(
@@ -1172,6 +1198,24 @@ class CommerceService:
         row, _line = await self._vendor_return_row(vendor_id=vendor_id, return_id=return_id)
         if row.status != "approved":
             raise ConflictError("return must be approved before refunding")
+        if row.refund_amount is not None and row.refund_amount > 0:
+            from payments.application.payment_service import PaymentService
+
+            payments = PaymentService(self._session, self._authorization)
+            method = (row.refund_method or "original").strip().lower() or "original"
+            try:
+                await payments.create_refund(
+                    order_id=row.order_id,
+                    amount=Decimal(str(row.refund_amount)),
+                    reason=f"return {row.id}",
+                    return_id=row.id,
+                    actor_user_id=caller_user_id,
+                    refund_method=method,
+                )
+            except NotFoundError:
+                pass
+            else:
+                await self._session.refresh(row)
         row.status = "refunded"
         row.refunded_at = utcnow()
         await audit(

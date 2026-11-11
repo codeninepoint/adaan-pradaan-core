@@ -439,6 +439,92 @@ class AiDraftResponse(BaseModel):
     template: str
 
 
+class VendorCommunicationTemplateItem(BaseModel):
+    id: str
+    code: str
+    name: str
+    channel: str
+    plugin: str
+    message_type: str
+    body: str
+    approval_status: str
+    dlt_reference: str | None = None
+    vendors_using: int = 0
+    messages_sent_month: int = 0
+    variable_map: list = Field(default_factory=list)
+    meta: dict = Field(default_factory=dict)
+    submitted_at: str | None = None
+
+
+class VendorCommunicationTemplateListResponse(BaseModel):
+    items: list[VendorCommunicationTemplateItem]
+
+
+class VendorCommunicationLogItem(BaseModel):
+    id: str
+    occurred_at: str
+    channel: str
+    template_code: str
+    template_name: str
+    audience: str
+    contact_name: str | None = None
+    sent: int
+    delivered: int | None = None
+    read_count: int = 0
+    replied_count: int = 0
+    status: str
+
+
+class VendorCommunicationHubResponse(BaseModel):
+    summary: dict
+    recent: list[VendorCommunicationLogItem]
+
+
+class VendorCommunicationSendRequest(BaseModel):
+    template_id: str
+    audience: str = "Single Contact"
+    variables: dict = Field(default_factory=dict)
+    contact_name: str | None = None
+    schedule: str = "now"
+
+
+class VendorCommunicationSendResponse(BaseModel):
+    log_id: str
+    status: str
+    sent: int
+    delivered: int
+    estimated_cost_inr: float
+
+
+class VendorCommunicationLogsResponse(BaseModel):
+    items: list[VendorCommunicationLogItem]
+    campaign: dict | None = None
+    compliance: dict = Field(default_factory=dict)
+
+
+class VendorCommunicationTemplateRequestBody(BaseModel):
+    name: str
+    channel: str = "sms"
+    notes: str = ""
+
+
+class VendorCommunicationTemplateRequestResponse(BaseModel):
+    id: str
+    status: str
+
+
+class VendorSettlementReturnActionRequest(BaseModel):
+    action: str
+    reason: str | None = None
+
+
+class VendorSettlementBankUpdateRequest(BaseModel):
+    bank_name: str
+    account_number: str
+    ifsc: str
+    branch: str | None = None
+
+
 class CreateSalesFollowUpRequest(BaseModel):
     title: str
     detail: str = ""

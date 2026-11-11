@@ -12,6 +12,7 @@ from authz.application.authorization_service import AuthorizationService
 from authz.interface.api.dependencies import get_authorization_service
 from identity.interface.api.dependencies import CurrentAuthDep, get_session
 from marketplace.application.commerce_service import CommerceService
+from marketplace.application.customer_order_service import CustomerOrderService
 
 router = APIRouter(prefix="/api/v1", tags=["marketplace-commerce"])
 
@@ -319,6 +320,12 @@ class ReturnRequest(BaseModel):
     notes: str = ""
 
 
+class CustomerHubReturnSubmitRequest(BaseModel):
+    category: str
+    description: str
+    photo_name: str = "item_photo.jpg"
+
+
 class ReturnResponse(BaseModel):
     return_id: str
     order_id: str
@@ -350,6 +357,12 @@ def get_commerce_service(
     authorization: Annotated[AuthorizationService, Depends(get_authorization_service)],
 ) -> CommerceService:
     return CommerceService(session, authorization)
+
+
+def get_customer_order_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> CustomerOrderService:
+    return CustomerOrderService(session)
 
 
 def _cart(view) -> CartResponse:
@@ -1096,4 +1109,95 @@ async def cancel_subscription(
         plan_name=item.plan_name,
         status=item.status,
         next_billing_at=item.next_billing_at,
+    )
+
+
+@router.get("/tenants/{tenant_id}/order-hub")
+async def customer_order_hub(
+    tenant_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.hub(tenant_id=tenant_id, caller_user_id=user.id)
+
+
+@router.get("/tenants/{tenant_id}/order-hub/payments")
+async def customer_order_hub_payments(
+    tenant_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.payments(tenant_id=tenant_id, caller_user_id=user.id)
+
+
+@router.get("/tenants/{tenant_id}/order-hub/chat")
+async def customer_order_hub_chat(
+    tenant_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+    order_id: Annotated[UUID | None, Query()] = None,
+) -> dict:
+    user, _session, _credential = auth
+    return await service.chat(
+        tenant_id=tenant_id, caller_user_id=user.id, order_id=order_id
+    )
+
+
+@router.get("/tenants/{tenant_id}/order-hub/orders/{order_id}")
+async def customer_order_hub_order(
+    tenant_id: UUID,
+    order_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.get_order(
+        tenant_id=tenant_id, caller_user_id=user.id, order_id=order_id
+    )
+
+
+@router.post("/tenants/{tenant_id}/order-hub/orders/{order_id}/returns")
+async def customer_order_hub_submit_return(
+    tenant_id: UUID,
+    order_id: UUID,
+    body: CustomerHubReturnSubmitRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.submit_return(
+        tenant_id=tenant_id,
+        caller_user_id=user.id,
+        order_id=order_id,
+        category=body.category,
+        description=body.description,
+        photo_name=body.photo_name,
+    )
+
+
+@router.post("/tenants/{tenant_id}/order-hub/orders/{order_id}/returns/simulate-accept")
+async def customer_order_hub_simulate_accept(
+    tenant_id: UUID,
+    order_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.simulate_vendor_accept(
+        tenant_id=tenant_id, caller_user_id=user.id, order_id=order_id
+    )
+
+
+@router.post("/tenants/{tenant_id}/order-hub/orders/{order_id}/close-window")
+async def customer_order_hub_close_window(
+    tenant_id: UUID,
+    order_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[CustomerOrderService, Depends(get_customer_order_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.close_window(
+        tenant_id=tenant_id, caller_user_id=user.id, order_id=order_id
     )

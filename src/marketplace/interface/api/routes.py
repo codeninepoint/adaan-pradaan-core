@@ -14,6 +14,8 @@ from marketplace.application.catalog_service import CatalogService
 from marketplace.application.growth_plugins import GrowthPluginService
 from marketplace.application.plugin_service import PluginService
 from marketplace.application.vendor_growth_plugins import VendorGrowthPluginService
+from platform_ops.application.vendor_communications_service import VendorCommunicationsService
+from platform_ops.application.vendor_settlement_service import VendorSettlementService
 from marketplace.interface.api.schemas import (
     CatalogFacets,
     CatalogItem,
@@ -78,6 +80,17 @@ from marketplace.interface.api.schemas import (
     PressReleaseItem,
     PublicityBoardResponse,
     UpdatePressReleaseRequest,
+    VendorCommunicationHubResponse,
+    VendorCommunicationLogItem,
+    VendorCommunicationLogsResponse,
+    VendorCommunicationSendRequest,
+    VendorCommunicationSendResponse,
+    VendorCommunicationTemplateItem,
+    VendorCommunicationTemplateListResponse,
+    VendorCommunicationTemplateRequestBody,
+    VendorCommunicationTemplateRequestResponse,
+    VendorSettlementBankUpdateRequest,
+    VendorSettlementReturnActionRequest,
     CreateSalesFollowUpRequest,
     MarketingBoardResponse,
     MarketingCampaignItem,
@@ -149,6 +162,54 @@ def get_vendor_growth_plugin_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> VendorGrowthPluginService:
     return VendorGrowthPluginService(session)
+
+
+def get_vendor_communications_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> VendorCommunicationsService:
+    return VendorCommunicationsService(session)
+
+
+def get_vendor_settlement_service(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> VendorSettlementService:
+    return VendorSettlementService(session)
+
+
+def _vendor_comm_template(item) -> VendorCommunicationTemplateItem:
+    return VendorCommunicationTemplateItem(
+        id=item.id,
+        code=item.code,
+        name=item.name,
+        channel=item.channel,
+        plugin=item.plugin,
+        message_type=item.message_type,
+        body=item.body,
+        approval_status=item.approval_status,
+        dlt_reference=item.dlt_reference,
+        vendors_using=item.vendors_using,
+        messages_sent_month=item.messages_sent_month,
+        variable_map=item.variable_map,
+        meta=item.meta,
+        submitted_at=item.submitted_at,
+    )
+
+
+def _vendor_comm_log(item) -> VendorCommunicationLogItem:
+    return VendorCommunicationLogItem(
+        id=item.id,
+        occurred_at=item.occurred_at,
+        channel=item.channel,
+        template_code=item.template_code,
+        template_name=item.template_name,
+        audience=item.audience,
+        contact_name=item.contact_name,
+        sent=item.sent,
+        delivered=item.delivered,
+        read_count=item.read_count,
+        replied_count=item.replied_count,
+        status=item.status,
+    )
 
 
 def _product(item) -> ProductResponse:
@@ -1257,6 +1318,213 @@ async def vendor_publicity_ai_draft(
     user, _session, _credential = auth
     draft = await service.ai_draft(vendor_id=vendor_id, caller_user_id=user.id, body=body.model_dump())
     return AiDraftResponse(**draft)
+
+
+@router.get(
+    "/vendors/{vendor_id}/communications/hub",
+    response_model=VendorCommunicationHubResponse,
+)
+async def vendor_communications_hub(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorCommunicationsService, Depends(get_vendor_communications_service)],
+) -> VendorCommunicationHubResponse:
+    user, _session, _credential = auth
+    summary, recent = await service.hub(vendor_id=vendor_id, caller_user_id=user.id)
+    return VendorCommunicationHubResponse(
+        summary={
+            "sent_this_month": summary.sent_this_month,
+            "delivery_rate": summary.delivery_rate,
+            "active_campaigns": summary.active_campaigns,
+            "templates_available": summary.templates_available,
+            "by_channel": summary.by_channel,
+        },
+        recent=[_vendor_comm_log(item) for item in recent],
+    )
+
+
+@router.get(
+    "/vendors/{vendor_id}/communications/templates",
+    response_model=VendorCommunicationTemplateListResponse,
+)
+async def vendor_communication_templates(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorCommunicationsService, Depends(get_vendor_communications_service)],
+    channel: Annotated[str | None, Query()] = None,
+) -> VendorCommunicationTemplateListResponse:
+    user, _session, _credential = auth
+    items = await service.list_templates(
+        vendor_id=vendor_id, caller_user_id=user.id, channel=channel
+    )
+    return VendorCommunicationTemplateListResponse(
+        items=[_vendor_comm_template(item) for item in items]
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/communications/send",
+    response_model=VendorCommunicationSendResponse,
+)
+async def vendor_communication_send(
+    vendor_id: UUID,
+    body: VendorCommunicationSendRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorCommunicationsService, Depends(get_vendor_communications_service)],
+) -> VendorCommunicationSendResponse:
+    user, _session, _credential = auth
+    result = await service.send(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        template_id=UUID(body.template_id),
+        audience=body.audience,
+        variables=body.variables,
+        contact_name=body.contact_name,
+        schedule=body.schedule,
+    )
+    return VendorCommunicationSendResponse(
+        log_id=result.log_id,
+        status=result.status,
+        sent=result.sent,
+        delivered=result.delivered,
+        estimated_cost_inr=result.estimated_cost_inr,
+    )
+
+
+@router.get(
+    "/vendors/{vendor_id}/communications/logs",
+    response_model=VendorCommunicationLogsResponse,
+)
+async def vendor_communication_logs(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorCommunicationsService, Depends(get_vendor_communications_service)],
+) -> VendorCommunicationLogsResponse:
+    user, _session, _credential = auth
+    data = await service.logs(vendor_id=vendor_id, caller_user_id=user.id)
+    return VendorCommunicationLogsResponse(
+        items=[_vendor_comm_log(item) for item in data["items"]],
+        campaign=data.get("campaign"),
+        compliance=data.get("compliance") or {},
+    )
+
+
+@router.post(
+    "/vendors/{vendor_id}/communications/template-requests",
+    response_model=VendorCommunicationTemplateRequestResponse,
+    status_code=201,
+)
+async def vendor_communication_template_request(
+    vendor_id: UUID,
+    body: VendorCommunicationTemplateRequestBody,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorCommunicationsService, Depends(get_vendor_communications_service)],
+) -> VendorCommunicationTemplateRequestResponse:
+    user, _session, _credential = auth
+    result = await service.request_template(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        name=body.name,
+        channel=body.channel,
+        notes=body.notes,
+    )
+    return VendorCommunicationTemplateRequestResponse(**result)
+
+
+@router.get("/vendors/{vendor_id}/settlement/earnings")
+async def vendor_settlement_earnings(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.earnings(vendor_id=vendor_id, caller_user_id=user.id)
+
+
+@router.get("/vendors/{vendor_id}/settlement/returns")
+async def vendor_settlement_returns(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.returns(vendor_id=vendor_id, caller_user_id=user.id)
+
+
+@router.post("/vendors/{vendor_id}/settlement/returns/{return_id}/respond")
+async def vendor_settlement_respond_return(
+    vendor_id: UUID,
+    return_id: UUID,
+    body: VendorSettlementReturnActionRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.respond_return(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        return_id=return_id,
+        action=body.action,
+        reason=body.reason,
+    )
+
+
+@router.get("/vendors/{vendor_id}/settlement/orders")
+async def vendor_settlement_orders(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.orders(vendor_id=vendor_id, caller_user_id=user.id)
+
+
+@router.get("/vendors/{vendor_id}/settlement/history")
+async def vendor_settlement_history(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.history(vendor_id=vendor_id, caller_user_id=user.id)
+
+
+@router.get("/vendors/{vendor_id}/settlement/chat")
+async def vendor_settlement_chat(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.chat(vendor_id=vendor_id, caller_user_id=user.id)
+
+
+@router.get("/vendors/{vendor_id}/settlement/bank")
+async def vendor_settlement_bank(
+    vendor_id: UUID,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.bank(vendor_id=vendor_id, caller_user_id=user.id)
+
+
+@router.patch("/vendors/{vendor_id}/settlement/bank")
+async def vendor_settlement_update_bank(
+    vendor_id: UUID,
+    body: VendorSettlementBankUpdateRequest,
+    auth: CurrentAuthDep,
+    service: Annotated[VendorSettlementService, Depends(get_vendor_settlement_service)],
+) -> dict:
+    user, _session, _credential = auth
+    return await service.update_bank(
+        vendor_id=vendor_id,
+        caller_user_id=user.id,
+        bank_name=body.bank_name,
+        account_number=body.account_number,
+        ifsc=body.ifsc,
+        branch=body.branch,
+    )
 
 
 @router.get("/vendors/{vendor_id}/offerings", response_model=OfferingListResponse)

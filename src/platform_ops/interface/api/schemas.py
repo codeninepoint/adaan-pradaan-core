@@ -145,3 +145,92 @@ class TeamActionResponse(BaseModel):
     to_member_id: str | None = None
     caller_role: str | None = None
     recipient_role: str | None = None
+
+
+class CommunicationTemplateItem(BaseModel):
+    id: str
+    code: str
+    name: str
+    channel: str
+    plugin: str
+    message_type: str
+    body: str
+    approval_status: str
+    dlt_reference: str | None = None
+    vendors_using: int = 0
+    messages_sent_month: int = 0
+    variable_map: list = Field(default_factory=list)
+    meta: dict = Field(default_factory=dict)
+    submitted_at: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class CommunicationTemplateSummary(BaseModel):
+    live: int
+    pending: int
+    sms: int
+    whatsapp: int
+    email: int
+    inapp: int
+
+
+class CommunicationTemplateListResponse(BaseModel):
+    items: list[CommunicationTemplateItem]
+    summary: CommunicationTemplateSummary
+
+
+class CreateCommunicationTemplateRequest(BaseModel):
+    name: str
+    channel: str
+    plugin: str = "Sales"
+    message_type: str = "Marketing"
+    body: str
+    code: str | None = None
+    buttons: str | None = None
+
+
+class CommunicationUsageItem(BaseModel):
+    id: str
+    occurred_at: str
+    vendor_name: str
+    channel: str
+    template_code: str
+    template_name: str
+    audience: str
+    sent: int
+    delivered: int | None = None
+    status: str
+
+
+class CommunicationUsageSummary(BaseModel):
+    messages_this_month: int
+    sms_sent: int
+    whatsapp_sent: int
+    email_sent: int
+    inapp_sent: int
+    failed_or_opted_out: int
+    warning: str | None = None
+
+
+class CommunicationUsageListResponse(BaseModel):
+    items: list[CommunicationUsageItem]
+    summary: CommunicationUsageSummary
+
+
+class CommunicationConsentResponse(BaseModel):
+    sms_optouts: int
+    whatsapp_optouts: int
+    email_unsubs: int
+    dnd_scrub_today: int
+    note: str
+
+
+class ResolveSettlementReturnRequest(BaseModel):
+    outcome: str
+    amount: float | None = None
+    reason: str | None = None
+
+
+class SettlementFraudActionRequest(BaseModel):
+    action: str

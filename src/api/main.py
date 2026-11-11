@@ -11,6 +11,7 @@ from resources.interface.api.routes import router as resources_router
 from shared.settings import settings
 from marketplace.interface.api.commerce_routes import router as commerce_router
 from marketplace.interface.api.routes import router as marketplace_router
+from payments.interface.api.routes import router as payments_router
 from tenant.interface.api.routes import router as tenant_router
 from platform_ops.interface.api.routes import router as platform_ops_router
 from vendor.interface.api.routes import router as vendor_router
@@ -38,6 +39,7 @@ def create_app() -> FastAPI:
     app.include_router(vendor_router)
     app.include_router(marketplace_router)
     app.include_router(commerce_router)
+    app.include_router(payments_router)
     app.include_router(platform_ops_router)
     return app
 

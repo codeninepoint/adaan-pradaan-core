@@ -33,6 +33,15 @@ class Settings(BaseSettings):
     # Comma-separated emails promoted to platform operator on GET /auth/me.
     platform_operator_emails: str = ""
 
+    # Payments: stub (default, offline tests) | cashfree (live/sandbox PG).
+    payments_provider: str = "stub"
+    cashfree_env: str = "sandbox"  # sandbox | production
+    cashfree_app_id: str = ""
+    cashfree_secret_key: str = ""
+    cashfree_api_version: str = "2025-01-01"
+    cashfree_webhook_secret: str = ""
+    cashfree_return_url_base: str = "http://localhost:3000"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -40,6 +49,17 @@ class Settings(BaseSettings):
     @property
     def platform_operator_email_set(self) -> set[str]:
         return {e.strip().lower() for e in self.platform_operator_emails.split(",") if e.strip()}
+
+    @property
+    def cashfree_base_url(self) -> str:
+        if (self.cashfree_env or "sandbox").lower() == "production":
+            return "https://api.cashfree.com/pg"
+        return "https://sandbox.cashfree.com/pg"
+
+    @property
+    def payments_provider_normalized(self) -> str:
+        value = (self.payments_provider or "stub").strip().lower()
+        return value if value in {"stub", "cashfree"} else "stub"
 
     @model_validator(mode="after")
     def _reject_weak_jwt_outside_dev(self) -> Settings:
